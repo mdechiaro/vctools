@@ -7,7 +7,6 @@ from pyVmomi import vim
 from pyVmomi import  Iso8601
 
 import getpass
-import atexit
 
 class vSphereAPI(object):
     def __init__(self, datacenter=None, port=443, domain='adlocal', user=None, passwd=None):
@@ -54,9 +53,6 @@ class vSphereAPI(object):
         except vim.fault.InvalidLogin as loginerr:
             passwd = None
             print ('error: %s' % (loginerr))
-
-        # Ensure that we cleanly disconnect in case our code dies
-        atexit.register(connect.Disconnect, self.dcc)
 
 
     def containerObj(self, *args):
