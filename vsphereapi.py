@@ -81,6 +81,17 @@ class vSphereAPI(object):
         return [vm.name for vm in obj.view]
 
 
+    def getId(self, system):
+        """ 
+        returns a id of system
+        """
+
+        obj = self.containerObj( self.content.rootFolder, [vim.VirtualMachine], True )
+
+        return [vm for vm in obj.view if vm.name in system]
+
+
+
     def listDCs(self):
         """ 
         returns a list of datacenter names.
