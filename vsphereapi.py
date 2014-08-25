@@ -67,7 +67,7 @@ class vSphereAPI(object):
         return obj
 
 
-    def listVMs(self):
+    def listVM(self):
         """ 
         returns a list of VM names.
         """
@@ -87,8 +87,7 @@ class vSphereAPI(object):
         return [vm for vm in obj.view if vm.name in system]
 
 
-
-    def listDCs(self):
+    def listDC(self):
         """ 
         returns a list of datacenter names.
         """
@@ -98,7 +97,7 @@ class vSphereAPI(object):
         return [dc for dc in obj.view]
 
 
-    def listDSs(self):
+    def listDS(self):
         """ 
         returns a list of datastore names inside of datacenter
 
@@ -109,3 +108,12 @@ class vSphereAPI(object):
         return [ds.info.name for ds in obj.view]
 
 
+    def listHS(self):
+        """ 
+        returns a list of host system names inside of datacenter
+
+        """
+
+        obj = self.containerObj( self.content.rootFolder, [vim.HostSystem], True )
+
+        return [hs.name for hs in obj.view]
