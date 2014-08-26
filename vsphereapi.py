@@ -2,9 +2,8 @@
 from __future__ import print_function
 
 from pyVim import connect
-from pyVmomi import vmodl
 from pyVmomi import vim
-from pyVmomi import  Iso8601
+from pyVmomi import Iso8601
 
 import getpass
 
@@ -67,53 +66,84 @@ class vSphereAPI(object):
         return obj
 
 
-    def listVM(self):
+    def getObj(self, vimType, name):
         """ 
-        returns a list of VM names.
+        returns an object inside of vimtype if it matches name
         """
 
-        obj = self.containerObj( self.content.rootFolder, [vim.VirtualMachine], True )
+        obj = self.containerObj( self.content.rootFolder, vimType, True )
+
+        for obj in obj.view:
+            if obj.name == name:
+                return obj
+            else:
+                print '%s not found in %s' % (name, vimType)
+
+
+    def listObjNames(self, vimType):
+        """
+        returns a list of object.name inside of vimType
+        """
+
+        obj = self.containerObj( self.content.rootFolder, vimType, True )
 
         return [vm.name for vm in obj.view]
 
 
-    def getId(self, system):
-        """ 
-        returns a id of system
+    def diskConfig(self, datastore, sizeKB, mode = 'persistent', thin = True):
+        """
+        Method returns configured VirtualDisk object
+
+        :param datastore: [datastore] where the disk will reside.
+        :param sizeKB: int(sizeKB) of disk in kilobytes
+        :param mode: The disk persistence mode. Valid modes are:
+                     persistent
+                     independent_persistent
+                     independent_nonpersistent
+                     nonpersistent
+                     undoable
+                     append 
+        :param thin: enable thin provisioning
         """
 
-        obj = self.containerObj( self.content.rootFolder, [vim.VirtualMachine], True )
+        disk = vim.vm.device.VirtualDeviceSpec()
+        disk.operation = 'add'
+        disk.fileOperation = 'create'
 
-        return [vm for vm in obj.view if vm.name in system]
+        disk.device = vim.vm.device.VirtualDisk()
+        disk.device.capacityInKB = sizeKB
+
+        disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+        disk.device.backing.fileName = datastore
+        disk.device.backing.datastore = self.getObj([vim.Datastore], datastore)
+        disk.device.backing.diskMode = mode
+        disk.device.backing.thinProvisioned = thin 
+
+        return disk
 
 
-    def listDC(self):
-        """ 
-        returns a list of datacenter names.
+    def nicConfig(self, network):
         """
+        Method returns configured object for VirtualDevice() network interface.
 
-        obj = self.containerObj( self.content.rootFolder, [vim.Datacenter], True )
-
-        return [dc for dc in obj.view]
-
-
-    def listDS(self):
+        :param network: network to add
         """ 
-        returns a list of datastore names inside of datacenter
 
-        """
-   
-        obj = self.containerObj( self.content.rootFolder, [vim.Datastore], True )
-        
-        return [ds.info.name for ds in obj.view]
+        nic = vim.vm.device.VirtualDeviceSpec()
+        nic.operation = 'add'
 
+        nic.device = vim.vm.device.VirtualDevice()
+        nic.device.deviceInfo = vim.Description()
+        nic.device.unitNumber = unit
 
-    def listHS(self):
-        """ 
-        returns a list of host system names inside of datacenter
+        nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+        nic.device.backing.network = self.getObj([vim.Network], network)
+        nic.device.backing.deviceName = network
 
-        """
+        nic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+        nic.device.connectable.connected = True
+        nic.device.connectable.startConnected = True
+        nic.device.connectable.allowGuestControl = True
 
-        obj = self.containerObj( self.content.rootFolder, [vim.HostSystem], True )
+        return nic
 
-        return [hs.name for hs in obj.view]
