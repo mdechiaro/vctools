@@ -77,7 +77,7 @@ class vSphereAPI(object):
             if obj.name == name:
                 return obj
             else:
-                print '%s not found in %s' % (name, vimType)
+                print ('%s not found in %s' % (name, vimType))
 
 
     def listObjNames(self, vimType):
