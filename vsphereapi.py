@@ -90,60 +90,36 @@ class vSphereAPI(object):
         return [vm.name for vm in obj.view]
 
 
-    def diskConfig(self, datastore, sizeKB, mode = 'persistent', thin = True):
+    def scsiConfig(self, sharedBus = 'noSharing'):
+
+        scsi = vim.vm.device.VirtualDeviceSpec()
+        scsi.operation = 'add'
+        scsi.fileOperation = 'create'
+
+        scsi.device = vim.vm.device.ParaVirtualSCSIController()
+        scsi.device.sharedBus = sharedBus
+
+        return scsi
+
+
+    def cdromConfig(self):
         """
-        Method returns configured VirtualDisk object
-
-        :param datastore: [datastore] where the disk will reside.
-        :param sizeKB: int(sizeKB) of disk in kilobytes
-        :param mode: The disk persistence mode. Valid modes are:
-                     persistent
-                     independent_persistent
-                     independent_nonpersistent
-                     nonpersistent
-                     undoable
-                     append 
-        :param thin: enable thin provisioning
+        Method creates a CD-Rom Virtual Device
         """
 
-        disk = vim.vm.device.VirtualDeviceSpec()
-        disk.operation = 'add'
-        disk.fileOperation = 'create'
+        cdrom = vim.vm.device.VirtualDeviceSpec()
+        cdrom.operation = 'add'
 
-        disk.device = vim.vm.device.VirtualDisk()
-        disk.device.capacityInKB = sizeKB
+        cdrom.device = vim.vm.device.VirtualCdrom()
+        # controllerKey is tied to IDE Controller
+        cdrom.device.controllerKey = 201
 
-        disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
-        disk.device.backing.fileName = datastore
-        disk.device.backing.datastore = self.getObj([vim.Datastore], datastore)
-        disk.device.backing.diskMode = mode
-        disk.device.backing.thinProvisioned = thin 
+        cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
+        cdrom.device.backing.exclusive = False
 
-        return disk
+        cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+        cdrom.device.connectable.connected = False
+        cdrom.device.connectable.startConnected = False
+        cdrom.device.connectable.allowGuestControl = True
 
-
-    def nicConfig(self, network):
-        """
-        Method returns configured object for VirtualDevice() network interface.
-
-        :param network: network to add
-        """ 
-
-        nic = vim.vm.device.VirtualDeviceSpec()
-        nic.operation = 'add'
-
-        nic.device = vim.vm.device.VirtualDevice()
-        nic.device.deviceInfo = vim.Description()
-        nic.device.unitNumber = unit
-
-        nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
-        nic.device.backing.network = self.getObj([vim.Network], network)
-        nic.device.backing.deviceName = network
-
-        nic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
-        nic.device.connectable.connected = True
-        nic.device.connectable.startConnected = True
-        nic.device.connectable.allowGuestControl = True
-
-        return nic
-
+        return cdrom
