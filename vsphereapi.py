@@ -13,6 +13,7 @@ class vSphereAPI(object):
         self.domain = domain
         self.user = user
         self.passwd = passwd
+        self.scsiKey = None
 
 
     def login(self):
@@ -97,6 +98,9 @@ class vSphereAPI(object):
         scsi.device = vim.vm.device.ParaVirtualSCSIController()
         scsi.device.sharedBus = sharedBus
 
+        # grab defined key so devices can use it to connect to it.
+        self.scsiKey = scsi.device.key
+
         return scsi
 
 
@@ -122,10 +126,48 @@ class vSphereAPI(object):
 
         return cdrom
 
-    def createVM(self, name, folder, datastore, cpu, memoryMB, pool, hwVer='vmx-08', guestId='rhel6_64Guest'):
+    def diskConfig(self, datastore, sizeKB, unit = 0, mode = 'persistent', thin = True):
+        """
+        Method returns configured VirtualDisk object
+
+        :param datastore: [datastore] where the disk will reside.
+        :param sizeKB: int(sizeKB) of disk in kilobytes
+        :param unit: unitNumber of device.  
+        :param mode: The disk persistence mode. Valid modes are:
+                     persistent
+                     independent_persistent
+                     independent_nonpersistent
+                     nonpersistent
+		     undoable
+                     append 
+        :param thin: enable thin provisioning
+        """
+
+        disk = vim.vm.device.VirtualDeviceSpec()
+        disk.operation = 'add'
+        disk.fileOperation = 'create'
+
+        disk.device = vim.vm.device.VirtualDisk()
+        disk.device.capacityInKB = sizeKB
+        # controllerKey is tied to SCSI Controller
+        disk.device.controllerKey = self.scsiKey
+        disk.device.unitNumber = unit
+
+        disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+        disk.device.backing.fileName = '['+datastore+']'
+        disk.device.backing.datastore = self.getObj([vim.Datastore], datastore)
+        disk.device.backing.diskMode = mode
+        disk.device.backing.thinProvisioned = thin
+        disk.device.backing.eagerlyScrub = False
+
+        return disk
+
+
+    def createVM(self, name, folder, datastore, sizeKB, cpu, memoryMB, pool, hwVer='vmx-08', guestId='rhel6_64Guest'):
        
         scsi = self.scsiConfig() 
         cdrom = self.cdromConfig()
+        disk = self.diskConfig(datastore, sizeKB)
 
         vmxfile = vim.vm.FileInfo(
             vmPathName='['+datastore+']'
@@ -138,7 +180,7 @@ class vSphereAPI(object):
             files=vmxfile,
             numCPUs=cpu,
             memoryMB=memoryMB,
-            deviceChange=[scsi, cdrom],
+            deviceChange=[scsi, cdrom, disk],
         )
 
         print (
@@ -147,13 +189,16 @@ class vSphereAPI(object):
             name: %s
             cpu: %s
             mem: %s
+            disk: %s KB
 
             It'll be done shortly.
-            """ % (name, cpu, memoryMB)
+            """ % (name, cpu, memoryMB, sizeKB)
         )
 
         self.folder = self.getObj([vim.Folder], folder)
         self.folder.CreateVM_Task(config=config, pool=self.getObj([vim.ResourcePool], pool))
+        
+        print ('all done')
 
-        print('all done.')
+
 
