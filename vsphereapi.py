@@ -167,7 +167,6 @@ class vSphereAPI(object):
         Method returns configured object for VirtualDevice() network interface.
 
         :param network: network to add
-        :param device: network device to add
         """ 
 
         nic = vim.vm.device.VirtualDeviceSpec()
