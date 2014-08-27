@@ -162,11 +162,36 @@ class vSphereAPI(object):
 
         return disk
 
+    def nicConfig(self, network):
+        """
+        Method returns configured object for VirtualDevice() network interface.
 
-    def createVM(self, name, folder, datastore, sizeKB, cpu, memoryMB, pool, hwVer='vmx-08', guestId='rhel6_64Guest'):
+        :param network: network to add
+        :param device: network device to add
+        """ 
+
+        nic = vim.vm.device.VirtualDeviceSpec()
+        nic.operation = 'add'
+
+        nic.device = vim.vm.device.VirtualVmxnet3()
+
+        nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+        nic.device.backing.network = self.getObj([vim.Network], network)
+        nic.device.backing.deviceName = network
+
+        nic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+        nic.device.connectable.connected = True
+        nic.device.connectable.startConnected = True
+        nic.device.connectable.allowGuestControl = True
+
+        return nic
+
+
+    def createVM(self, name, folder, network, datastore, sizeKB, cpu, memoryMB, pool, hwVer='vmx-08', guestId='rhel6_64Guest'):
        
         scsi = self.scsiConfig() 
         cdrom = self.cdromConfig()
+        nic = self.nicConfig(network)
         disk = self.diskConfig(datastore, sizeKB)
 
         vmxfile = vim.vm.FileInfo(
@@ -180,7 +205,7 @@ class vSphereAPI(object):
             files=vmxfile,
             numCPUs=cpu,
             memoryMB=memoryMB,
-            deviceChange=[scsi, cdrom, disk],
+            deviceChange=[scsi, cdrom, nic, disk],
         )
 
         print (
@@ -189,10 +214,12 @@ class vSphereAPI(object):
             name: %s
             cpu: %s
             mem: %s
+            nic: %s
             disk: %s KB
+            datastore: %s
 
             It'll be done shortly.
-            """ % (name, cpu, memoryMB, sizeKB)
+            """ % (name, cpu, memoryMB, network, sizeKB, datastore)
         )
 
         self.folder = self.getObj([vim.Folder], folder)
