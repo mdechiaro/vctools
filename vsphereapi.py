@@ -3,7 +3,6 @@ from __future__ import print_function
 
 from pyVim import connect
 from pyVmomi import vim
-from pyVmomi import Iso8601
 
 import getpass
 
@@ -94,7 +93,6 @@ class vSphereAPI(object):
 
         scsi = vim.vm.device.VirtualDeviceSpec()
         scsi.operation = 'add'
-        scsi.fileOperation = 'create'
 
         scsi.device = vim.vm.device.ParaVirtualSCSIController()
         scsi.device.sharedBus = sharedBus
@@ -123,3 +121,39 @@ class vSphereAPI(object):
         cdrom.device.connectable.allowGuestControl = True
 
         return cdrom
+
+    def createVM(self, name, folder, datastore, cpu, memoryMB, pool, hwVer='vmx-08', guestId='rhel6_64Guest'):
+       
+        scsi = self.scsiConfig() 
+        cdrom = self.cdromConfig()
+
+        vmxfile = vim.vm.FileInfo(
+            vmPathName='['+datastore+']'
+        )
+
+        config = vim.vm.ConfigSpec(
+            name=name,
+            version=hwVer,
+            guestId=guestId,
+            files=vmxfile,
+            numCPUs=cpu,
+            memoryMB=memoryMB,
+            deviceChange=[scsi, cdrom],
+        )
+
+        print (
+            """
+            Creating VM using these values:
+            name: %s
+            cpu: %s
+            mem: %s
+
+            It'll be done shortly.
+            """ % (name, cpu, memoryMB)
+        )
+
+        self.folder = self.getObj([vim.Folder], folder)
+        self.folder.CreateVM_Task(config=config, pool=self.getObj([vim.ResourcePool], pool))
+
+        print('all done.')
+
