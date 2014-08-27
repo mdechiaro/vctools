@@ -50,6 +50,7 @@ class vSphereAPI(object):
 
 
         except vim.fault.InvalidLogin as loginerr:
+            self.user = None
             passwd = None
             print ('error: %s' % (loginerr))
 
