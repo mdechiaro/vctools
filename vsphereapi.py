@@ -7,13 +7,20 @@ from pyVmomi import vim
 import getpass
 
 class vSphereAPI(object):
-    def __init__(self, datacenter=None, port=443, domain='adlocal', user=None, passwd=None):
+    def __init__(self, datacenter=None, port=443, domain='adlocal', 
+                 user=None, passwd=None):
+
         self.datacenter = datacenter
         self.port = port
         self.domain = domain
         self.user = user
         self.passwd = passwd
+        #
         self.scsiKey = None
+        self.content = None
+        self.sessionManager = None 
+        self.sessionKey = None
+
 
 
     def login(self):
@@ -44,7 +51,9 @@ class vSphereAPI(object):
             self.sessionManager = self.content.sessionManager
             self.sessionKey = self.sessionManager.currentSession.key
 
-            print ('successfully logged into %s:%s as user %s' % (self.datacenter, self.port, self.user))
+            print ('successfully logged into %s:%s as user %s' % (
+                self.datacenter, self.port, self.user)
+            )
 
             passwd = None
 
@@ -91,13 +100,23 @@ class vSphereAPI(object):
         return [vm.name for vm in obj.view]
 
 
-    def scsiConfig(self, sharedBus = 'noSharing'):
+    def scsiConfig(self, busNumber = 0, sharedBus = 'noSharing'):
+        """
+        Method creates a SCSI Controller on the VM
+
+        :param busNumber: Bus number associated with this controller.
+        :param sharedBus: Mode for sharing the SCSI bus. 
+                          physicalSharing
+                          virtualSharing
+                          noSharing
+        """
 
         scsi = vim.vm.device.VirtualDeviceSpec()
         scsi.operation = 'add'
 
         scsi.device = vim.vm.device.ParaVirtualSCSIController()
         scsi.device.sharedBus = sharedBus
+        scsi.device.busNumber = busNumber
 
         # grab defined key so devices can use it to connect to it.
         self.scsiKey = scsi.device.key
@@ -117,31 +136,32 @@ class vSphereAPI(object):
         # controllerKey is tied to IDE Controller
         cdrom.device.controllerKey = 201
 
-        cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
+        cdrom.device.backing = cdrom.device.RemotePassthroughBackingInfo()
         cdrom.device.backing.exclusive = False
 
-        cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+        cdrom.device.connectable = cdrom.device.ConnectInfo()
         cdrom.device.connectable.connected = False
         cdrom.device.connectable.startConnected = False
         cdrom.device.connectable.allowGuestControl = True
 
         return cdrom
 
-    def diskConfig(self, datastore, sizeKB, unit = 0, mode = 'persistent', thin = True):
+    def diskConfig(self, datastore, sizeKB, unit = 0, mode = 'persistent', 
+                   thin = True):
         """
         Method returns configured VirtualDisk object
 
-        :param datastore: [datastore] where the disk will reside.
-        :param sizeKB: int(sizeKB) of disk in kilobytes
-        :param unit: unitNumber of device.  
-        :param mode: The disk persistence mode. Valid modes are:
-                     persistent
-                     independent_persistent
-                     independent_nonpersistent
-                     nonpersistent
-		     undoable
-                     append 
-        :param thin: enable thin provisioning
+        :param datastore: string datastore for the disk files location.
+        :param sizeKB:    integer of disk in kilobytes
+        :param unit:      unitNumber of device.  
+        :param mode:      The disk persistence mode. Valid modes are:
+                          persistent
+                          independent_persistent
+                          independent_nonpersistent
+                          nonpersistent
+		          undoable
+                          append 
+        :param thin:      enable thin provisioning
         """
 
         disk = vim.vm.device.VirtualDeviceSpec()
@@ -154,7 +174,7 @@ class vSphereAPI(object):
         disk.device.controllerKey = self.scsiKey
         disk.device.unitNumber = unit
 
-        disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+        disk.device.backing = disk.device.FlatVer2BackingInfo()
         disk.device.backing.fileName = '['+datastore+']'
         disk.device.backing.datastore = self.getObj([vim.Datastore], datastore)
         disk.device.backing.diskMode = mode
@@ -165,9 +185,9 @@ class vSphereAPI(object):
 
     def nicConfig(self, network):
         """
-        Method returns configured object for VirtualDevice() network interface.
+        Method returns configured object for network interface.
 
-        :param network: network to add
+        :param network: string network to add to VM.
         """ 
 
         nic = vim.vm.device.VirtualDeviceSpec()
@@ -187,8 +207,24 @@ class vSphereAPI(object):
         return nic
 
 
-    def createVM(self, hostname, version, guestId, folder, datastore, cpu, memoryMB, pool, *devices):
-       
+    def createVM(self, hostname, version, guestId, folder, datastore, cpu, 
+                 memoryMB, pool, *devices):
+        """
+        Method creates the VM.
+
+        :param hostname:  Display name of the virtual machine.
+        :param version:   The version string for this virtual machine.
+        :param guestId:   Short guest operating system identifier.
+        :param folder:    string container for storing and organizing inventory
+                          objects.
+        :param datastore: string datastore where the vmdk files are stored. 
+        :param cpu:       Number of virtual processors in a virtual machine. 
+        :param memoryMB:  Size of a virtual machine's memory, in MB. 
+        :param pool:      string resource pool.
+        :param devices:   list of configured devices.  See scsiConfig, 
+                          cdromConfig, and diskConfig.  
+        """
+
         vmxfile = vim.vm.FileInfo(
             vmPathName='['+datastore+']'
         )
