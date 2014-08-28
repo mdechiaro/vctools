@@ -136,10 +136,10 @@ class vSphereAPI(object):
         # controllerKey is tied to IDE Controller
         cdrom.device.controllerKey = 201
 
-        cdrom.device.backing = cdrom.device.RemotePassthroughBackingInfo()
+        cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
         cdrom.device.backing.exclusive = False
 
-        cdrom.device.connectable = cdrom.device.ConnectInfo()
+        cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
         cdrom.device.connectable.connected = False
         cdrom.device.connectable.startConnected = False
         cdrom.device.connectable.allowGuestControl = True
@@ -174,7 +174,7 @@ class vSphereAPI(object):
         disk.device.controllerKey = self.scsiKey
         disk.device.unitNumber = unit
 
-        disk.device.backing = disk.device.FlatVer2BackingInfo()
+        disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
         disk.device.backing.fileName = '['+datastore+']'
         disk.device.backing.datastore = self.getObj([vim.Datastore], datastore)
         disk.device.backing.diskMode = mode
