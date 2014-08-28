@@ -5,6 +5,7 @@ from pyVim import connect
 from pyVmomi import vim
 
 import getpass
+import random
 
 class vSphereAPI(object):
     def __init__(self, datacenter=None, port=443, domain='adlocal', 
@@ -20,7 +21,6 @@ class vSphereAPI(object):
         self.content = None
         self.sessionManager = None 
         self.sessionKey = None
-
 
 
     def login(self):
@@ -111,10 +111,14 @@ class vSphereAPI(object):
                           noSharing
         """
 
+        # randomize key for multiple scsi controllers
+        key = int(random.uniform(-1,-100))
+
         scsi = vim.vm.device.VirtualDeviceSpec()
         scsi.operation = 'add'
 
         scsi.device = vim.vm.device.ParaVirtualSCSIController()
+        scsi.device.key = key
         scsi.device.sharedBus = sharedBus
         scsi.device.busNumber = busNumber
 
