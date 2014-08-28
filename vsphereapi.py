@@ -187,25 +187,22 @@ class vSphereAPI(object):
         return nic
 
 
-    def createVM(self, name, folder, network, datastore, sizeKB, cpu, memoryMB, pool, hwVer='vmx-08', guestId='rhel6_64Guest'):
+    def createVM(self, hostname, version, guestId, folder, datastore, cpu, memoryMB, pool, *devices):
        
-        scsi = self.scsiConfig() 
-        cdrom = self.cdromConfig()
-        nic = self.nicConfig(network)
-        disk = self.diskConfig(datastore, sizeKB)
-
         vmxfile = vim.vm.FileInfo(
             vmPathName='['+datastore+']'
         )
 
+        devices = list(devices)
+
         config = vim.vm.ConfigSpec(
-            name=name,
-            version=hwVer,
+            name=hostname,
+            version=version,
             guestId=guestId,
             files=vmxfile,
             numCPUs=cpu,
             memoryMB=memoryMB,
-            deviceChange=[scsi, cdrom, nic, disk],
+            deviceChange=devices,
         )
 
         print (
@@ -214,16 +211,19 @@ class vSphereAPI(object):
             name: %s
             cpu: %s
             mem: %s
-            nic: %s
-            disk: %s KB
             datastore: %s
 
             It'll be done shortly.
-            """ % (name, cpu, memoryMB, network, sizeKB, datastore)
+            """ % (hostname, cpu, memoryMB, datastore)
         )
 
-        self.folder = self.getObj([vim.Folder], folder)
-        self.folder.CreateVM_Task(config=config, pool=self.getObj([vim.ResourcePool], pool))
+        folderObj = self.getObj([vim.Folder], folder)
+
+        folderObj.CreateVM_Task(
+            config=config, 
+            pool=self.getObj([vim.ResourcePool], pool)
+        )
+        
         
         print ('all done')
 
