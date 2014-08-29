@@ -1,11 +1,11 @@
 #!/usr/bin/python
-from __future__ import print_function
 
+from __future__ import print_function
+from getpass import getpass, getuser
+from random import uniform
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim # pylint: disable=E0611
 
-import getpass
-import random
 
 class VMConfig(object): 
     """ 
@@ -52,12 +52,14 @@ class VMConfig(object):
                 pass
         else:
             if self.domain:
-                self.user = self.domain + '\\' + getpass.getuser()
+                self.user = self.domain + '\\' + getuser()
             else:
-                self.user = getpass.getuser()
+                self.user = getuser()
+            
+        print ('Logging in as %s' % self.user)
 
         if not self.passwd:
-            passwd = getpass.getpass()
+            passwd = getpass()
 
         try:
             self.dcc = SmartConnect( 
@@ -68,8 +70,8 @@ class VMConfig(object):
             self.session_manager = self.content.sessionManager
             self.session_key = self.session_manager.currentSession.key
 
-            print ('successfully logged into %s:%s as user %s' % (
-                self.datacenter, self.port, self.user)
+            print ('Successfully logged into %s:%s' % ( 
+                self.datacenter, self.port )
             )
 
             passwd = None
@@ -139,7 +141,7 @@ class VMConfig(object):
         """
 
         # randomize key for multiple scsi controllers
-        key = int(random.uniform(-1, -100))
+        key = int(uniform(-1, -100))
 
         scsi = vim.vm.device.VirtualDeviceSpec()
         scsi.operation = 'add'
@@ -282,9 +284,10 @@ class VMConfig(object):
             cpu: %s
             mem: %s
             datastore: %s
+            devices: %s
 
             It'll be done shortly.
-            """ % (hostname, cpu, memory, datastore)
+            """ % (hostname, cpu, memory, datastore, len(devices))
         )
 
         folder_obj = self.get_obj([vim.Folder], folder)
