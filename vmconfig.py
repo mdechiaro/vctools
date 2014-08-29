@@ -2,14 +2,30 @@
 from __future__ import print_function
 
 from pyVim import connect
-from pyVmomi import vim
+from pyVmomi import vim # pylint: disable=E0611
 
 import getpass
 import random
 
-class vSphereAPI(object):
+class VMConfig(object): 
+    """ 
+    Class goal is to simplify VM builds outside of using the client or Web App.
+    Class can handle setting up a complete VM with multiple devices attached.  
+    It can also handle the addition of mutiple disks attached to multiple SCSI 
+    controllers, as well as multiple network interfaces.    
+    """
+
     def __init__(self, datacenter=None, port=443, domain='adlocal', 
                  user=None, passwd=None):
+        """
+        Define our class attributes here.
+
+        :param datacenter: This string is the vSphere datacenter host.
+        :param port:       Port to connect to host.
+        :param domain:     This is for changing the domain to login if needed.
+        :param user:       Username to connect to host.
+        :param passwd:     Password to connect to host.  
+        """
 
         self.datacenter = datacenter
         self.port = port
@@ -17,10 +33,11 @@ class vSphereAPI(object):
         self.user = user
         self.passwd = passwd
         #
-        self.scsiKey = None
+        self.dcc = None
         self.content = None
-        self.sessionManager = None 
-        self.sessionKey = None
+        self.session_manager = None 
+        self.session_key = None
+        self.scsi_key = None
 
 
     def login(self):
@@ -48,8 +65,8 @@ class vSphereAPI(object):
             )
 
             self.content = self.dcc.content
-            self.sessionManager = self.content.sessionManager
-            self.sessionKey = self.sessionManager.currentSession.key
+            self.session_manager = self.content.sessionManager
+            self.session_key = self.session_manager.currentSession.key
 
             print ('successfully logged into %s:%s as user %s' % (
                 self.datacenter, self.port, self.user)
@@ -57,14 +74,13 @@ class vSphereAPI(object):
 
             passwd = None
 
-
         except vim.fault.InvalidLogin as loginerr:
             self.user = None
             passwd = None
             print ('error: %s' % (loginerr))
 
 
-    def containerObj(self, *args):
+    def container_obj(self, *args):
         """ 
         Wrapper function for creating objects inside CreateContainerView.
         """
@@ -76,31 +92,36 @@ class vSphereAPI(object):
         return obj
 
 
-    def getObj(self, vimType, name):
+    def get_obj(self, arg, name):
         """ 
-        returns an object inside of vimtype if it matches name
+        Returns an object inside of arg if it matches name. 
+
+        :param arg: [vim.arg] (i.e. [vim.Datastore])
+        :param name: Name to match
         """
 
-        obj = self.containerObj( self.content.rootFolder, vimType, True )
+        obj = self.container_obj( self.content.rootFolder, arg, True )
 
         for obj in obj.view:
             if obj.name == name:
                 return obj
             else:
-                print ('%s not found in %s' % (name, vimType))
+                print ('%s not found in %s' % (name, arg))
 
 
-    def listObjNames(self, vimType):
+    def list_obj_names(self, arg):
         """
-        returns a list of object.name inside of vimType
+        Returns a list of string names inside of arg
+
+        :param arg: [vim.arg] (i.e. [vim.Network])
         """
 
-        obj = self.containerObj( self.content.rootFolder, vimType, True )
+        obj = self.container_obj( self.content.rootFolder, arg, True )
 
         return [vm.name for vm in obj.view]
 
 
-    def scsiConfig(self, busNumber = 0, sharedBus = 'noSharing'):
+    def scsi_config(self, bus_number = 0, shared_bus = 'noSharing'):
         """
         Method creates a SCSI Controller on the VM
 
@@ -112,23 +133,24 @@ class vSphereAPI(object):
         """
 
         # randomize key for multiple scsi controllers
-        key = int(random.uniform(-1,-100))
+        key = int(random.uniform(-1, -100))
 
         scsi = vim.vm.device.VirtualDeviceSpec()
         scsi.operation = 'add'
 
         scsi.device = vim.vm.device.ParaVirtualSCSIController()
         scsi.device.key = key
-        scsi.device.sharedBus = sharedBus
-        scsi.device.busNumber = busNumber
+        scsi.device.sharedBus = shared_bus
+        scsi.device.busNumber = bus_number
 
         # grab defined key so devices can use it to connect to it.
-        self.scsiKey = scsi.device.key
+        self.scsi_key = scsi.device.key
 
         return scsi
 
 
-    def cdromConfig(self):
+    @classmethod
+    def cdrom_config(cls):
         """
         Method creates a CD-Rom Virtual Device
         """
@@ -150,13 +172,14 @@ class vSphereAPI(object):
 
         return cdrom
 
-    def diskConfig(self, datastore, sizeKB, unit = 0, mode = 'persistent', 
-                   thin = True):
+
+    def disk_config(self, datastore, size, unit = 0, mode = 'persistent', 
+                    thin = True):
         """
         Method returns configured VirtualDisk object
 
         :param datastore: string datastore for the disk files location.
-        :param sizeKB:    integer of disk in kilobytes
+        :param size:      integer of disk in kilobytes
         :param unit:      unitNumber of device.  
         :param mode:      The disk persistence mode. Valid modes are:
                           persistent
@@ -173,21 +196,22 @@ class vSphereAPI(object):
         disk.fileOperation = 'create'
 
         disk.device = vim.vm.device.VirtualDisk()
-        disk.device.capacityInKB = sizeKB
+        disk.device.capacityInKB = size
         # controllerKey is tied to SCSI Controller
-        disk.device.controllerKey = self.scsiKey
+        disk.device.controllerKey = self.scsi_key
         disk.device.unitNumber = unit
 
         disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
         disk.device.backing.fileName = '['+datastore+']'
-        disk.device.backing.datastore = self.getObj([vim.Datastore], datastore)
+        disk.device.backing.datastore = self.get_obj([vim.Datastore], datastore)
         disk.device.backing.diskMode = mode
         disk.device.backing.thinProvisioned = thin
         disk.device.backing.eagerlyScrub = False
 
         return disk
 
-    def nicConfig(self, network):
+
+    def nic_config(self, network):
         """
         Method returns configured object for network interface.
 
@@ -200,7 +224,7 @@ class vSphereAPI(object):
         nic.device = vim.vm.device.VirtualVmxnet3()
 
         nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
-        nic.device.backing.network = self.getObj([vim.Network], network)
+        nic.device.backing.network = self.get_obj([vim.Network], network)
         nic.device.backing.deviceName = network
 
         nic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
@@ -211,8 +235,8 @@ class vSphereAPI(object):
         return nic
 
 
-    def createVM(self, hostname, version, guestId, folder, datastore, cpu, 
-                 memoryMB, pool, *devices):
+    def create_vm(self, hostname, version, guest_id, folder, datastore, cpu, 
+                  memory, pool, *devices):
         """
         Method creates the VM.
 
@@ -223,7 +247,7 @@ class vSphereAPI(object):
                           objects.
         :param datastore: string datastore where the vmdk files are stored. 
         :param cpu:       Number of virtual processors in a virtual machine. 
-        :param memoryMB:  Size of a virtual machine's memory, in MB. 
+        :param memory:    Size of a virtual machine's memory, in MB. 
         :param pool:      string resource pool.
         :param devices:   list of configured devices.  See scsiConfig, 
                           cdromConfig, and diskConfig.  
@@ -238,10 +262,10 @@ class vSphereAPI(object):
         config = vim.vm.ConfigSpec(
             name=hostname,
             version=version,
-            guestId=guestId,
+            guestId=guest_id,
             files=vmxfile,
             numCPUs=cpu,
-            memoryMB=memoryMB,
+            memoryMB=memory,
             deviceChange=devices,
         )
 
@@ -254,18 +278,14 @@ class vSphereAPI(object):
             datastore: %s
 
             It'll be done shortly.
-            """ % (hostname, cpu, memoryMB, datastore)
+            """ % (hostname, cpu, memory, datastore)
         )
 
-        folderObj = self.getObj([vim.Folder], folder)
+        folder_obj = self.get_obj([vim.Folder], folder)
 
-        folderObj.CreateVM_Task(
+        folder_obj.CreateVM_Task(
             config=config, 
-            pool=self.getObj([vim.ResourcePool], pool)
+            pool=self.get_obj([vim.ResourcePool], pool)
         )
-        
         
         print ('all done')
-
-
-
