@@ -255,8 +255,8 @@ class VMConfig(object):
         :param cpu:       Number of virtual processors in a virtual machine. 
         :param memory:    Size of a virtual machine's memory, in MB. 
         :param pool:      string resource pool.
-        :param devices:   list of configured devices.  See scsiConfig, 
-                          cdromConfig, and diskConfig.  
+        :param devices:   list of configured devices.  See scsi_config, 
+                          cdrom_config, and disk_config.  
         """
 
         vmxfile = vim.vm.FileInfo(
