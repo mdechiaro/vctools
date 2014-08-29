@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from __future__ import print_function
 
-from pyVim import connect
+from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim # pylint: disable=E0611
 
 import getpass
@@ -60,7 +60,7 @@ class VMConfig(object):
             passwd = getpass.getpass()
 
         try:
-            self.dcc = connect.SmartConnect( 
+            self.dcc = SmartConnect( 
                 host=self.datacenter, user=self.user, pwd=passwd, port=self.port 
             )
 
@@ -78,6 +78,12 @@ class VMConfig(object):
             self.user = None
             passwd = None
             print ('error: %s' % (loginerr))
+
+
+    def logout(self):
+        Disconnect(self.dcc)
+
+        print ('log out successful')
 
 
     def container_obj(self, *args):
