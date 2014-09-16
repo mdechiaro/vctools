@@ -162,12 +162,13 @@ class VMConfig(object):
 
         obj = self.get_obj([vim.Datacenter], datacenter)
 
-        print('{0:30}\t{1:10}\t{2:10}\t{3:10}'.format(
-            'Datastore', 'Capacity', 'Provisioned', 'Free Space'
-            )
-        )
+        datastore_info = []
+        header = ['Datastore', 'Capacity', 'Provisioned', 'Free Space']
+        datastore_info.append(header)
+
 
         for datastore in obj.datastore:
+            info = []
             free = int(datastore.summary.freeSpace)
             capacity = int(datastore.summary.capacity)
             
@@ -180,13 +181,15 @@ class VMConfig(object):
             provisioned = int((capacity - free) + uncommitted)
 
 
-            print ('{0:30}\t{1:10}\t{2:10}\t{3:10}'.format(
-                datastore.name, 
-                self.disk_size_format(capacity),
-                self.disk_size_format(provisioned),
-                self.disk_size_format(free)
-                )
-            )
+            info.append(datastore.name)
+            info.append(self.disk_size_format(capacity))
+            info.append(self.disk_size_format(provisioned))
+            info.append(self.disk_size_format(free))
+
+            datastore_info.append(info)
+
+        for row in datastore_info:
+            print ('{0:30}\t{1:10}\t{2:10}\t{3:10}'.format(*row))
 
 
     def scsi_config(self, bus_number = 0, shared_bus = 'noSharing'):
