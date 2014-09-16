@@ -162,7 +162,10 @@ class VMConfig(object):
 
         obj = self.get_obj([vim.Datacenter], datacenter)
 
-        print('datastore\tcapacity\tprovisioned\tfree')
+        print('{0:30}\t{1:10}\t{2:10}\t{3:10}'.format(
+            'datastore', 'capacity', 'provisioned', 'free'
+            )
+        )
 
         for datastore in obj.datastore:
             free = int(datastore.summary.freeSpace)
@@ -176,7 +179,8 @@ class VMConfig(object):
             
             provisioned = int((capacity - free) + uncommitted)
 
-            print ('%s\t%s\t%s\t%s' % (
+
+            print ('{0:30}\t{1:10}\t{2:10}\t{3:10}'.format(
                 datastore.name, 
                 self.disk_size_format(capacity),
                 self.disk_size_format(provisioned),
