@@ -63,7 +63,7 @@ class VMConfig(object):
 
         try:
             self.dcc = SmartConnect( 
-                host=self.datacenter, user=self.user, pwd=passwd, port=self.port 
+                host=self.datacenter, user=self.user, pwd=passwd, port=self.port
             )
 
             self.content = self.dcc.content
@@ -86,6 +86,17 @@ class VMConfig(object):
         Disconnect(self.dcc)
 
         print ('log out successful')
+
+
+    # http://stackoverflow.com/questions/1094841
+    @classmethod
+    def disk_size_format(cls, num):
+        """Method converts datastore size in bytes to human readable format."""
+
+        for attr in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+            if num < 1024.0:
+                return '%3.2f %s' % (num, attr)
+            num /= 1024.0
 
 
     def container_obj(self, *args):
@@ -127,6 +138,51 @@ class VMConfig(object):
         obj = self.container_obj( self.content.rootFolder, arg, True )
 
         return [vm.name for vm in obj.view]
+
+
+    def list_datastore_names(self, datacenter):
+        """
+        Returns a list of datastore names listed inside datacenter.
+
+        :param datacenter: string name of datacenter
+        """
+
+        obj = self.get_obj([vim.Datacenter], datacenter)
+
+        return [dc.name for dc in obj.datastore]
+
+
+    def list_datastore_info(self, datacenter):
+        """
+        Returns a summary of disk space for datastores listed inside a
+        datacenter.
+
+        :param datacenter: string name of datacenter
+        """
+
+        obj = self.get_obj([vim.Datacenter], datacenter)
+
+        print('datastore\tcapacity\tprovisioned\tfree')
+
+        for datastore in obj.datastore:
+            free = int(datastore.summary.freeSpace)
+            capacity = int(datastore.summary.capacity)
+            
+            # uncommitted is sometimes None, so we'll convert that to 0.
+            if not datastore.summary.uncommitted:
+                uncommitted = int(0)
+            else:
+                uncommitted = int(datastore.summary.uncommitted)
+            
+            provisioned = int((capacity - free) + uncommitted)
+
+            print ('%s\t%s\t%s\t%s' % (
+                datastore.name, 
+                self.disk_size_format(capacity),
+                self.disk_size_format(provisioned),
+                self.disk_size_format(free)
+                )
+            )
 
 
     def scsi_config(self, bus_number = 0, shared_bus = 'noSharing'):
