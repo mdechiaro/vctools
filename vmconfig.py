@@ -163,7 +163,7 @@ class VMConfig(object):
         obj = self.get_obj([vim.Datacenter], datacenter)
 
         print('{0:30}\t{1:10}\t{2:10}\t{3:10}'.format(
-            'datastore', 'capacity', 'provisioned', 'free'
+            'Datastore', 'Capacity', 'Provisioned', 'Free Space'
             )
         )
 
