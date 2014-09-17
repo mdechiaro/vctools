@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
+from __future__ import division
 from __future__ import print_function
+#
 from getpass import getpass, getuser
 from random import uniform
 from pyVim.connect import SmartConnect, Disconnect
@@ -163,12 +165,13 @@ class VMConfig(object):
         obj = self.get_obj([vim.Datacenter], datacenter)
 
         datastore_info = []
-        header = ['Datastore', 'Capacity', 'Provisioned', 'Free Space']
+        header = ['Datastore', 'Capacity', 'Provisioned', 'Pct', 'Free Space', 'Pct']
         datastore_info.append(header)
 
 
         for datastore in obj.datastore:
             info = []
+            # type is long(bytes)
             free = int(datastore.summary.freeSpace)
             capacity = int(datastore.summary.capacity)
             
@@ -180,16 +183,20 @@ class VMConfig(object):
             
             provisioned = int((capacity - free) + uncommitted)
 
+            provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
+            free_pct = '{0:.2%}'.format((free / capacity))
 
             info.append(datastore.name)
             info.append(self.disk_size_format(capacity))
             info.append(self.disk_size_format(provisioned))
+            info.append(provisioned_pct)
             info.append(self.disk_size_format(free))
+            info.append(free_pct)
 
             datastore_info.append(info)
 
         for row in datastore_info:
-            print ('{0:30}\t{1:10}\t{2:10}\t{3:10}'.format(*row))
+            print ('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
 
 
     def scsi_config(self, bus_number = 0, shared_bus = 'noSharing'):
