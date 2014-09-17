@@ -11,7 +11,7 @@ from pyVmomi import vim # pylint: disable=E0611
 
 class VMConfig(object): 
     """ 
-    Class goal is to simplify VM builds outside of using the client or Web App.
+    Class simplifies VM builds outside of using the client or Web App.
     Class can handle setting up a complete VM with multiple devices attached.  
     It can also handle the addition of mutiple disks attached to multiple SCSI 
     controllers, as well as multiple network interfaces.    
@@ -90,7 +90,6 @@ class VMConfig(object):
         print ('log out successful')
 
 
-    # http://stackoverflow.com/questions/1094841
     @classmethod
     def disk_size_format(cls, num):
         """Method converts datastore size in bytes to human readable format."""
@@ -154,46 +153,77 @@ class VMConfig(object):
         return [dc.name for dc in obj.datastore]
 
 
-    def list_datastore_info(self, datacenter):
+    def list_datastore_info(self, datacenter, filter = None):
         """
         Returns a summary of disk space for datastores listed inside a
         datacenter.
 
-        :param datacenter: string name of datacenter
+        :param datacenter:  string name of datacenter
+        :param filter:      string filter for datastore name
         """
 
         obj = self.get_obj([vim.Datacenter], datacenter)
 
         datastore_info = []
-        header = ['Datastore', 'Capacity', 'Provisioned', 'Pct', 'Free Space', 'Pct']
+        header = [
+            'Datastore', 'Capacity', 'Provisioned', 'Pct', 'Free Space', 'Pct'
+        ]
         datastore_info.append(header)
 
-
-        for datastore in obj.datastore:
-            info = []
-            # type is long(bytes)
-            free = int(datastore.summary.freeSpace)
-            capacity = int(datastore.summary.capacity)
+        if filter:
+            for datastore in obj.datastore:
+                if filter in datastore.name:
+                    info = []
+                    # type is long(bytes)
+                    free = int(datastore.summary.freeSpace)
+                    capacity = int(datastore.summary.capacity)
             
-            # uncommitted is sometimes None, so we'll convert that to 0.
-            if not datastore.summary.uncommitted:
-                uncommitted = int(0)
-            else:
-                uncommitted = int(datastore.summary.uncommitted)
+                    # uncommitted is sometimes None, so we'll convert that to 0.
+                    if not datastore.summary.uncommitted:
+                        uncommitted = int(0)
+                    else:
+                        uncommitted = int(datastore.summary.uncommitted)
             
-            provisioned = int((capacity - free) + uncommitted)
+                    provisioned = int((capacity - free) + uncommitted)
 
-            provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
-            free_pct = '{0:.2%}'.format((free / capacity))
+                    provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
+                    free_pct = '{0:.2%}'.format((free / capacity))
 
-            info.append(datastore.name)
-            info.append(self.disk_size_format(capacity))
-            info.append(self.disk_size_format(provisioned))
-            info.append(provisioned_pct)
-            info.append(self.disk_size_format(free))
-            info.append(free_pct)
+                    info.append(datastore.name)
+                    info.append(self.disk_size_format(capacity))
+                    info.append(self.disk_size_format(provisioned))
+                    info.append(provisioned_pct)
+                    info.append(self.disk_size_format(free))
+                    info.append(free_pct)
 
-            datastore_info.append(info)
+                    datastore_info.append(info)
+        else:
+            for datastore in obj.datastore:
+                info = []
+                # type is long(bytes)
+                free = int(datastore.summary.freeSpace)
+                capacity = int(datastore.summary.capacity)
+
+                # uncommitted is sometimes None, so we'll convert that to 0.
+                if not datastore.summary.uncommitted:
+                    uncommitted = int(0)
+                else:
+                    uncommitted = int(datastore.summary.uncommitted)
+
+                provisioned = int((capacity - free) + uncommitted)
+
+                provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
+                free_pct = '{0:.2%}'.format((free / capacity))
+
+                info.append(datastore.name)
+                info.append(self.disk_size_format(capacity))
+                info.append(self.disk_size_format(provisioned))
+                info.append(provisioned_pct)
+                info.append(self.disk_size_format(free))
+                info.append(free_pct)
+
+                datastore_info.append(info)
+
 
         for row in datastore_info:
             print ('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
@@ -203,11 +233,11 @@ class VMConfig(object):
         """
         Method creates a SCSI Controller on the VM
 
-        :param busNumber: Bus number associated with this controller.
-        :param sharedBus: Mode for sharing the SCSI bus. 
-                          physicalSharing
-                          virtualSharing
-                          noSharing
+        :param bus_number: Bus number associated with this controller.
+        :param shared_bus: Mode for sharing the SCSI bus. 
+                           physicalSharing
+                           virtualSharing
+                           noSharing
         """
 
         # randomize key for multiple scsi controllers
