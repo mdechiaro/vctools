@@ -117,7 +117,7 @@ class VMConfig(object):
         """ 
         Returns an object inside of arg if it matches name. 
 
-        :param arg: [vim.arg] (i.e. [vim.Datastore])
+        :param arg: [vim.arg] (e.g. [vim.Datastore])
         :param name: Name to match
         """
 
@@ -134,7 +134,7 @@ class VMConfig(object):
         """
         Returns a list of string names inside of arg
 
-        :param arg: [vim.arg] (i.e. [vim.Network])
+        :param arg: [vim.arg] (e.g. [vim.Network])
         """
 
         obj = self.container_obj( self.content.rootFolder, arg, True )
