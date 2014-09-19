@@ -229,6 +229,29 @@ class VMConfig(object):
             print ('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
 
 
+    def list_vm_names(self, datacenter):
+        """
+        Returns a list of names for VMs located inside a datacenter.
+
+        :param datacenter:  string name of datacenter
+        """
+
+        obj = self.get_obj([vim.Datacenter], datacenter)
+
+        vms = []
+
+        # recurse through datacenter object attributes looking for vms.  
+        if hasattr(obj, 'vmFolder'):
+            for vm in obj.vmFolder.childEntity:
+                if hasattr(vm, 'childEntity'):
+                    for v in vm.childEntity:
+                        vms.append(v.name)
+                else:
+                    vms.append(vm.name)    
+
+        return vms
+
+
     def scsi_config(self, bus_number = 0, shared_bus = 'noSharing'):
         """
         Method creates a SCSI Controller on the VM
