@@ -42,10 +42,10 @@ class Query(object):
 
     def get_obj(self, container, name):
         """ 
-        Returns an object inside of arg if it matches name. 
+        Returns an object inside of ContainverView if it matches name.
 
-        :param arg: [vim.arg] (e.g. [vim.Datastore])
-        :param name: Name to match
+        :param container: ContainerView object
+        :param name:      Name to match
         """
 
         for obj in container.view:
@@ -53,18 +53,16 @@ class Query(object):
                 return obj
             else:
                 print ('%s not found in %s' % (name, container))
-                
 
 
-    def get_attrs(self, container, attr):
+    def list_obj_names(self, container):
         """
-        Returns a list of attrs inside of container
+        Returns a list of string names inside of arg
 
-        :param managed_object: container object
-        :param attr:           attribute of container object. 
+        :param arg: [vim.arg] (e.g. [vim.Network])
         """
 
-        return [getattr(obj, attr) for obj in container.view][0]
+        return [obj.name for obj in container.view]
 
 
     def list_datastore_info(self, container, datacenter, filter = None):
