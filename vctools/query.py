@@ -28,8 +28,6 @@ class Query(object):
         """ 
         Wrapper method for creating managed objects inside vim.view.ViewManager.
 
-        :param si: ServiceInstance provided by successful Auth()
-        :param container: 
         """
         if hasattr(si, 'content'):
             if hasattr(si.content, 'viewManager'):
@@ -44,8 +42,6 @@ class Query(object):
         """ 
         Returns an object inside of ContainverView if it matches name.
 
-        :param container: ContainerView object
-        :param name:      Name to match
         """
 
         for obj in container.view:
@@ -59,7 +55,6 @@ class Query(object):
         """
         Returns a list of string names inside of arg
 
-        :param arg: [vim.arg] (e.g. [vim.Network])
         """
 
         return [obj.name for obj in container.view]
@@ -70,8 +65,6 @@ class Query(object):
         Returns a summary of disk space for datastores listed inside a
         datacenter.
 
-        :param datacenter:  string name of datacenter
-        :param filter:      string filter for datastore name
         """
 
         obj = self.get_obj(container, datacenter)
@@ -145,7 +138,6 @@ class Query(object):
         """
         Returns a list of names for VMs located inside a datacenter.
 
-        :param datacenter:  string name of datacenter
         """
 
         obj = self.get_obj(container, datacenter)
