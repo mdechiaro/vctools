@@ -47,8 +47,6 @@ class Query(object):
         for obj in container.view:
             if obj.name == name:
                 return obj
-            else:
-                print ('%s not found in %s' % (name, container))
 
 
     def list_obj_names(self, container):
