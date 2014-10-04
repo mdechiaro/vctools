@@ -148,16 +148,17 @@ class VMConfig(Query):
             vmPathName='[' + config['datastore'] + ']'
         )
 
-        devices = list(devices)
+        config.update({'deviceChange' : list(devices)}
+        config.update({'file' : vmxfile})
 
         specs = vim.vm.ConfigSpec(
             deviceChange=devices,
             ','.join('%s=%s' % (key,val) for (key,val) in config.iteritems())
             )
 
-        folder_obj = self.get_obj(container, folder)
+        folder = self.get_obj(container, folder)
 
-        folder_obj.CreateVM_Task(
+        folder.CreateVM_Task(
             config=specs, 
             pool=self.get_obj(container, pool)
         )
