@@ -134,59 +134,30 @@ class VMConfig(Query):
         return nic
 
 
-    def create_vm(self, hostname, version, guest_id, folder, container, 
-                  datastore, cpu, memory, pool, *devices):
+    def create_vm(self, *devices, **config):
         """
         Method creates the VM.
 
-        :param hostname:  Display name of the virtual machine.
-        :param version:   The version string for this virtual machine.
-        :param guestId:   Short guest operating system identifier.
-        :param folder:    string container for storing and organizing inventory
-                          objects.
-        :param datastore: string datastore where the vmdk files are stored. 
-        :param cpu:       Number of virtual processors in a virtual machine. 
-        :param memory:    Size of a virtual machine's memory, in MB. 
-        :param pool:      string resource pool.
+        :param config:    dictionary of vim.vm.ConfigSpec attributes and their
+                          values, excluding devices.
         :param devices:   list of configured devices.  See scsi_config, 
                           cdrom_config, and disk_config.  
         """
 
         vmxfile = vim.vm.FileInfo(
-            vmPathName='['+datastore+']'
+            vmPathName='[' + config['datastore'] + ']'
         )
 
         devices = list(devices)
 
-        config = vim.vm.ConfigSpec(
-            name=hostname,
-            version=version,
-            guestId=guest_id,
-            files=vmxfile,
-            numCPUs=cpu,
-            memoryMB=memory,
+        specs = vim.vm.ConfigSpec(
             deviceChange=devices,
-        )
-
-        print (
-            """
-            Creating VM using these values:
-            name: %s
-            cpu: %s
-            mem: %s
-            datastore: %s
-            devices: %s
-
-            It'll be done shortly.
-            """ % (hostname, cpu, memory, datastore, len(devices))
-        )
+            ','.join('%s=%s' % (key,val) for (key,val) in config.iteritems())
+            )
 
         folder_obj = self.get_obj(container, folder)
 
         folder_obj.CreateVM_Task(
-            config=config, 
+            config=specs, 
             pool=self.get_obj(container, pool)
         )
-        
-        print ('all done')
-
