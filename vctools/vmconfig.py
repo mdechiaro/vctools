@@ -134,31 +134,49 @@ class VMConfig(Query):
         return nic
 
 
-    def create_vm(self, *devices, **config):
+    def create_vm(self, folder, pool, *devices, **config):
         """
         Method creates the VM.
 
+        :param folder:    Folder object where the VM will reside
+        :param pool:      ResourcePool object
         :param config:    dictionary of vim.vm.ConfigSpec attributes and their
                           values, excluding devices.
         :param devices:   list of configured devices.  See scsi_config, 
                           cdrom_config, and disk_config.  
         """
 
+        # datastore is not a valid attribute inside vim.vm.ConfigSpec, but is 
+        # needed when creating the vm.  This makes unpacking easier.    
+        datastore = config['datastore']
+        del config['datastore']
+
         vmxfile = vim.vm.FileInfo(
-            vmPathName='[' + config['datastore'] + ']'
+            vmPathName='[' + datastore + ']'
         )
 
-        config.update({'deviceChange' : list(devices)}
-        config.update({'file' : vmxfile})
-
-        specs = vim.vm.ConfigSpec(
-            deviceChange=devices,
-            ','.join('%s=%s' % (key,val) for (key,val) in config.iteritems())
-            )
-
-        folder = self.get_obj(container, folder)
+        config.update({'files' : vmxfile})
+        config.update({'deviceChange' : list(devices)})
 
         folder.CreateVM_Task(
-            config=specs, 
-            pool=self.get_obj(container, pool)
+            config=vim.vm.ConfigSpec(**config),
+            pool=pool,
         )
+
+    def clone_vm(self, hostname, folder, name, **config):
+        hostname.CloneVM_Task(
+            folder, name, **config
+        )
+
+    def reconfig_vm(self, hostname, **config):
+        hostname.ReconfigVM_Task(
+            vim.vm.ConfigSpec(**config),
+        )
+
+    # TODO
+    def migrate_vm(self, hostname, location, **config):
+        pass
+
+    # TODO 
+    def power(self, hostname, state):
+        pass
