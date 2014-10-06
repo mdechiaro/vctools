@@ -163,6 +163,7 @@ class VMConfig(Query):
             pool=pool,
         )
 
+    # TODO
     def clone_vm(self, hostname, folder, name, **config):
         hostname.CloneVM_Task(
             folder, name, **config
