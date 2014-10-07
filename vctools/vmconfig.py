@@ -163,15 +163,23 @@ class VMConfig(Query):
             pool=pool,
         )
 
+    def reconfig_vm(self, vm, **config):
+        """
+        Method reconfigures a VM.
+
+        :param vm:        VirtualMachine object
+        :param config:    dictionary of vim.vm.ConfigSpec attributes and their
+                          values.
+        """
+
+        hostname.ReconfigVM_Task(
+            vim.vm.ConfigSpec(**config),
+        )
+
     # TODO
     def clone_vm(self, hostname, folder, name, **config):
         hostname.CloneVM_Task(
             folder, name, **config
-        )
-
-    def reconfig_vm(self, hostname, **config):
-        hostname.ReconfigVM_Task(
-            vim.vm.ConfigSpec(**config),
         )
 
     # TODO
