@@ -1,10 +1,11 @@
 #!/usr/bin/python
 from __future__ import print_function
 from random import uniform
+from pyVmomi import vmodl
 from pyVmomi import vim # pylint: disable=E0611
 #
 from query import Query
-
+import sys
 
 class VMConfig(Query): 
     """ 
@@ -133,7 +134,6 @@ class VMConfig(Query):
 
         return nic
 
-
     def create_vm(self, folder, pool, *devices, **config):
         """
         Method creates the VM.
@@ -158,23 +158,40 @@ class VMConfig(Query):
         config.update({'files' : vmxfile})
         config.update({'deviceChange' : list(devices)})
 
-        folder.CreateVM_Task(
+        task = folder.CreateVM_Task(
             config=vim.vm.ConfigSpec(**config),
             pool=pool,
         )
 
-    def reconfig_vm(self, vm, **config):
+        print('Creating VM %s' % config['name'])
+
+        while task.info.state == 'running':
+            sys.stdout.write( '\r' + str(task.info.progress) + '%')
+            sys.stdout.flush()
+
+            if task.info.progress == 100:
+                break
+
+
+        if task.info.state == 'error':
+            return task.info.error.msg
+        elif task.info.state == 'success':
+            print('% successfully created' % config['name'])
+
+
+    def reconfig_vm(self, host, **config):
         """
         Method reconfigures a VM.
 
-        :param vm:        VirtualMachine object
+        :param host:      VirtualMachine object
         :param config:    dictionary of vim.vm.ConfigSpec attributes and their
                           values.
         """
 
-        hostname.ReconfigVM_Task(
+        host.ReconfigVM_Task(
             vim.vm.ConfigSpec(**config),
         )
+
 
     # TODO
     def clone_vm(self, hostname, folder, name, **config):
