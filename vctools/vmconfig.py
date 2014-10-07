@@ -188,9 +188,24 @@ class VMConfig(Query):
                           values.
         """
 
-        host.ReconfigVM_Task(
+        task = host.ReconfigVM_Task(
             vim.vm.ConfigSpec(**config),
         )
+
+        print('Reconfiguring VM %s' % host.name)
+
+        while task.info.state == 'running':
+            sys.stdout.write( '\r' + str(task.info.progress) + '%')
+            sys.stdout.flush()
+
+            if task.info.progress == 100:
+                break
+
+
+        if task.info.state == 'error':
+            return task.info.error.msg
+        elif task.info.state == 'success':
+            print('% successfully reconfigured' % host.name)
 
 
     # TODO
@@ -199,10 +214,3 @@ class VMConfig(Query):
             folder, name, **config
         )
 
-    # TODO
-    def migrate_vm(self, hostname, location, **config):
-        pass
-
-    # TODO 
-    def power(self, hostname, state):
-        pass
