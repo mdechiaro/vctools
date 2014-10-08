@@ -213,7 +213,11 @@ class VMConfig(Query):
             vim.vm.ConfigSpec(**config),
         )
 
-        print('Reconfiguring VM %s with %s' % (host.name, config))
+        print('Reconfiguring VM %s with %s' % (
+            host.name, 
+            ', '.join("%s=%s" % (key,val) for key,val in config.items())
+            )
+        )
 
         while task.info.state == 'running':
             while task.info.progress:
@@ -242,7 +246,7 @@ class VMConfig(Query):
         if task.info.state == 'success':
             sys.stdout.write(
                 '\r[' + task.info.state + '] | ' + 
-                '%s successfully reconfigured with %s.' % (host.name, config)
+                '%s successfully reconfigured.' % (host.name) 
             )
             sys.stdout.flush()
 
