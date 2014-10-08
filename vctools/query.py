@@ -40,22 +40,22 @@ class Query(object):
 
     def get_obj(self, container, name):
         """ 
-        Returns an object inside of ContainverView if it matches name.
-
+        Returns an object inside of ContainerView if it matches name.
+       
         """
 
-        for obj in container.view:
+        for obj in container:
             if obj.name == name:
                 return obj
 
 
-    def list_obj_names(self, container):
+    def list_obj_attrs(self, container, attr):
         """
-        Returns a list of string names inside of arg
+        Returns a list of attributes inside of container.
 
         """
 
-        return [obj.name for obj in container.view]
+        return [getattr(obj, attr) for obj in container.view]
 
 
     def list_datastore_info(self, container, datacenter, filter = None):
