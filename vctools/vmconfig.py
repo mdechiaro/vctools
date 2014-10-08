@@ -232,4 +232,13 @@ class VMConfig(Query):
             folder, name, **config
         )
 
-       
+    def power(self, host, state):
+        """Method manages power states."""
+        if state == 'off':
+            self.task_monitor(host.PowerOff())
+
+        if state == 'on':
+            self.task_monitor(host.PowerOn())
+
+        if state == 'reset':
+            self.task_monitor(host.Reset())
