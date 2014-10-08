@@ -22,6 +22,42 @@ class VMConfig(Query):
         self.scsi_key = None
 
 
+    def task_monitor(self, task):
+        """ method monitors the state of called task and outputs info. """
+        while task.info.state == 'running':
+            while task.info.progress:
+                sys.stdout.write(
+                    '\r[' + task.info.state + '] | ' + 
+                    str(task.info.progress) + '%'
+                )
+                sys.stdout.flush()
+
+                # fixes bug where progress is set to None after hitting 100% 
+                # when state is still running.  This forces it show 100%
+                if task.info.progress == 100:
+                    sys.stdout.write(
+                        '\r[' + task.info.state + '] | ' + str(100) + '%'
+                    )
+                    sys.stdout.flush()
+
+        print()
+
+        if task.info.state =='error':
+            sys.stdout.write(
+                '\r[' + task.info.state + '] | ' + task.info.error.msg
+            )
+            sys.stdout.flush()
+            
+        if task.info.state == 'success':
+            sys.stdout.write(
+                '\r[' + task.info.state + '] | ' + 
+                'task successfully completed.'
+            )
+            sys.stdout.flush()
+
+        print()
+
+
     def scsi_config(self, bus_number = 0, shared_bus = 'noSharing'):
         """
         Method creates a SCSI Controller on the VM
@@ -48,6 +84,7 @@ class VMConfig(Query):
         self.scsi_key = scsi.device.key
 
         return scsi
+
 
 
     @classmethod
@@ -166,39 +203,7 @@ class VMConfig(Query):
 
         print('Creating VM %s' % config['name'])
 
-        while task.info.state == 'running':
-            while task.info.progress:
-                sys.stdout.write(
-                    '\r[' + task.info.state + '] | ' + 
-                    str(task.info.progress) + '%'
-                )
-                sys.stdout.flush()
-
-                # fixes bug where progress is set to None after hitting 100% 
-                # when state is still running.  This forces it show 100%
-                if task.info.progress == 100:
-                    sys.stdout.write(
-                        '\r[' + task.info.state + '] | ' + str(100) + '%'
-                    )
-                    sys.stdout.flush()
-
-        print()
-
-        if task.info.state =='error':
-            sys.stdout.write(
-                '\r[' + task.info.state + '] | ' + task.info.error.msg
-            )
-            sys.stdout.flush()
-            
-        if task.info.state == 'success':
-            sys.stdout.write(
-                '\r[' + task.info.state + '] | ' + 
-                '%s successfully created' % (config['name'])
-            )
-            sys.stdout.flush()
-
-        print()
-
+        self.task_monitor(task)
 
     def reconfig_vm(self, host, **config):
         """
@@ -219,39 +224,7 @@ class VMConfig(Query):
             )
         )
 
-        while task.info.state == 'running':
-            while task.info.progress:
-                sys.stdout.write(
-                    '\r[' + task.info.state + '] | ' + 
-                    str(task.info.progress) + '%'
-                )
-                sys.stdout.flush()
-
-                # fixes bug where progress is set to None after hitting 100% 
-                # when state is still running.  This forces it show 100%
-                if task.info.progress == 100:
-                    sys.stdout.write(
-                        '\r[' + task.info.state + '] | ' + str(100) + '%'
-                    )
-                    sys.stdout.flush()
-
-        print()
-
-        if task.info.state =='error':
-            sys.stdout.write(
-                '\r[' + task.info.state + '] | ' + task.info.error.msg
-            )
-            sys.stdout.flush()
-            
-        if task.info.state == 'success':
-            sys.stdout.write(
-                '\r[' + task.info.state + '] | ' + 
-                '%s successfully reconfigured.' % (host.name) 
-            )
-            sys.stdout.flush()
-
-        print()
-
+        self.task_monitor(task)
 
     # TODO
     def clone_vm(self, hostname, folder, name, **config):
@@ -259,4 +232,4 @@ class VMConfig(Query):
             folder, name, **config
         )
 
-
+       
