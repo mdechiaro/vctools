@@ -169,9 +169,20 @@ class VMConfig(Query):
         while task.info.state == 'running':
             while task.info.progress:
                 sys.stdout.write(
-                    '\r[' + task.info.state + '] | ' + str(task.info.progress) + '%'
+                    '\r[' + task.info.state + '] | ' + 
+                    str(task.info.progress) + '%'
                 )
                 sys.stdout.flush()
+
+                # fixes bug where progress is set to None after hitting 100% 
+                # when state is still running.  This forces it show 100%
+                if task.info.progress == 100:
+                    sys.stdout.write(
+                        '\r[' + task.info.state + '] | ' + str(100) + '%'
+                    )
+                    sys.stdout.flush()
+
+        print()
 
         if task.info.state =='error':
             sys.stdout.write(
@@ -207,10 +218,20 @@ class VMConfig(Query):
         while task.info.state == 'running':
             while task.info.progress:
                 sys.stdout.write(
-                    '\r[' + task.info.state + '] | ' + str(task.info.progress) + '%'
+                    '\r[' + task.info.state + '] | ' + 
+                    str(task.info.progress) + '%'
                 )
                 sys.stdout.flush()
 
+                # fixes bug where progress is set to None after hitting 100% 
+                # when state is still running.  This forces it show 100%
+                if task.info.progress == 100:
+                    sys.stdout.write(
+                        '\r[' + task.info.state + '] | ' + str(100) + '%'
+                    )
+                    sys.stdout.flush()
+
+        print()
 
         if task.info.state =='error':
             sys.stdout.write(
@@ -224,7 +245,6 @@ class VMConfig(Query):
                 '%s successfully reconfigured with %s.' % (host.name, config)
             )
             sys.stdout.flush()
-
 
         print()
 
