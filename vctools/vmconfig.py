@@ -213,7 +213,7 @@ class VMConfig(Query):
             vim.vm.ConfigSpec(**config),
         )
 
-        print('Reconfiguring VM %s with %s' % host.name, config)
+        print('Reconfiguring VM %s with %s' % (host.name, config))
 
         while task.info.state == 'running':
             while task.info.progress:
