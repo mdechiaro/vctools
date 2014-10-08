@@ -5,6 +5,7 @@ from pyVmomi import vmodl
 from pyVmomi import vim # pylint: disable=E0611
 #
 from query import Query
+
 import sys
 
 class VMConfig(Query): 
@@ -166,17 +167,26 @@ class VMConfig(Query):
         print('Creating VM %s' % config['name'])
 
         while task.info.state == 'running':
-            sys.stdout.write( '\r' + str(task.info.progress) + '%')
+            while task.info.progress:
+                sys.stdout.write(
+                    '\r[' + task.info.state + '] | ' + str(task.info.progress) + '%'
+                )
+                sys.stdout.flush()
+
+        if task.info.state =='error':
+            sys.stdout.write(
+                '\r[' + task.info.state + '] | ' + task.info.error.msg
+            )
+            sys.stdout.flush()
+            
+        if task.info.state == 'success':
+            sys.stdout.write(
+                '\r[' + task.info.state + '] | ' + 
+                '%s successfully created' % (config['name'])
+            )
             sys.stdout.flush()
 
-            if task.info.progress == 100:
-                break
-
-
-        if task.info.state == 'error':
-            return task.info.error.msg
-        elif task.info.state == 'success':
-            print('% successfully created' % config['name'])
+        print()
 
 
     def reconfig_vm(self, host, **config):
@@ -192,20 +202,31 @@ class VMConfig(Query):
             vim.vm.ConfigSpec(**config),
         )
 
-        print('Reconfiguring VM %s' % host.name)
+        print('Reconfiguring VM %s with %s' % host.name, config)
 
         while task.info.state == 'running':
-            sys.stdout.write( '\r' + str(task.info.progress) + '%')
+            while task.info.progress:
+                sys.stdout.write(
+                    '\r[' + task.info.state + '] | ' + str(task.info.progress) + '%'
+                )
+                sys.stdout.flush()
+
+
+        if task.info.state =='error':
+            sys.stdout.write(
+                '\r[' + task.info.state + '] | ' + task.info.error.msg
+            )
+            sys.stdout.flush()
+            
+        if task.info.state == 'success':
+            sys.stdout.write(
+                '\r[' + task.info.state + '] | ' + 
+                '%s successfully reconfigured with %s.' % (host.name, config)
+            )
             sys.stdout.flush()
 
-            if task.info.progress == 100:
-                break
 
-
-        if task.info.state == 'error':
-            return task.info.error.msg
-        elif task.info.state == 'success':
-            print('% successfully reconfigured' % host.name)
+        print()
 
 
     # TODO
@@ -213,4 +234,5 @@ class VMConfig(Query):
         hostname.CloneVM_Task(
             folder, name, **config
         )
+
 
