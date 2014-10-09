@@ -149,7 +149,8 @@ class VMConfig(Query):
         return disk
 
 
-    def nic_config(self, container, network):
+    def nic_config(self, container, network, connected = True, 
+                   start_connected = True, allow_guest_control = True):
         """
         Method returns configured object for network interface.
 
@@ -166,9 +167,9 @@ class VMConfig(Query):
         nic.device.backing.deviceName = network
 
         nic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
-        nic.device.connectable.connected = True
-        nic.device.connectable.startConnected = True
-        nic.device.connectable.allowGuestControl = True
+        nic.device.connectable.connected = connected
+        nic.device.connectable.startConnected = start_connected
+        nic.device.connectable.allowGuestControl = allow_guest_control
 
         return nic
 
