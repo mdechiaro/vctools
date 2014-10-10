@@ -26,19 +26,24 @@ class VMConfig(Query):
         """ method monitors the state of called task and outputs info. """
         while task.info.state == 'running':
             while task.info.progress:
-                sys.stdout.write(
-                    '\r[' + task.info.state + '] | ' + 
-                    str(task.info.progress) + '%'
-                )
-                sys.stdout.flush()
-
-                # fixes bug where progress is set to None after hitting 100% 
-                # when state is still running.  This forces it show 100%
-                if task.info.progress == 100:
+                # Ensure it's an integer before printing, otherwise None
+                # Tracebacks appear.  
+                if isinstance(task.info.progress, int):
                     sys.stdout.write(
-                        '\r[' + task.info.state + '] | ' + str(100) + '%'
+                        '\r[' + task.info.state + '] | ' + 
+                        str(task.info.progress)
                     )
                     sys.stdout.flush()
+                    if task.info.progress == 100:
+                        sys.stdout.write(
+                            '\r[' + task.info.state + '] | ' + 
+                            str(task.info.progress)
+                        )
+                        sys.stdout.flush()
+                        break
+                else:
+                    sys.stdout.flush()
+                    break
 
         print()
 
