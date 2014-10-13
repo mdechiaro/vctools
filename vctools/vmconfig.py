@@ -178,7 +178,7 @@ class VMConfig(Query):
 
         return nic
 
-    def create_vm(self, folder, pool, *devices, **config):
+    def create(self, folder, pool, *devices, **config):
         """
         Method creates the VM.
 
@@ -211,7 +211,7 @@ class VMConfig(Query):
 
         self.task_monitor(task)
 
-    def reconfig_vm(self, host, **config):
+    def reconfig(self, host, **config):
         """
         Method reconfigures a VM.
 
@@ -233,7 +233,7 @@ class VMConfig(Query):
         self.task_monitor(task)
 
     # TODO
-    def clone_vm(self, hostname, folder, name, **config):
+    def clone(self, hostname, folder, name, **config):
         hostname.CloneVM_Task(
             folder, name, **config
         )
