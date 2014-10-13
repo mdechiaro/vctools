@@ -27,22 +27,22 @@ class VCTools(object):
         subparsers = parser.add_subparsers(metavar='')
 
 
-        # vcenter subparser
-        vcenter_parser = subparsers.add_parser(
-            'vcenter', help = 'vCenter URL'
+        # vc subparser
+        vc_parser = subparsers.add_parser(
+            'vc', help = 'vCenter URL'
         )
-        vcenter_parser.set_defaults(cmd='url')
+        vc_parser.set_defaults(cmd='url')
 
-        vcenter_parser.add_argument(
+        vc_parser.add_argument(
            'url', help = 'vCenter HTTPS URL'
         )
 
 
-        # vcenter subparser subparsers
-        vcenter_subparser = vcenter_parser.add_subparsers(metavar='')
+        # vc subparser subparsers
+        vc_subparser = vc_parser.add_subparsers(metavar='')
 
         # query
-        query_parser = vcenter_subparser.add_parser(
+        query_parser = vc_subparser.add_parser(
             'query', help = 'Query Info'
         )
         query_parser.set_defaults(cmd='query')
@@ -69,7 +69,7 @@ class VCTools(object):
 
 
         # create
-        create_parser = vcenter_subparser.add_parser(
+        create_parser = vc_subparser.add_parser(
             'create',
             help = 'Create Virtual Machines'
         )
@@ -81,26 +81,26 @@ class VCTools(object):
         )
 
         # clone
-        clone_parser = vcenter_subparser.add_parser(
+        clone_parser = vc_subparser.add_parser(
             'clone', help = 'Clone Virtual Machines'
         )
         clone_parser.set_defaults(cmd='clone')
 
         # console
-        console_parser = vcenter_subparser.add_parser(
+        console_parser = vc_subparser.add_parser(
             'console', help = 'Console Virtual Machines'
         )
         console_parser.set_defaults(cmd='console')
 
 
         # reconfig
-        reconfig_parser = vcenter_subparser.add_parser(
+        reconfig_parser = vc_subparser.add_parser(
             'reconfig', help = 'Reconfig Virtual Machines'
         )
         reconfig_parser.set_defaults(cmd='reconfig')
 
         # power
-        power_parser = vcenter_subparser.add_parser(
+        power_parser = vc_subparser.add_parser(
             'power', help = 'Power Management for Virtual Machines'
         )
         power_parser.set_defaults(cmd='power')
