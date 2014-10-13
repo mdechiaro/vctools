@@ -111,13 +111,13 @@ class VCTools(object):
 
 
     def create_containers(self):
-        self.clusters = query.create_container(
-            auth.session, auth.session.content.rootFolder, 
+        self.clusters = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder, 
             [vim.ComputeResource], True
         )
 
-        self.folders = query.create_container(
-            auth.session, auth.session.content.rootFolder, 
+        self.folders = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder, 
             [vim.Folder], True
         )
 
@@ -126,30 +126,28 @@ class VCTools(object):
     def main(self):
         self.options()
 
-        auth = vctools.auth.Auth(self.opts.vcenter.url)
-        auth.login()
+        self.auth = Auth(self.opts.url)
+        self.auth.login()
 
-        query = vctools.query.Query()
-        vmcfg = vctools.vmconfig.VMConfig()
+        self.query = Query()
+        vmcfg = VMConfig()
 
         self.create_containers()
 
 
-        if self.opts.vcenter.create:
-            if self.opts.config:
-                spec = yaml.load(open(config))
-            else:
-                print 'YaML config not found, exiting.'
-                self.help
-                sys.exit(1)
+        #if self.opts.create:
+        if self.opts.config:
+            spec = yaml.load(self.opts.config)
+            datastore = spec['config']['datastore']
 
-            cluster = query.get_obj(
+
+            cluster = self.query.get_obj(
                 self.clusters.view, spec['vcenter']['cluster']
             )
 
             pool = cluster.resourcePool
 
-            folder = query.get_obj(
+            folder = self.query.get_obj(
                 self.folders.view, spec['vcenter']['folder']
             )
 
@@ -162,85 +160,69 @@ class VCTools(object):
             z = 0
             for scsi, disk in enumerate(spec['devices']['disks']):
                 # setup the first four disks on a separate scsi controller
-                while scsi <= 3:
-                    devices.append(vmcfg.scsi_config(scsi))
-                    devices.append(
-                        vmcfg.disk_config(
-                            cluster.datastore, datastore, disk*gb, unit = scsi
-                        )
+                self.devices.append(vmcfg.scsi_config(scsi))
+                self.devices.append(
+                    vmcfg.disk_config(
+                        cluster.datastore, datastore, disk*gb, unit = scsi
                     )
+                )
 
                 # every remaining disk will be added sequentially across each
                 # scsi controller.  
-                if scsi == 4:
-                    while scsi > 8:
-                        while x < 4:
-                            devices.append(
-                                vmcfg.disk_config(
-                                    cluster.datastore, datastore, disk*gb, 
-                                    unit = x
-                                )
-                            )
+                #if scsi == 4:
+                #    print 'building second four disks.'
+                #    while scsi > 8:
+                #        while x < 4:
+                #            self.devices.append(
+                #                vmcfg.disk_config(
+                #                    cluster.datastore, datastore, disk*gb, 
+                #                    unit = x
+                #                )
+                #            )
 
-                            x += 1
+                #            x += 1
 
-                        break
+                #        break
+                #        scsi += 1
 
-                if scsi == 8:
-                    while scsi > 12:
-                        while y < 4:
-                            devices.append(
-                                vmcfg.disk_config(
-                                    cluster.datastore, datastore, disk*gb, 
-                                    unit = y
-                                )
-                            )
+                #if scsi == 8:
+                #    print 'building third four disks.'
+                #    while scsi > 12:
+                #        while y < 4:
+                #            self.devices.append(
+                #                vmcfg.disk_config(
+                #                    cluster.datastore, datastore, disk*gb, 
+                #                    unit = y
+                #                )
+                #            )
 
-                            y += 1
+                #            y += 1
 
-                        break
+                #        break
 
-                if scsi == 12:
-                    while scsi >= 16:
-                        while z < 4:
-                            devices.append(
-                                vmcfg.disk_config(
-                                    cluster.datastore, datastore, disk*gb, 
-                                    unit = z
-                                )
-                            )
+                #if scsi == 12:
+                #    print 'building fourth four disks.'
+                #    while scsi >= 16:
+                #        while z < 4:
+                #            self.devices.append(
+                #                vmcfg.disk_config(
+                #                    cluster.datastore, datastore, disk*gb, 
+                #                    unit = z
+                #                )
+                #            )
 
-                            z += 1
+                #            z += 1
 
-                        break
+                #        break
                 
 
             for nic in spec['devices']['nics']:
-                devices.append(vmcfg.nic_config(cluster.network, nic))
+                self.devices.append(vmcfg.nic_config(cluster.network, nic))
 
-            devices.append(vmcfg.cdrom_config())
+            self.devices.append(vmcfg.cdrom_config())
            
-            vmcfg.create(folder, pool, *devices, **spec['config'])
+            vmcfg.create(folder, pool, *self.devices, **spec['config'])
 
-
-        if self.opts.vcenter.clone:
-            pass
-
-        if self.opts.vcenter.console:
-            pass
-
-        if self.opts.vcenter.reconfig:
-            vmcfg.reconfig_vm(host, **reconfig)
-
-        if self.opts.vcenter.query:
-
-            if self.opts.vcenter.query.datastores:
-                if self.opts.query.cluster:
-                    cluster = self.opts.query.cluster
-                    query.list_datastore_info(self.cluster.view, cluster)
-
-        if self.opts.power:
-            vmcfg.power(host, state)
 
 if __name__ == '__main__':
     vc = VCTools()
