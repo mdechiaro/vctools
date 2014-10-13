@@ -31,7 +31,7 @@ class VCTools(object):
         vcenter_parser = subparsers.add_parser(
             'vcenter', help = 'vCenter URL'
         )
-        vcenter_parser.set_defaults(cmd='vcenter')
+        vcenter_parser.set_defaults(cmd='url')
 
         vcenter_parser.add_argument(
            'url', help = 'vCenter HTTPS URL'
@@ -66,17 +66,17 @@ class VCTools(object):
            '--cluster',
             help = 'vCenter ComputeResource.'
         )
-        
 
 
         # create
         create_parser = vcenter_subparser.add_parser(
-            'create', help = 'Create Virtual Machines'
+            'create',
+            help = 'Create Virtual Machines'
         )
-        create_parser.set_defaults(cmd='create')
+        create_parser.set_defaults(cmd='config')
 
         create_parser.add_argument(
-           'config', 
+           'config', type=file,
             help = 'YaML config for creating new Virtual Machines.'
         )
 
