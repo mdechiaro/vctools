@@ -2,7 +2,10 @@
 import sys
 import yaml
 import argparse
-import vctools
+from pyVmomi import vim
+from vctools.auth import Auth
+from vctools.query import Query
+from vctools.vmconfig import VMConfig
 
 class VCTools(object):
     def __init__(self):
