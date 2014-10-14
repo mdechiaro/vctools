@@ -2,6 +2,7 @@
 import sys
 import yaml
 import argparse
+#
 from pyVmomi import vim
 from vctools.auth import Auth
 from vctools.query import Query
