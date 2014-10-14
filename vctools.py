@@ -31,6 +31,39 @@ class VCTools(object):
         # subparser
         subparsers = parser.add_subparsers(metavar='')
 
+        # clone
+        clone_parser = subparsers.add_parser(
+            'clone', parents=[vc_parser],
+            help = 'Clone Virtual Machines'
+        )
+        clone_parser.set_defaults(cmd='clone')
+
+        # console
+        console_parser = subparsers.add_parser(
+            'console', parents=[vc_parser],
+            help = 'Console Virtual Machines'
+        )
+        console_parser.set_defaults(cmd='console')
+
+        # create
+        create_parser = subparsers.add_parser(
+            'create', parents=[vc_parser],
+            help = 'Create Virtual Machines'
+        )
+        create_parser.set_defaults(cmd='create')
+
+        create_parser.add_argument(
+           'config', type=file,
+            help = 'YaML config for creating new Virtual Machines.'
+        )
+
+        # power
+        power_parser = subparsers.add_parser(
+            'power', parents=[vc_parser],
+            help = 'Power Management for Virtual Machines'
+        )
+        power_parser.set_defaults(cmd='power')
+
         # query
         query_parser = subparsers.add_parser(
             'query', parents=[vc_parser], 
@@ -58,32 +91,6 @@ class VCTools(object):
             help = 'vCenter ComputeResource.'
         )
 
-        # create
-        create_parser = subparsers.add_parser(
-            'create', parents=[vc_parser],
-            help = 'Create Virtual Machines'
-        )
-        create_parser.set_defaults(cmd='create')
-
-        create_parser.add_argument(
-           'config', type=file,
-            help = 'YaML config for creating new Virtual Machines.'
-        )
-
-        # clone
-        clone_parser = subparsers.add_parser(
-            'clone', parents=[vc_parser],
-            help = 'Clone Virtual Machines'
-        )
-        clone_parser.set_defaults(cmd='clone')
-
-        # console
-        console_parser = subparsers.add_parser(
-            'console', parents=[vc_parser],
-            help = 'Console Virtual Machines'
-        )
-        console_parser.set_defaults(cmd='console')
-
         # reconfig
         reconfig_parser = subparsers.add_parser(
             'reconfig', parents=[vc_parser],
@@ -91,12 +98,6 @@ class VCTools(object):
         )
         reconfig_parser.set_defaults(cmd='reconfig')
 
-        # power
-        power_parser = subparsers.add_parser(
-            'power', parents=[vc_parser],
-            help = 'Power Management for Virtual Machines'
-        )
-        power_parser.set_defaults(cmd='power')
 
         self.opts = parser.parse_args()
         self.help = parser.print_help
