@@ -21,29 +21,20 @@ class VCTools(object):
             description='vCenter Tools CLI'
         )
 
-
+        # vc (parent)
+        vc_parser = argparse.ArgumentParser(add_help=False)
+        vc_parser.add_argument(
+            'vc',
+            help = 'vCenter host'
+        )
 
         # subparser
         subparsers = parser.add_subparsers(metavar='')
 
-
-        # vc subparser
-        vc_parser = subparsers.add_parser(
-            'vc', help = 'vCenter URL'
-        )
-        vc_parser.set_defaults(cmd='url')
-
-        vc_parser.add_argument(
-           'url', help = 'vCenter HTTPS URL'
-        )
-
-
-        # vc subparser subparsers
-        vc_subparser = vc_parser.add_subparsers(metavar='')
-
         # query
-        query_parser = vc_subparser.add_parser(
-            'query', help = 'Query Info'
+        query_parser = subparsers.add_parser(
+            'query', parents=[vc_parser], 
+            help = 'Query Info'
         )
         query_parser.set_defaults(cmd='query')
 
@@ -67,13 +58,12 @@ class VCTools(object):
             help = 'vCenter ComputeResource.'
         )
 
-
         # create
-        create_parser = vc_subparser.add_parser(
-            'create',
+        create_parser = subparsers.add_parser(
+            'create', parents=[vc_parser],
             help = 'Create Virtual Machines'
         )
-        create_parser.set_defaults(cmd='config')
+        create_parser.set_defaults(cmd='create')
 
         create_parser.add_argument(
            'config', type=file,
@@ -81,30 +71,32 @@ class VCTools(object):
         )
 
         # clone
-        clone_parser = vc_subparser.add_parser(
-            'clone', help = 'Clone Virtual Machines'
+        clone_parser = subparsers.add_parser(
+            'clone', parents=[vc_parser],
+            help = 'Clone Virtual Machines'
         )
         clone_parser.set_defaults(cmd='clone')
 
         # console
-        console_parser = vc_subparser.add_parser(
-            'console', help = 'Console Virtual Machines'
+        console_parser = subparsers.add_parser(
+            'console', parents=[vc_parser],
+            help = 'Console Virtual Machines'
         )
         console_parser.set_defaults(cmd='console')
 
-
         # reconfig
-        reconfig_parser = vc_subparser.add_parser(
-            'reconfig', help = 'Reconfig Virtual Machines'
+        reconfig_parser = subparsers.add_parser(
+            'reconfig', parents=[vc_parser],
+            help = 'Reconfig Virtual Machines'
         )
         reconfig_parser.set_defaults(cmd='reconfig')
 
         # power
-        power_parser = vc_subparser.add_parser(
-            'power', help = 'Power Management for Virtual Machines'
+        power_parser = subparsers.add_parser(
+            'power', parents=[vc_parser],
+            help = 'Power Management for Virtual Machines'
         )
         power_parser.set_defaults(cmd='power')
-
 
         self.opts = parser.parse_args()
         self.help = parser.print_help
@@ -122,11 +114,10 @@ class VCTools(object):
         )
 
 
-
     def main(self):
         self.options()
 
-        self.auth = Auth(self.opts.url)
+        self.auth = Auth(self.opts.vc)
         self.auth.login()
 
         self.query = Query()
@@ -135,11 +126,9 @@ class VCTools(object):
         self.create_containers()
 
 
-        #if self.opts.create:
-        if self.opts.config:
+        if self.opts.cmd == 'create':
             spec = yaml.load(self.opts.config)
             datastore = spec['config']['datastore']
-
 
             cluster = self.query.get_obj(
                 self.clusters.view, spec['vcenter']['cluster']
