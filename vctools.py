@@ -143,10 +143,7 @@ class VCTools(object):
             # convert kb to gb 
             gb = 1024*1024
 
-            # counters for scsi controllers
-            x = 0
-            y = 0
-            z = 0
+            # TODO: increase 4 disk limit
             for scsi, disk in enumerate(spec['devices']['disks']):
                 # setup the first four disks on a separate scsi controller
                 self.devices.append(vmcfg.scsi_config(scsi))
@@ -155,55 +152,6 @@ class VCTools(object):
                         cluster.datastore, datastore, disk*gb, unit = scsi
                     )
                 )
-
-                # every remaining disk will be added sequentially across each
-                # scsi controller.  
-                #if scsi == 4:
-                #    print 'building second four disks.'
-                #    while scsi > 8:
-                #        while x < 4:
-                #            self.devices.append(
-                #                vmcfg.disk_config(
-                #                    cluster.datastore, datastore, disk*gb, 
-                #                    unit = x
-                #                )
-                #            )
-
-                #            x += 1
-
-                #        break
-                #        scsi += 1
-
-                #if scsi == 8:
-                #    print 'building third four disks.'
-                #    while scsi > 12:
-                #        while y < 4:
-                #            self.devices.append(
-                #                vmcfg.disk_config(
-                #                    cluster.datastore, datastore, disk*gb, 
-                #                    unit = y
-                #                )
-                #            )
-
-                #            y += 1
-
-                #        break
-
-                #if scsi == 12:
-                #    print 'building fourth four disks.'
-                #    while scsi >= 16:
-                #        while z < 4:
-                #            self.devices.append(
-                #                vmcfg.disk_config(
-                #                    cluster.datastore, datastore, disk*gb, 
-                #                    unit = z
-                #                )
-                #            )
-
-                #            z += 1
-
-                #        break
-                
 
             for nic in spec['devices']['nics']:
                 self.devices.append(vmcfg.nic_config(cluster.network, nic))
