@@ -98,7 +98,6 @@ class VCTools(object):
         )
         reconfig_parser.set_defaults(cmd='reconfig')
 
-
         self.opts = parser.parse_args()
         self.help = parser.print_help
 
