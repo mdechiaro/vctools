@@ -135,7 +135,7 @@ class Query(object):
             print ('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
 
 
-    def list_vm_names(self, container, datacenter):
+    def list_vm_info(self, container, datacenter):
         """
         Returns a list of names for VMs located inside a datacenter.
 
