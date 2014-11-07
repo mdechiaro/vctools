@@ -156,3 +156,25 @@ class Query(object):
 
         return vms
 
+    def get_vmid_by_name(self, container, datacenter, name):
+        """
+        Returns the moId of matched name
+
+        """
+
+        obj = self.get_obj(container, datacenter)
+
+        vms = {}
+
+        # recurse through datacenter object attributes looking for vm that
+        # matches hostname.
+        if hasattr(obj, 'vmFolder'):
+            for vm in obj.vmFolder.childEntity:
+                if hasattr(vm, 'childEntity'):
+                    for v in vm.childEntity:
+                        if v.name == name:
+                            return v._moId
+                else:
+                    if v.name == name:
+                        return v._moId
+
