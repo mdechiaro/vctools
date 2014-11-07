@@ -223,13 +223,15 @@ class VCTools(object):
                 cluster = self.query.get_obj(
                     self.clusters.view, self.opts.cluster
                 )
-                networks =  self.query.list_obj_attrs(cluster.network, 'name', view = False)
+                networks =  self.query.list_obj_attrs(
+                    cluster.network, 'name', view = False
+                )
                 networks.sort()
                 for net in networks:
                     print net
 
             if self.opts.vms:
-                vms = self.query.list_vm_names(
+                vms = self.query.list_vm_info(
                         self.datacenters.view, self.opts.datacenter
                 )
                 for key, value in vms.iteritems():
