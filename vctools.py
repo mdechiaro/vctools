@@ -112,8 +112,8 @@ class VCTools(object):
         )
 
         query_parser.add_argument(
-           '--datacenter',
-            help = 'vCenter Datacenter.'
+           '--datacenter', default='Linux',
+            help = 'vCenter Datacenter. default: %(default)s'
         )
 
 
