@@ -71,12 +71,13 @@ class VCTools(object):
             help = 'YaML config for creating new Virtual Machines.'
         )
 
+        # TODO
         # power
-        power_parser = subparsers.add_parser(
-            'power', parents=[vc_parser],
-            help = 'Power Management for Virtual Machines'
-        )
-        power_parser.set_defaults(cmd='power')
+        #power_parser = subparsers.add_parser(
+        #    'power', parents=[vc_parser],
+        #    help = 'Power Management for Virtual Machines'
+        #)
+        #power_parser.set_defaults(cmd='power')
 
         # query
         query_parser = subparsers.add_parser(
@@ -115,12 +116,14 @@ class VCTools(object):
             help = 'vCenter Datacenter.'
         )
 
+
+        # TODO
         # reconfig
-        reconfig_parser = subparsers.add_parser(
-            'reconfig', parents=[vc_parser],
-            help = 'Reconfig Virtual Machines'
-        )
-        reconfig_parser.set_defaults(cmd='reconfig')
+        #reconfig_parser = subparsers.add_parser(
+        #    'reconfig', parents=[vc_parser],
+        #    help = 'Reconfig Virtual Machines'
+        #)
+        #reconfig_parser.set_defaults(cmd='reconfig')
 
         self.opts = parser.parse_args()
         self.help = parser.print_help
