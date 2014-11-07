@@ -73,7 +73,7 @@ class VCTools(object):
         query_parser.set_defaults(cmd='query')
 
         query_parser.add_argument(
-           'datastores',
+           '--datastores', action='store_true',
             help = 'Returns information about Datastores.'
         )
 
@@ -161,6 +161,11 @@ class VCTools(object):
            
             vmcfg.create(folder, pool, *self.devices, **spec['config'])
 
+        if self.opts.cmd == 'query':
+            if self.opts.datastores:
+                self.query.list_datastore_info(
+                    self.clusters.view, self.opts.cluster
+                )
 
 if __name__ == '__main__':
     vc = VCTools()
