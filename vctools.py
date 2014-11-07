@@ -1,4 +1,6 @@
 #!/usr/bin/python
+import os
+import subprocess
 import sys
 import yaml
 import argparse
@@ -15,6 +17,7 @@ class VCTools(object):
         self.folders = None
 
         # vmrc remote console args
+        self.vmrc_path = os.path.expanduser("~/vmware-console/plugins/")
         self.vmrc = 'vmware-vmrc'
 
 
@@ -163,14 +166,13 @@ class VCTools(object):
                     self.datacenters.view, self.opts.datacenter,
                     self.opts.name
                 )
-                # domain\user needs to be escaped properly 
-                d, u = self.auth.user.split('\\')
-                user = d + '\\\\' + u
+
                 command = '%s -h %s -u %s -M %s' % (
-                        self.vmrc, self.opts.vc, user, vmid
+                        self.vmrc, self.opts.vc, self.auth.user, vmid
                 )
 
-                print command
+                os.chdir(self.vmrc_path)
+                subprocess.call(command.split())
 
         if self.opts.cmd == 'create':
             spec = yaml.load(self.opts.config)
