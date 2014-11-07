@@ -178,16 +178,19 @@ class VCTools(object):
            
             vmcfg.create(folder, pool, *self.devices, **spec['config'])
 
+
         if self.opts.cmd == 'query':
             if self.opts.datastores:
                 self.query.list_datastore_info(
                     self.clusters.view, self.opts.cluster
                 )
+
             if self.opts.folders:
                 folders = self.query.list_obj_attrs(self.folders, 'name')
                 folders.sort()
                 for folder in folders:
                     print folder
+
             if self.opts.networks:
                 cluster = self.query.get_obj(
                     self.clusters.view, self.opts.cluster
