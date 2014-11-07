@@ -49,13 +49,16 @@ class Query(object):
                 return obj
 
 
-    def list_obj_attrs(self, container, attr):
+    def list_obj_attrs(self, container, attr, view = True):
         """
         Returns a list of attributes inside of container.
 
         """
+        if view:
+            return [getattr(obj, attr) for obj in container.view]
+        else:
+            return [getattr(obj, attr) for obj in container]
 
-        return [getattr(obj, attr) for obj in container.view]
 
 
     def list_datastore_info(self, container, datacenter, filter = None):
