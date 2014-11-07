@@ -32,19 +32,21 @@ class VCTools(object):
         # subparser
         subparsers = parser.add_subparsers(metavar='')
 
+        # TODO
         # clone
-        clone_parser = subparsers.add_parser(
-            'clone', parents=[vc_parser],
-            help = 'Clone Virtual Machines'
-        )
-        clone_parser.set_defaults(cmd='clone')
+        #clone_parser = subparsers.add_parser(
+        #    'clone', parents=[vc_parser],
+        #    help = 'Clone Virtual Machines'
+        #)
+        #clone_parser.set_defaults(cmd='clone')
 
+        # TODO
         # console
-        console_parser = subparsers.add_parser(
-            'console', parents=[vc_parser],
-            help = 'Console Virtual Machines'
-        )
-        console_parser.set_defaults(cmd='console')
+        #console_parser = subparsers.add_parser(
+        #    'console', parents=[vc_parser],
+        #    help = 'Console Virtual Machines'
+        #)
+        #console_parser.set_defaults(cmd='console')
 
         # create
         create_parser = subparsers.add_parser(
