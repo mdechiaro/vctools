@@ -80,7 +80,7 @@ class VCTools(object):
         )
 
         query_parser.add_argument(
-           'vms',
+           '--vms', action='store_true',
             help = 'Returns information about Virtual Machines.'
         )
 
@@ -99,6 +99,11 @@ class VCTools(object):
             help = 'vCenter ComputeResource.'
         )
 
+        query_parser.add_argument(
+           '--datacenter',
+            help = 'vCenter Datacenter.'
+        )
+
         # reconfig
         reconfig_parser = subparsers.add_parser(
             'reconfig', parents=[vc_parser],
@@ -111,6 +116,11 @@ class VCTools(object):
 
 
     def create_containers(self):
+        self.datacenters = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder, 
+            [vim.Datacenter], True
+        )
+
         self.clusters = self.query.create_container(
             self.auth.session, self.auth.session.content.rootFolder, 
             [vim.ComputeResource], True
@@ -186,6 +196,13 @@ class VCTools(object):
                 networks.sort()
                 for net in networks:
                     print net
+
+            if self.opts.vms:
+                vms = self.query.list_vm_names(
+                        self.datacenters.view, self.opts.datacenter
+                )
+                for key, value in vms.iteritems():
+                    print key, value
 
 
 
