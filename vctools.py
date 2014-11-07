@@ -86,6 +86,11 @@ class VCTools(object):
            'folders',
             help = 'Returns information about Folders.'
         )
+        
+        query_parser.add_argument(
+           '--networks', action='store_true',
+            help = 'Returns information about Networks.'
+        )
 
         query_parser.add_argument(
            '--cluster',
@@ -166,6 +171,16 @@ class VCTools(object):
                 self.query.list_datastore_info(
                     self.clusters.view, self.opts.cluster
                 )
+            if self.opts.networks:
+                cluster = self.query.get_obj(
+                    self.clusters.view, self.opts.cluster
+                )
+                networks =  self.query.list_obj_attrs(cluster.network, 'name', view = False)
+                networks.sort()
+                for net in networks:
+                    print net
+
+
 
 if __name__ == '__main__':
     vc = VCTools()
