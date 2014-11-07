@@ -143,16 +143,16 @@ class Query(object):
 
         obj = self.get_obj(container, datacenter)
 
-        vms = []
+        vms = {}
 
         # recurse through datacenter object attributes looking for vms.  
         if hasattr(obj, 'vmFolder'):
             for vm in obj.vmFolder.childEntity:
                 if hasattr(vm, 'childEntity'):
                     for v in vm.childEntity:
-                        vms.append(v.name)
+                        vms.update({v.name:v._moId})
                 else:
-                    vms.append(vm.name)    
+                    vms.update({vm.name:v._moId})    
 
         return vms
 
