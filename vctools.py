@@ -14,6 +14,9 @@ class VCTools(object):
         self.devices = []
         self.folders = None
 
+        # vmrc remote console args
+        self.vmrc = 'vmware-vmrc'
+
 
     def options(self):
         """argparse command line options."""
@@ -42,11 +45,19 @@ class VCTools(object):
 
         # TODO
         # console
-        #console_parser = subparsers.add_parser(
-        #    'console', parents=[vc_parser],
-        #    help = 'Console Virtual Machines'
-        #)
-        #console_parser.set_defaults(cmd='console')
+        console_parser = subparsers.add_parser(
+            'console', parents=[vc_parser],
+            help = 'Generate CLI Console Command'
+        )
+        console_parser.set_defaults(cmd='console')
+        console_parser.add_argument(
+           '--name',
+            help = 'name attribute of Virtual Machine object.'
+        )
+        console_parser.add_argument(
+           '--datacenter', default='Linux',
+           help = 'vCenter Datacenter. default: %(default)s'
+        )
 
         # create
         create_parser = subparsers.add_parser(
@@ -143,6 +154,20 @@ class VCTools(object):
 
         self.create_containers()
 
+        if self.opts.cmd == 'console':
+            if self.opts.name:
+                vmid = self.query.get_vmid_by_name(
+                    self.datacenters.view, self.opts.datacenter,
+                    self.opts.name
+                )
+                # domain\user needs to be escaped properly 
+                d, u = self.auth.user.split('\\')
+                user = d + '\\\\' + u
+                command = '%s -h %s -u %s -M %s' % (
+                        self.vmrc, self.opts.vc, user, vmid
+                )
+
+                print command
 
         if self.opts.cmd == 'create':
             spec = yaml.load(self.opts.config)
