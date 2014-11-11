@@ -9,6 +9,7 @@ from pyVmomi import vim
 from vctools.auth import Auth
 from vctools.query import Query
 from vctools.vmconfig import VMConfig
+from vctools.console import Console
 
 class VCTools(object):
     def __init__(self):
@@ -50,7 +51,7 @@ class VCTools(object):
         # console
         console_parser = subparsers.add_parser(
             'console', parents=[vc_parser],
-            help = 'Generate CLI Console Command'
+            help = 'Generate CLI Console Url'
         )
         console_parser.set_defaults(cmd='console')
         console_parser.add_argument(
@@ -157,6 +158,7 @@ class VCTools(object):
 
         self.query = Query()
         vmcfg = VMConfig()
+        console = Console()
 
         self.create_containers()
 
@@ -167,12 +169,19 @@ class VCTools(object):
                     self.opts.name
                 )
 
-                command = '%s -h %s -u %s -M %s' % (
-                        self.vmrc, self.opts.vc, self.auth.user, vmid
+                print 'enter in this url into any browser.'
+                print console.generate_url(
+                    self.opts.vc, vmid, self.opts.name, self.opts.vc, 
+                    self.auth.ticket
                 )
 
-                os.chdir(self.vmrc_path)
-                subprocess.call(command.split())
+                #command = '%s -h %s -u %s -M %s' % (
+                #        self.vmrc, self.opts.vc, self.auth.user, vmid
+                #)
+
+                #os.chdir(self.vmrc_path)
+                #subprocess.call(command.split())
+
 
         if self.opts.cmd == 'create':
             spec = yaml.load(self.opts.config)
