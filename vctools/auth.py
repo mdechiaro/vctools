@@ -24,6 +24,7 @@ class Auth(object):
         self.passwd = passwd
         #
         self.session = None
+        self.ticket = None
 
 
     def login(self):
@@ -55,6 +56,7 @@ class Auth(object):
             print ('Successfully logged into %s:%s' % ( 
                 self.host, self.port )
             )
+            self.ticket = self.session.content.sessionManager.AcquireCloneTicket()
 
             passwd = None
 
