@@ -1,15 +1,16 @@
 #!/usr/bin/python
+import argparse
 import os
 import subprocess
 import sys
 import yaml
-import argparse
 #
 from pyVmomi import vim
 from vctools.auth import Auth
-from vctools.query import Query
-from vctools.vmconfig import VMConfig
 from vctools.console import Console
+from vctools.vmconfig import VMConfig
+from vctools.query import Query
+
 
 class VCTools(object):
     def __init__(self):
@@ -240,7 +241,8 @@ class VCTools(object):
                 clusters.sort()
                 for cluster in clusters:
                     print cluster
-            
+
+
             if self.opts.networks:
                 cluster = self.query.get_obj(
                     self.clusters.view, self.opts.cluster
