@@ -175,11 +175,14 @@ class VCTools(object):
                     self.opts.name
                 )
 
+                thumbprint = console.mkthumbprint(self.auth.ticket)
+
                 print 'enter in this url into any browser.'
-                print console.generate_url(
-                    self.opts.vc, vmid, self.opts.name, self.opts.vc, 
-                    self.auth.ticket
+                command = console.mkurl(
+                    vmid, self.opts.name, self.opts.vc, self.auth.ticket, 
+                    thumbprint
                 )
+                print command
 
                 #command = '%s -h %s -u %s -M %s' % (
                 #        self.vmrc, self.opts.vc, self.auth.user, vmid
