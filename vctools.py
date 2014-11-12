@@ -111,6 +111,11 @@ class VCTools(object):
         )
 
         query_parser.add_argument(
+           '--clusters', action='store_true',
+            help = 'Returns information about ComputeResources.'
+        )
+
+        query_parser.add_argument(
            '--cluster',
             help = 'vCenter ComputeResource.'
         )
@@ -230,6 +235,12 @@ class VCTools(object):
                 for folder in folders:
                     print folder
 
+            if self.opts.clusters:
+                clusters = self.query.list_obj_attrs(self.clusters, 'name')
+                clusters.sort()
+                for cluster in clusters:
+                    print cluster
+            
             if self.opts.networks:
                 cluster = self.query.get_obj(
                     self.clusters.view, self.opts.cluster
