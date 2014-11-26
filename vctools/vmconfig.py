@@ -63,6 +63,24 @@ class VMConfig(Query):
         print()
 
 
+    def assign_ip(self, ip, mask, gw, domain, dhcp = False, *dns):
+        if dhcp:
+            nic = vim.vm.customization.AdapterMapping()
+            nic.adapter = vim.vm.customization.DhcpIpGenerator()
+
+            return nic
+        else:
+            nic.adapter = vim.vm.customization.IPSettings()
+            nic.adapter.ip = vim.vm.customization.FixedIp()
+            nic.adapter.ip.ipAddress = ip
+            nic.adapter.subnetMask = mask
+            nic.adapter.gateway = gw
+            nic.adapter.dnsDomain = domain
+            nic.adapter.dnsServerList= list(dns)
+
+            return nic
+
+
     def scsi_config(self, bus_number = 0, shared_bus = 'noSharing'):
         """
         Method creates a SCSI Controller on the VM
@@ -210,6 +228,7 @@ class VMConfig(Query):
         print('Creating VM %s' % config['name'])
 
         self.task_monitor(task)
+
 
     def reconfig(self, host, **config):
         """
