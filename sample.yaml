@@ -1,0 +1,18 @@
+vcenter:
+  cluster: 1234_test_cluster
+  folder: 'Linux'
+  datastore: Test_Datastore_01
+
+config:
+  name: test-delete
+  guestId: rhel6_64Guest
+  numCPUs: 1
+  memoryMB: 4096
+  memoryHotAddEnabled: True
+  cpuHotAddEnabled: True
+
+devices:
+  disks:
+      - 30
+  nics:
+      - vlan_1234_test_network
