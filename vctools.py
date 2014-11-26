@@ -18,10 +18,6 @@ class VCTools(object):
         self.devices = []
         self.folders = None
 
-        # vmrc remote console args
-        self.vmrc_path = os.path.expanduser("~/vmware-console/plugins/")
-        self.vmrc = 'vmware-vmrc'
-
 
     def options(self):
         """argparse command line options."""
