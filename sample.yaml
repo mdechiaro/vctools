@@ -12,6 +12,7 @@ config:
   cpuHotAddEnabled: True
 
 devices:
+  # Can support up to 4 disks, with each disk on a separate SCSI Controller.
   disks:
       - 30
   nics:
