@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 import argparse
 import os
 import subprocess
@@ -173,19 +174,12 @@ class VCTools(object):
 
                 thumbprint = console.mkthumbprint(self.auth.ticket)
 
-                print 'enter in this url into any browser.'
+                print('enter in this url into any browser.')
                 command = console.mkurl(
                     vmid, self.opts.name, self.opts.vc, self.auth.ticket, 
                     thumbprint
                 )
-                print command
-
-                #command = '%s -h %s -u %s -M %s' % (
-                #        self.vmrc, self.opts.vc, self.auth.user, vmid
-                #)
-
-                #os.chdir(self.vmrc_path)
-                #subprocess.call(command.split())
+                print(command)
 
 
         if self.opts.cmd == 'create':
@@ -233,13 +227,13 @@ class VCTools(object):
                 folders = self.query.list_obj_attrs(self.folders, 'name')
                 folders.sort()
                 for folder in folders:
-                    print folder
+                    print(folder)
 
             if self.opts.clusters:
                 clusters = self.query.list_obj_attrs(self.clusters, 'name')
                 clusters.sort()
                 for cluster in clusters:
-                    print cluster
+                    print(cluster)
 
 
             if self.opts.networks:
@@ -251,14 +245,14 @@ class VCTools(object):
                 )
                 networks.sort()
                 for net in networks:
-                    print net
+                    print(net)
 
             if self.opts.vms:
                 vms = self.query.list_vm_info(
                         self.datacenters.view, self.opts.datacenter
                 )
                 for key, value in vms.iteritems():
-                    print key, value
+                    print(key, value)
 
 
 
