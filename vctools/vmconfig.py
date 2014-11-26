@@ -196,22 +196,18 @@ class VMConfig(Query):
 
         return nic
 
-    def create(self, folder, pool, *devices, **config):
+    def create(self, folder, pool, datastore, *devices, **config):
         """
         Method creates the VM.
 
         :param folder:    Folder object where the VM will reside
         :param pool:      ResourcePool object
+        :param datastore: datastore for vmx files
         :param config:    dictionary of vim.vm.ConfigSpec attributes and their
                           values, excluding devices.
         :param devices:   list of configured devices.  See scsi_config, 
                           cdrom_config, and disk_config.  
         """
-
-        # datastore is not a valid attribute inside vim.vm.ConfigSpec, but is 
-        # needed when creating the vm.  This makes unpacking easier.    
-        datastore = config['datastore']
-        del config['datastore']
 
         vmxfile = vim.vm.FileInfo(
             vmPathName='[' + datastore + ']'

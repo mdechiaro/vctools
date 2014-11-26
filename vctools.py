@@ -184,7 +184,7 @@ class VCTools(object):
 
         if self.opts.cmd == 'create':
             spec = yaml.load(self.opts.config)
-            datastore = spec['config']['datastore']
+            datastore = spec['vcenter']['datastore']
 
             cluster = self.query.get_obj(
                 self.clusters.view, spec['vcenter']['cluster']
@@ -214,7 +214,7 @@ class VCTools(object):
 
             self.devices.append(vmcfg.cdrom_config())
            
-            vmcfg.create(folder, pool, *self.devices, **spec['config'])
+            vmcfg.create(folder, pool, datastore, *self.devices, **spec['config'])
 
 
         if self.opts.cmd == 'query':
