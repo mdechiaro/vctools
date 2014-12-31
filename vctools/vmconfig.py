@@ -1,7 +1,6 @@
 #!/usr/bin/python
 from __future__ import print_function
 from random import uniform
-from pyVmomi import vmodl
 from pyVmomi import vim # pylint: disable=E0611
 #
 from query import Query
@@ -9,15 +8,15 @@ from query import Query
 import requests
 import sys
 
-class VMConfig(Query): 
-    """ 
+class VMConfig(Query):
+    """
     Class simplifies VM builds outside of using the client or Web App.
-    Class can handle setting up a complete VM with multiple devices attached.  
-    It can also handle the addition of mutiple disks attached to multiple SCSI 
-    controllers, as well as multiple network interfaces.    
+    Class can handle setting up a complete VM with multiple devices attached.
+    It can also handle the addition of mutiple disks attached to multiple SCSI
+    controllers, as well as multiple network interfaces.
     """
 
-    def __init__(self): 
+    def __init__(self):
         """ Define our class attributes here. """
         Query.__init__(self)
         self.scsi_key = None
@@ -29,14 +28,10 @@ class VMConfig(Query):
         dest_folder = 'folder/' + dest_folder
 
         data = open(iso, 'rb')
-        params = {'dcPath':'ha-datacenter', 'dsName' : datastore} 
+        params = {'dcPath':'ha-datacenter', 'dsName' : datastore}
         url = 'https://%s/%s/%s' % (esxi_host, dest_folder, iso)
         requests.put(url, params=params, files={iso : data})
 
-
-    # TODO
-    def mount_iso(self, datastore, folder, iso, vm)
-        pass
 
 
     def task_monitor(self, task):
@@ -44,16 +39,16 @@ class VMConfig(Query):
         while task.info.state == 'running':
             while task.info.progress:
                 # Ensure it's an integer before printing, otherwise None
-                # Tracebacks appear.  
+                # Tracebacks appear.
                 if isinstance(task.info.progress, int):
                     sys.stdout.write(
-                        '\r[' + task.info.state + '] | ' + 
+                        '\r[' + task.info.state + '] | ' +
                         str(task.info.progress)
                     )
                     sys.stdout.flush()
                     if task.info.progress == 100:
                         sys.stdout.write(
-                            '\r[' + task.info.state + '] | ' + 
+                            '\r[' + task.info.state + '] | ' +
                             str(task.info.progress)
                         )
                         sys.stdout.flush()
@@ -64,15 +59,15 @@ class VMConfig(Query):
 
         print()
 
-        if task.info.state =='error':
+        if task.info.state == 'error':
             sys.stdout.write(
                 '\r[' + task.info.state + '] | ' + task.info.error.msg
             )
             sys.stdout.flush()
-            
+
         if task.info.state == 'success':
             sys.stdout.write(
-                '\r[' + task.info.state + '] | ' + 
+                '\r[' + task.info.state + '] | ' +
                 'task successfully completed.'
             )
             sys.stdout.flush()
@@ -80,7 +75,7 @@ class VMConfig(Query):
         print()
 
 
-    def assign_ip(self, ip, mask, gw, domain, dhcp = False, *dns):
+    def assign_ip(self, ip, mask, gw, domain, dhcp=False, *dns):
         if dhcp:
             nic = vim.vm.customization.AdapterMapping()
             nic.adapter = vim.vm.customization.DhcpIpGenerator()
@@ -93,17 +88,17 @@ class VMConfig(Query):
             nic.adapter.subnetMask = mask
             nic.adapter.gateway = gw
             nic.adapter.dnsDomain = domain
-            nic.adapter.dnsServerList= list(dns)
+            nic.adapter.dnsServerList = list(dns)
 
             return nic
 
 
-    def scsi_config(self, bus_number = 0, shared_bus = 'noSharing'):
+    def scsi_config(self, bus_number=0, shared_bus='noSharing'):
         """
         Method creates a SCSI Controller on the VM
 
         :param bus_number: Bus number associated with this controller.
-        :param shared_bus: Mode for sharing the SCSI bus. 
+        :param shared_bus: Mode for sharing the SCSI bus.
                            physicalSharing
                            virtualSharing
                            noSharing
@@ -128,7 +123,7 @@ class VMConfig(Query):
 
 
     @classmethod
-    def cdrom_config(cls, iso_path = None):
+    def cdrom_config(cls, iso_path=None):
         """
         Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
         then it will create the device.  Otherwise, it will attempt to mount
@@ -174,21 +169,21 @@ class VMConfig(Query):
             return cdrom
 
 
-    def disk_config(self, container, datastore, size, unit = 0, 
-                    mode = 'persistent', thin = True):
+    def disk_config(self, container, datastore, size, unit=0,
+                    mode='persistent', thin=True):
         """
         Method returns configured VirtualDisk object
 
         :param datastore: string datastore for the disk files location.
         :param size:      integer of disk in kilobytes
-        :param unit:      unitNumber of device.  
+        :param unit:      unitNumber of device.
         :param mode:      The disk persistence mode. Valid modes are:
                           persistent
                           independent_persistent
                           independent_nonpersistent
                           nonpersistent
 		          undoable
-                          append 
+                          append
         :param thin:      enable thin provisioning
         """
 
@@ -212,13 +207,13 @@ class VMConfig(Query):
         return disk
 
 
-    def nic_config(self, container, network, connected = True, 
-                   start_connected = True, allow_guest_control = True):
+    def nic_config(self, container, network, connected=True,
+                   start_connected=True, allow_guest_control=True):
         """
         Method returns configured object for network interface.
 
         :param network: string network to add to VM.
-        """ 
+        """
 
         nic = vim.vm.device.VirtualDeviceSpec()
         nic.operation = 'add'
@@ -245,8 +240,8 @@ class VMConfig(Query):
         :param datastore: datastore for vmx files
         :param config:    dictionary of vim.vm.ConfigSpec attributes and their
                           values, excluding devices.
-        :param devices:   list of configured devices.  See scsi_config, 
-                          cdrom_config, and disk_config.  
+        :param devices:   list of configured devices.  See scsi_config,
+                          cdrom_config, and disk_config.
         """
 
         vmxfile = vim.vm.FileInfo(
@@ -280,8 +275,8 @@ class VMConfig(Query):
         )
 
         print('Reconfiguring VM %s with %s' % (
-            host.name, 
-            ', '.join("%s=%s" % (key,val) for key,val in config.items())
+            host.name,
+            ', '.join("%s=%s" % (key, val) for key, val in config.items())
             )
         )
 
