@@ -128,27 +128,50 @@ class VMConfig(Query):
 
 
     @classmethod
-    def cdrom_config(cls):
+    def cdrom_config(cls, iso_path = None):
         """
-        Method creates a CD-Rom Virtual Device
+        Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
+        then it will create the device.  Otherwise, it will attempt to mount
+        the iso.
+
+        :param iso_path:  path/to/file.iso
         """
 
-        cdrom = vim.vm.device.VirtualDeviceSpec()
-        cdrom.operation = 'add'
+        if iso_path:
+            cdrom = vim.vm.device.VirtualDeviceSpec()
+            cdrom.operation = 'edit'
 
-        cdrom.device = vim.vm.device.VirtualCdrom()
-        # controllerKey is tied to IDE Controller
-        cdrom.device.controllerKey = 201
+            cdrom.device = vim.vm.device.VirtualCdrom()
+            # controllerKey is tied to IDE Controller
+            cdrom.device.controllerKey = 201
 
-        cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
-        cdrom.device.backing.exclusive = False
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.VirtualCdromIsoBackingInfo()
+            cdrom.device.backing.filename = '['+ datastore + ']' + iso_path
 
-        cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
-        cdrom.device.connectable.connected = False
-        cdrom.device.connectable.startConnected = False
-        cdrom.device.connectable.allowGuestControl = True
+            cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+            cdrom.device.connectable.connected = True
+            cdrom.device.connectable.startConnected = True
+            cdrom.device.connectable.allowGuestControl = True
 
-        return cdrom
+            return cdrom
+
+        else:
+            cdrom = vim.vm.device.VirtualDeviceSpec()
+            cdrom.operation = 'add'
+
+            cdrom.device = vim.vm.device.VirtualCdrom()
+            # controllerKey is tied to IDE Controller
+            cdrom.device.controllerKey = 201
+
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
+            cdrom.device.backing.exclusive = False
+
+            cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+            cdrom.device.connectable.connected = False
+            cdrom.device.connectable.startConnected = False
+            cdrom.device.connectable.allowGuestControl = True
+
+            return cdrom
 
 
     def disk_config(self, container, datastore, size, unit = 0, 
