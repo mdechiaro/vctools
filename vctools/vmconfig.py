@@ -5,7 +5,8 @@ from pyVmomi import vmodl
 from pyVmomi import vim # pylint: disable=E0611
 #
 from query import Query
-
+#
+import requests
 import sys
 
 class VMConfig(Query): 
@@ -20,6 +21,22 @@ class VMConfig(Query):
         """ Define our class attributes here. """
         Query.__init__(self)
         self.scsi_key = None
+
+
+    # TODO
+    def upload_iso(self, esxi_host, dest_folder, datastore, iso):
+        #add parent folder to dest_folder
+        dest_folder = 'folder/' + dest_folder
+
+        data = open(iso, 'rb')
+        params = {'dcPath':'ha-datacenter', 'dsName' : datastore} 
+        url = 'https://%s/%s/%s' % (esxi_host, dest_folder, iso)
+        requests.put(url, params=params, files={iso : data})
+
+
+    # TODO
+    def mount_iso(self, datastore, folder, iso, vm)
+        pass
 
 
     def task_monitor(self, task):
