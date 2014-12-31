@@ -3,18 +3,17 @@ from __future__ import print_function
 #
 from getpass import getpass, getuser
 from pyVim.connect import SmartConnect, Disconnect
-from pyVmomi import vim
-
+from pyVmomi import vim # pylint: disable=E0611
 class Auth(object):
-    def __init__(self, host=None, port=443, domain='adlocal', user=None, 
+    def __init__(self, host=None, port=443, domain='adlocal', user=None,
                  passwd=None):
-        """ 
+        """
         Authenication Class.
         :param host:       This string is the vSphere host host.
         :param port:       Port to connect to host.
         :param domain:     This is for changing the domain to login if needed.
         :param user:       Username to connect to host.
-        :param passwd:     Password to connect to host.  
+        :param passwd:     Password to connect to host.
         """
 
         self.host = host
@@ -42,19 +41,19 @@ class Auth(object):
                 self.user = self.domain + '\\' + getuser()
             else:
                 self.user = getuser()
-            
+
         print ('Logging in as %s' % self.user)
 
         if not self.passwd:
             passwd = getpass()
 
         try:
-            self.session = SmartConnect( 
+            self.session = SmartConnect(
                 host=self.host, user=self.user, pwd=passwd, port=self.port
             )
 
-            print ('Successfully logged into %s:%s' % ( 
-                self.host, self.port )
+            print ('Successfully logged into %s:%s' % (
+                self.host, self.port)
             )
             self.ticket = self.session.content.sessionManager.AcquireCloneTicket()
 
