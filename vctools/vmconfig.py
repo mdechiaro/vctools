@@ -22,7 +22,7 @@ class VMConfig(Query):
         self.scsi_key = None
 
 
-    def upload_iso(host, cookie, datacenter, dest_folder, datastore, iso, verify=False):
+    def upload_iso(self, host, cookie, datacenter, dest_folder, datastore, iso, verify=False):
         """ Method uploads iso to dest_folder."""
 
         if not dest_folder.startswith('/'):
