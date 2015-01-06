@@ -22,21 +22,31 @@ class VMConfig(Query):
         self.scsi_key = None
 
 
-    def upload_iso(self, host, cookie, datacenter, dest_folder, datastore, iso, verify=False):
+    def upload_iso(self, host, cookie, datacenter, dest_folder, datastore, 
+                   iso, verify=False):
         """ Method uploads iso to dest_folder."""
+
+        # we need the absolute path to open the binary locally, but only the 
+        # filename for uploading to the datastore.
+        if '/' in iso:
+            # the last item in the list will be the filename
+            iso_name = iso.split('/')[-1]
+        else:
+            iso_name = iso
 
         if not dest_folder.startswith('/'):
             dest_folder = '/' + dest_folder
 
         dest_folder = '/folder' + dest_folder
-        data = {iso : open(iso, 'rb')}
 
         cookie_val = cookie.split('"')[1]
         cookie = {'vmware_soap_session': cookie_val}
 
-        params = {'dcPath' : datacenter.name, 'dsName' : datastore}
-        url = 'https://' + host + dest_folder + '/' + iso
+        data = {iso_name : open(iso, 'rb')}
+        params = {'dcPath' : datacenter, 'dsName' : datastore}
+        url = 'https://' + host + dest_folder + '/' + iso_name
 
+        print(url, cookie, params, data)
         response = requests.put(url, params=params, cookies=cookie, files=data, verify=verify)
         return response.status_code
 
