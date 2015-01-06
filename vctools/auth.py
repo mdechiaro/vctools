@@ -4,6 +4,8 @@ from __future__ import print_function
 from getpass import getpass, getuser
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim # pylint: disable=E0611
+
+
 class Auth(object):
     def __init__(self, host=None, port=443, domain='adlocal', user=None,
                  passwd=None):
