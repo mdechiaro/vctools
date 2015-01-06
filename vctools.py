@@ -1,8 +1,6 @@
 #!/usr/bin/python
 from __future__ import print_function
 import argparse
-import os
-import subprocess
 import sys
 import yaml
 #
@@ -31,7 +29,7 @@ class VCTools(object):
         vc_parser = argparse.ArgumentParser(add_help=False)
         vc_parser.add_argument(
             'vc',
-            help = 'vCenter host'
+            help='vCenter host'
         )
 
         # subparser
@@ -49,28 +47,28 @@ class VCTools(object):
         # console
         console_parser = subparsers.add_parser(
             'console', parents=[vc_parser],
-            help = 'Generate CLI Console Url'
+            help='Generate CLI Console Url'
         )
         console_parser.set_defaults(cmd='console')
         console_parser.add_argument(
            '--name',
-            help = 'name attribute of Virtual Machine object.'
+            help='name attribute of Virtual Machine object.'
         )
         console_parser.add_argument(
            '--datacenter', default='Linux',
-           help = 'vCenter Datacenter. default: %(default)s'
+           help='vCenter Datacenter. default: %(default)s'
         )
 
         # create
         create_parser = subparsers.add_parser(
             'create', parents=[vc_parser],
-            help = 'Create Virtual Machines'
+            help='Create Virtual Machines'
         )
         create_parser.set_defaults(cmd='create')
 
         create_parser.add_argument(
            'config', type=file,
-            help = 'YaML config for creating new Virtual Machines.'
+            help='YaML config for creating new Virtual Machines.'
         )
 
         # TODO
@@ -83,77 +81,77 @@ class VCTools(object):
 
         # query
         query_parser = subparsers.add_parser(
-            'query', parents=[vc_parser], 
-            help = 'Query Info'
+            'query', parents=[vc_parser],
+            help='Query Info'
         )
         query_parser.set_defaults(cmd='query')
 
         query_parser.add_argument(
            '--datastores', action='store_true',
-            help = 'Returns information about Datastores.'
+            help='Returns information about Datastores.'
         )
 
         query_parser.add_argument(
            '--vms', action='store_true',
-            help = 'Returns information about Virtual Machines.'
+            help='Returns information about Virtual Machines.'
         )
 
         query_parser.add_argument(
            '--folders', action='store_true',
-            help = 'Returns information about Folders.'
+            help='Returns information about Folders.'
         )
-        
+
         query_parser.add_argument(
            '--networks', action='store_true',
-            help = 'Returns information about Networks.'
+            help='Returns information about Networks.'
         )
 
         query_parser.add_argument(
            '--clusters', action='store_true',
-            help = 'Returns information about ComputeResources.'
+            help='Returns information about ComputeResources.'
         )
 
         query_parser.add_argument(
            '--cluster',
-            help = 'vCenter ComputeResource.'
+            help='vCenter ComputeResource.'
         )
 
         query_parser.add_argument(
            '--datacenter', default='Linux',
-            help = 'vCenter Datacenter. default: %(default)s'
+            help='vCenter Datacenter. default: %(default)s'
         )
 
 
         # upload
         upload_parser = subparsers.add_parser(
             'upload', parents=[vc_parser],
-            help = 'Upload File'
+            help='Upload File'
         )
         upload_parser.set_defaults(cmd='upload')
-        
+
         upload_parser.add_argument(
            '--iso',
-            help = 'iso file that needs to be uploaded to vCenter.'
+            help='iso file that needs to be uploaded to vCenter.'
         )
 
         upload_parser.add_argument(
            '--dest',
-            help = 'destination folder where the iso will reside.'
+            help='destination folder where the iso will reside.'
         )
 
         upload_parser.add_argument(
            '--datastore', default='ISO_Templates',
-            help = 'datastore where the iso will reside.  default: %(default)s'
+            help='datastore where the iso will reside.  default: %(default)s'
         )
 
         upload_parser.add_argument(
            '--verify-ssl', default=False,
-            help = 'verify SSL certificate. default: %(default)s'
+            help='verify SSL certificate. default: %(default)s'
         )
-  
+
         upload_parser.add_argument(
            '--datacenter', default='Linux',
-            help = 'vCenter Datacenter. default: %(default)s'
+            help='vCenter Datacenter. default: %(default)s'
         )
 
 
@@ -172,17 +170,17 @@ class VCTools(object):
 
     def create_containers(self):
         self.datacenters = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder, 
+            self.auth.session, self.auth.session.content.rootFolder,
             [vim.Datacenter], True
         )
 
         self.clusters = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder, 
+            self.auth.session, self.auth.session.content.rootFolder,
             [vim.ComputeResource], True
         )
 
         self.folders = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder, 
+            self.auth.session, self.auth.session.content.rootFolder,
             [vim.Folder], True
         )
 
@@ -210,7 +208,7 @@ class VCTools(object):
 
                 print('enter in this url into any browser.')
                 command = console.mkurl(
-                    vmid, self.opts.name, self.opts.vc, self.auth.ticket, 
+                    vmid, self.opts.name, self.opts.vc, self.auth.ticket,
                     thumbprint
                 )
                 print(command)
@@ -230,7 +228,7 @@ class VCTools(object):
                 self.folders.view, spec['vcenter']['folder']
             )
 
-            # convert kb to gb 
+            # convert kb to gb
             gb = 1024*1024
 
             # TODO: increase 4 disk limit
@@ -239,7 +237,7 @@ class VCTools(object):
                 self.devices.append(vmcfg.scsi_config(scsi))
                 self.devices.append(
                     vmcfg.disk_config(
-                        cluster.datastore, datastore, disk*gb, unit = scsi
+                        cluster.datastore, datastore, disk*gb, unit=scsi
                     )
                 )
 
@@ -247,8 +245,10 @@ class VCTools(object):
                 self.devices.append(vmcfg.nic_config(cluster.network, nic))
 
             self.devices.append(vmcfg.cdrom_config())
-           
-            vmcfg.create(folder, pool, datastore, *self.devices, **spec['config'])
+
+            vmcfg.create(
+                folder, pool, datastore, *self.devices, **spec['config']
+            )
 
 
         if self.opts.cmd == 'query':
@@ -274,8 +274,8 @@ class VCTools(object):
                 cluster = self.query.get_obj(
                     self.clusters.view, self.opts.cluster
                 )
-                networks =  self.query.list_obj_attrs(
-                    cluster.network, 'name', view = False
+                networks = self.query.list_obj_attrs(
+                    cluster.network, 'name', view=False
                 )
                 networks.sort()
                 for net in networks:
@@ -291,8 +291,8 @@ class VCTools(object):
         if self.opts.cmd == 'upload':
             print('uploading ISO: %s' % (self.opts.iso))
             result = vmcfg.upload_iso(
-                self.opts.vc, self.auth.session._stub.cookie, 
-                self.opts.datacenter, self.opts.dest, self.opts.datastore, 
+                self.opts.vc, self.auth.session._stub.cookie,
+                self.opts.datacenter, self.opts.dest, self.opts.datastore,
                 self.opts.iso, self.opts.verify_ssl
             )
             if result == 200:
