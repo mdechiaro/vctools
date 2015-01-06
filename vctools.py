@@ -124,6 +124,40 @@ class VCTools(object):
         )
 
 
+        # upload
+        upload_parser = subparsers.add_parser(
+            'upload', parents=[vc_parser],
+            help = 'Upload File'
+        )
+        upload_parser.set_defaults(cmd='upload')
+        
+        upload_parser.add_argument(
+           '--iso',
+            help = 'iso file that needs to be uploaded to vCenter.'
+        )
+
+        upload_parser.add_argument(
+           '--dest',
+            help = 'destination folder where the iso will reside.'
+        )
+
+        upload_parser.add_argument(
+           '--datastore', default='ISO_Templates',
+            help = 'datastore where the iso will reside.  default: %(default)s'
+        )
+
+        upload_parser.add_argument(
+           '--verify-ssl', default=False,
+            help = 'verify SSL certificate. default: %(default)s'
+        )
+  
+        upload_parser.add_argument(
+           '--datacenter', default='Linux',
+            help = 'vCenter Datacenter. default: %(default)s'
+        )
+
+
+
         # TODO
         # reconfig
         #reconfig_parser = subparsers.add_parser(
@@ -254,6 +288,15 @@ class VCTools(object):
                 for key, value in vms.iteritems():
                     print(key, value)
 
+        if self.opts.cmd == 'upload':
+            print('uploading ISO: %s' % (self.opts.iso))
+            result = vmcfg.upload_iso(
+                self.opts.vc, self.auth.session._stub.cookie, 
+                self.opts.datacenter, self.opts.dest, self.opts.datastore, 
+                self.opts.iso, self.opts.verify_ssl
+            )
+            if result == 200:
+                print('%s uploaded successfully' % (self.opts.iso))
 
 
 if __name__ == '__main__':
