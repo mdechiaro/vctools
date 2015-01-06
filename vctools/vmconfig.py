@@ -22,16 +22,23 @@ class VMConfig(Query):
         self.scsi_key = None
 
 
-    # TODO
-    def upload_iso(self, esxi_host, dest_folder, datastore, iso):
-        #add parent folder to dest_folder
-        dest_folder = 'folder/' + dest_folder
+    def upload_iso(host, cookie, datacenter, dest_folder, datastore, iso, verify=False):
+        """ Method uploads iso to dest_folder."""
 
-        data = open(iso, 'rb')
-        params = {'dcPath':'ha-datacenter', 'dsName' : datastore}
-        url = 'https://%s/%s/%s' % (esxi_host, dest_folder, iso)
-        requests.put(url, params=params, files={iso : data})
+        if not dest_folder.startswith('/'):
+            dest_folder = '/' + dest_folder
 
+        dest_folder = '/folder' + dest_folder
+        data = {iso : open(iso, 'rb')}
+
+        cookie_val = cookie.split('"')[1]
+        cookie = {'vmware_soap_session': cookie_val}
+
+        params = {'dcPath' : datacenter.name, 'dsName' : datastore}
+        url = 'https://' + host + dest_folder + '/' + iso
+
+        response = requests.put(url, params=params, cookies=cookie, files=data, verify=verify)
+        return response.status_code
 
 
     def task_monitor(self, task):
@@ -127,7 +134,8 @@ class VMConfig(Query):
         """
         Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
         then it will create the device.  Otherwise, it will attempt to mount
-        the iso.
+        the iso.  Iso must reside inside a datastore.  Use the upload_iso()
+        method to use an iso stored locally.
 
         :param iso_path:  path/to/file.iso
         """
