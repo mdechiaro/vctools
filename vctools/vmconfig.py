@@ -24,7 +24,19 @@ class VMConfig(Query):
 
     def upload_iso(self, host, cookie, datacenter, dest_folder, datastore, 
                    iso, verify=False):
-        """ Method uploads iso to dest_folder."""
+        """ 
+        Method uploads iso to dest_folder.
+
+        :param host:        vCenter host
+        :param cookie:      Cookie from Service Instance
+                            example: auth.session._stub.cookie
+        :param datacenter:  Datacenter that has access to the datastore.
+        :param dest_folder: Folder that will store the iso.
+        :param datastore:   Datastore that will store the iso.
+        :param iso:         ISO file
+        :param verify:      Enable or disable SSL certificate validation.
+
+        """
 
         # we need the absolute path to open the binary locally, but only the 
         # filename for uploading to the datastore.
