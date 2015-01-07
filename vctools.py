@@ -193,6 +193,11 @@ class VCTools(object):
             [vim.Folder], True
         )
 
+        self.virtual_machines = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder,
+            [vim.VirtualMachine], True
+        )
+
 
     def main(self):
         self.options()
