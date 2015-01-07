@@ -35,15 +35,7 @@ class VCTools(object):
         # subparser
         subparsers = parser.add_subparsers(metavar='')
 
-        # TODO
-        # clone
-        #clone_parser = subparsers.add_parser(
-        #    'clone', parents=[vc_parser],
-        #    help = 'Clone Virtual Machines'
-        #)
-        #clone_parser.set_defaults(cmd='clone')
 
-        # TODO
         # console
         console_parser = subparsers.add_parser(
             'console', parents=[vc_parser],
@@ -163,15 +155,6 @@ class VCTools(object):
             help='vCenter Datacenter. default: %(default)s'
         )
 
-
-
-        # TODO
-        # reconfig
-        #reconfig_parser = subparsers.add_parser(
-        #    'reconfig', parents=[vc_parser],
-        #    help = 'Reconfig Virtual Machines'
-        #)
-        #reconfig_parser.set_defaults(cmd='reconfig')
 
         self.opts = parser.parse_args()
         self.help = parser.print_help
