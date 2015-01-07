@@ -150,19 +150,18 @@ class VMConfig(Query):
         return scsi
 
 
-
-    @classmethod
-    def cdrom_config(cls, iso_path=None):
+    def cdrom_config(self, datastore=None, iso_path=None):
         """
         Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
         then it will create the device.  Otherwise, it will attempt to mount
         the iso.  Iso must reside inside a datastore.  Use the upload_iso()
         method to use an iso stored locally.
 
+        :param datastore: string name of datastore
         :param iso_path:  path/to/file.iso
         """
 
-        if iso_path:
+        if iso_path and datastore:
             cdrom = vim.vm.device.VirtualDeviceSpec()
             cdrom.operation = 'edit'
 
@@ -170,8 +169,8 @@ class VMConfig(Query):
             # controllerKey is tied to IDE Controller
             cdrom.device.controllerKey = 201
 
-            cdrom.device.backing = vim.vm.device.VirtualCdrom.VirtualCdromIsoBackingInfo()
-            cdrom.device.backing.filename = '['+ datastore + ']' + iso_path
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.IsoBackingInfo()
+            cdrom.device.backing.fileName = '['+ datastore + '] ' + iso_path
 
             cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
             cdrom.device.connectable.connected = True
