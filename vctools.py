@@ -225,15 +225,23 @@ class VCTools(object):
                     self.datacenters.view, self.opts.datacenter,
                     self.opts.name
                 )
+                if vmid:
 
-                thumbprint = console.mkthumbprint(self.auth.ticket)
+                    thumbprint = console.mkthumbprint(self.auth.ticket)
 
-                print('enter in this url into any browser.')
-                command = console.mkurl(
-                    vmid, self.opts.name, self.opts.vc, self.auth.ticket,
-                    thumbprint
-                )
-                print(command)
+                    print()
+                    print('enter in this url into any browser.')
+                    print('you must use same IP that you used to authenticate.')
+                    print()
+
+                    command = console.mkurl(
+                        vmid, self.opts.name, self.opts.vc, self.auth.ticket,
+                        thumbprint
+                    )
+                    print(command)
+                else:
+                    print('%s not found in %s' % (self.opts.name, self.opts.vc))
+                    sys.exit(1)
 
 
         if self.opts.cmd == 'create':
