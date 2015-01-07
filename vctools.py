@@ -350,6 +350,11 @@ class VCTools(object):
                     )
                 )
             )
+            print('remote location: [%s] %s' % (
+                self.opts.datastore, self.opts.dest
+                )
+            )
+
             print('This may take some time.')
 
             result = vmcfg.upload_iso(
