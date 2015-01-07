@@ -333,3 +333,10 @@ class VMConfig(Query):
 
         if state == 'reset':
             self.task_monitor(host.Reset())
+
+        if state == 'reboot':
+            self.task_monitor(host.RebootGuest())
+
+        if state == 'shutdown':
+            self.task_monitor(host.ShutdownGuest())
+       
