@@ -22,9 +22,9 @@ class VMConfig(Query):
         self.scsi_key = None
 
 
-    def upload_iso(self, host, cookie, datacenter, dest_folder, datastore, 
+    def upload_iso(self, host, cookie, datacenter, dest_folder, datastore,
                    iso, verify=False):
-        """ 
+        """
         Method uploads iso to dest_folder.
 
         :param host:        vCenter host
@@ -38,7 +38,7 @@ class VMConfig(Query):
 
         """
 
-        # we need the absolute path to open the binary locally, but only the 
+        # we need the absolute path to open the binary locally, but only the
         # filename for uploading to the datastore.
         if '/' in iso:
             # the last item in the list will be the filename
@@ -59,6 +59,7 @@ class VMConfig(Query):
         url = 'https://' + host + dest_folder + '/' + iso_name
 
         response = requests.put(url, params=params, cookies=cookie, files=data, verify=verify)
+
         return response.status_code
 
 
