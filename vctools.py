@@ -71,7 +71,7 @@ class VCTools(object):
         power_parser.set_defaults(cmd='power')
 
         power_parser.add_argument(
-            'power', choices=['on', 'off', 'reset'],
+            'power', choices=['on', 'off', 'reset', 'reboot', 'shutdown'],
             help = 'change power state of VM'
 
         )
