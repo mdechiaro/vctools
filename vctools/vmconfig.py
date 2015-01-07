@@ -170,7 +170,6 @@ class VMConfig(Query):
             cdrom.device = vim.vm.device.VirtualCdrom()
             # controllerKey is tied to IDE Controller
             cdrom.device.controllerKey = 201
-            cdrom.device.unitNumber = 0
             # key is needed to mount the iso, need to verify if this value
             # changes per host, and if so, then logic needs to be added to
             # obtain it
