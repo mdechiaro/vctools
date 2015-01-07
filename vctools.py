@@ -71,13 +71,22 @@ class VCTools(object):
             help='YaML config for creating new Virtual Machines.'
         )
 
-        # TODO
         # power
-        #power_parser = subparsers.add_parser(
-        #    'power', parents=[vc_parser],
-        #    help = 'Power Management for Virtual Machines'
-        #)
-        #power_parser.set_defaults(cmd='power')
+        power_parser = subparsers.add_parser(
+            'power', parents=[vc_parser],
+            help = 'Power Management for Virtual Machines'
+        )
+        power_parser.set_defaults(cmd='power')
+
+        power_parser.add_argument(
+            'power', choices=['on', 'off', 'reset'],
+            help = 'change power state of VM'
+
+        )
+        power_parser.add_argument(
+           '--name',
+            help='name attribute of Virtual Machine object.'
+        )
 
         # query
         query_parser = subparsers.add_parser(
@@ -251,6 +260,18 @@ class VCTools(object):
             )
 
 
+        if self.opts.cmd == 'power':
+            if self.opts.name:
+                host = self.query.get_obj(
+                    self.virtual_machines.view, self.opts.name
+                )
+                print('%s changing power state to %s' % (
+                    self.opts.name, self.opts.power
+                    )
+                )
+                vmcfg.power(host, self.opts.power)
+
+
         if self.opts.cmd == 'query':
             if self.opts.datastores:
                 self.query.list_datastore_info(
@@ -287,6 +308,7 @@ class VCTools(object):
                 )
                 for key, value in vms.iteritems():
                     print(key, value)
+
 
         if self.opts.cmd == 'upload':
             print('uploading ISO: %s' % (self.opts.iso))
