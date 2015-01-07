@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from __future__ import print_function
 import argparse
+import os
 import sys
 import yaml
 #
@@ -63,16 +64,40 @@ class VCTools(object):
             help='YaML config for creating new Virtual Machines.'
         )
 
+        # mount
+        mount_parser = subparsers.add_parser(
+            'mount', parents=[vc_parser],
+            help='Mount ISOs to CD-Rom device'
+        )
+
+        mount_parser.set_defaults(cmd='mount')
+
+        mount_parser.add_argument(
+           '--datastore',
+            help='Name of datastore where the ISO is located.'
+        )
+
+        mount_parser.add_argument(
+           '--path',
+            help='Path inside datastore where the ISO is located.'
+        )
+
+        mount_parser.add_argument(
+           '--name',
+            help='name attribute of Virtual Machine object.'
+        )
+
+
         # power
         power_parser = subparsers.add_parser(
             'power', parents=[vc_parser],
-            help = 'Power Management for Virtual Machines'
+            help='Power Management for Virtual Machines'
         )
         power_parser.set_defaults(cmd='power')
 
         power_parser.add_argument(
             'power', choices=['on', 'off', 'reset', 'reboot', 'shutdown'],
-            help = 'change power state of VM'
+            help='change power state of VM'
 
         )
         power_parser.add_argument(
@@ -248,6 +273,25 @@ class VCTools(object):
             )
 
 
+        if self.opts.cmd == 'mount':
+            if self.opts.datastore and self.opts.path and self.opts.name:
+                host = self.query.get_obj(
+                    self.virtual_machines.view, self.opts.name
+                )
+
+                print('Mounting [%s] %s on %s' % (
+                    self.opts.datastore, self.opts.path, self.opts.name
+                    )
+                )
+                cdrom_cfg = []
+                cdrom_cfg.append(vmcfg.cdrom_config(
+                    self.opts.datastore, self.opts.path
+                    )
+                )
+                config = {'deviceChange' : cdrom_cfg}
+                vmcfg.reconfig(host, **config)
+
+
         if self.opts.cmd == 'power':
             if self.opts.name:
                 host = self.query.get_obj(
@@ -300,13 +344,25 @@ class VCTools(object):
 
         if self.opts.cmd == 'upload':
             print('uploading ISO: %s' % (self.opts.iso))
+            print('file size: %s' % (
+                self.query.disk_size_format(
+                    os.path.getsize(self.opts.iso)
+                    )
+                )
+            )
+            print('This may take some time.')
+
             result = vmcfg.upload_iso(
                 self.opts.vc, self.auth.session._stub.cookie,
                 self.opts.datacenter, self.opts.dest, self.opts.datastore,
                 self.opts.iso, self.opts.verify_ssl
             )
+
             if result == 200:
                 print('%s uploaded successfully' % (self.opts.iso))
+            else:
+                print('%s uploaded failed' % (self.opts.iso))
+
 
 
 if __name__ == '__main__':
