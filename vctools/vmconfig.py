@@ -151,8 +151,8 @@ class VMConfig(Query):
 
         return scsi
 
-
-    def cdrom_config(self, datastore=None, iso_path=None):
+    @classmethod
+    def cdrom_config(cls, datastore=None, iso_path=None):
         """
         Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
         then it will create the device.  Otherwise, it will attempt to mount
