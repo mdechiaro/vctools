@@ -58,9 +58,10 @@ class VMConfig(Query):
         params = {'dcPath' : datacenter, 'dsName' : datastore}
         url = 'https://' + host + dest_folder + '/' + iso_name
 
-        response = requests.put(
-            url, params=params, cookies=cookie, files=data, verify=verify
-        )
+        with open(iso, 'rb') as f:
+            response = requests.put(
+                url, params=params, cookies=cookie, data=f, verify=verify
+            )
 
         return response.status_code
 
