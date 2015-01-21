@@ -15,21 +15,20 @@ class Console(object):
 
         :param ticket: vim.SessionManager.AcquireCloneTicket()
         """
-        # cst is a placeholder
-        cst, tp = ticket.split('--')
-        thumbprint = re.sub(r'tp-', '', tp)
+
+        thumbprint = re.sub(r'tp-', '', ticket.split('--')[1])
         thumbprint = re.sub(r'-', ':', thumbprint)
         return thumbprint
 
 
     def mkurl(self, vmid, name, vc, ticket, thumbprint):
         """
-        We have a Tomcat broker (web) which has a different hostname than our 
+        We have a Tomcat broker (web) which has a different hostname than our
         vCenter, so we need to account for that.  The hostname appends -web to
         vc hostname.
         """
 
-        host, domain, tld  = vc.split('.')
+        host, domain, tld = vc.split('.')
         host = host + '-web'
         web = '.'.join((host, domain, tld))
 
