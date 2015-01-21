@@ -1,7 +1,6 @@
-vmware
+vctools
 ======
 
-vmware scripts
 
 vctools is a Python module using pyVmomi which aims to simplify command-line operations inside vCenter.  The current state of this project is beta, and so far it can do the following:
   - Build a new VM using a yaml config
