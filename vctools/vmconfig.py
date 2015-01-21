@@ -105,21 +105,32 @@ class VMConfig(Query):
 
         print()
 
+    @classmethod
+    def assign_ip(cls, dhcp=False, *static):
+        """
+        Method uploads iso to dest_folder.
 
-    def assign_ip(self, ip, mask, gw, domain, dhcp=False, *dns):
+        :param dhcp:   enable DHCP
+        :param static: a list that contains [ipaddr, netmask, gateway, domain,
+                       dns1, dns2]
+        :param dns:    A list that contains DNS IPs
+
+        """
+
         if dhcp:
             nic = vim.vm.customization.AdapterMapping()
             nic.adapter = vim.vm.customization.DhcpIpGenerator()
 
             return nic
         else:
+            ipaddr, netmask, gateway, domain, dns1, dns2 = static
             nic.adapter = vim.vm.customization.IPSettings()
             nic.adapter.ip = vim.vm.customization.FixedIp()
-            nic.adapter.ip.ipAddress = ip
-            nic.adapter.subnetMask = mask
-            nic.adapter.gateway = gw
+            nic.adapter.ip.ipAddress = ipaddr
+            nic.adapter.subnetMask = netmask
+            nic.adapter.gateway = gateway
             nic.adapter.dnsDomain = domain
-            nic.adapter.dnsServerList = list(dns)
+            nic.adapter.dnsServerList = [dns1, dns2]
 
             return nic
 
