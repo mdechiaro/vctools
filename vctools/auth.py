@@ -54,10 +54,12 @@ class Auth(object):
                 host=self.host, user=self.user, pwd=passwd, port=self.port
             )
 
+            session_mgr = self.session.content.sessionManager
+
             print ('Successfully logged into %s:%s' % (
                 self.host, self.port)
             )
-            self.ticket = self.session.content.sessionManager.AcquireCloneTicket()
+            self.ticket = session_mgr.AcquireCloneTicket()
 
             passwd = None
 
