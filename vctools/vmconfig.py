@@ -328,11 +328,6 @@ class VMConfig(Query):
 
         self.task_monitor(task)
 
-    # TODO
-    def clone(self, hostname, folder, name, **config):
-        hostname.CloneVM_Task(
-            folder, name, **config
-        )
 
     def power(self, host, state):
         """Method manages power states."""
@@ -350,4 +345,4 @@ class VMConfig(Query):
 
         if state == 'shutdown':
             self.task_monitor(host.ShutdownGuest())
-       
+
