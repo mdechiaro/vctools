@@ -32,6 +32,12 @@ class VCTools(object):
             'vc',
             help='vCenter host'
         )
+        vc_parser.add_argument(
+            '--passwd-file',
+            help='GPG encrypted passwd file'
+        )
+
+
 
         # subparser
         subparsers = parser.add_subparsers(metavar='')
@@ -211,7 +217,10 @@ class VCTools(object):
         self.options()
 
         self.auth = Auth(self.opts.vc)
-        self.auth.login()
+        if self.opts.passwd_file:
+            self.auth.login(self.opts.passwd_file)
+        else:
+            self.auth.login()
 
         self.query = Query()
         vmcfg = VMConfig()
@@ -377,6 +386,7 @@ class VCTools(object):
                 print('%s uploaded failed' % (self.opts.iso))
 
 
+        self.auth.logout()
 
 if __name__ == '__main__':
     vc = VCTools()

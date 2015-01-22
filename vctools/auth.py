@@ -4,7 +4,9 @@ from __future__ import print_function
 from getpass import getpass, getuser
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim # pylint: disable=E0611
-
+#
+import os
+import subprocess
 
 class Auth(object):
     def __init__(self, host=None, port=443, domain='adlocal', user=None,
@@ -28,9 +30,24 @@ class Auth(object):
         self.ticket = None
 
 
-    def login(self):
+    def decrypt_gpg_file(self, passwd_file):
+        if passwd_file.startswith('~'):
+            passwd_file = os.path.expanduser(passwd_file)
+        else:
+            passwd_file = os.path.basename(passwd_file)
+
+        command = ['/usr/bin/gpg', '--quiet', '--decrypt', passwd_file]
+        decrypt = subprocess.Popen(command, stdout=subprocess.PIPE)
+        output = decrypt.communicate()[0].strip()
+
+        return output
+
+
+    def login(self, passwd_file=None):
         """
         Login to vSphere host
+
+        :param passwd_file: path to GPG encrypted passwd file
         """
 
         if self.user:
@@ -46,8 +63,11 @@ class Auth(object):
 
         print ('Logging in as %s' % self.user)
 
-        if not self.passwd:
-            passwd = getpass()
+        if passwd_file:
+            passwd = self.decrypt_gpg_file(passwd_file)
+        else:
+            if not self.passwd:
+                passwd = getpass()
 
         try:
             self.session = SmartConnect(
