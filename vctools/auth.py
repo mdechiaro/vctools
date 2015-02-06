@@ -77,6 +77,7 @@ class Auth(object):
             print ('Successfully logged into %s:%s' % (
                 self.host, self.port)
             )
+            print()
             self.ticket = session_mgr.AcquireCloneTicket()
 
             passwd = None
@@ -89,6 +90,5 @@ class Auth(object):
 
     def logout(self):
         Disconnect(self.session)
-
-        print ('log out successful')
+        print ('\nlog out successful')
 
