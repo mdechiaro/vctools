@@ -11,7 +11,9 @@ vctools is a Python module using pyVmomi which aims to simplify command-line ope
 
 Dependencies:
   - Python 2.6+
+  - python-argparse
   - python-requests
+  - python-yaml
   - pyVmomi 
 
 Usage:
