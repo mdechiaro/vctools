@@ -33,8 +33,6 @@ class Auth(object):
     def decrypt_gpg_file(self, passwd_file):
         if passwd_file.startswith('~'):
             passwd_file = os.path.expanduser(passwd_file)
-        else:
-            passwd_file = os.path.basename(passwd_file)
 
         command = ['/usr/bin/gpg', '--quiet', '--decrypt', passwd_file]
         decrypt = subprocess.Popen(command, stdout=subprocess.PIPE)
