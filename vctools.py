@@ -73,7 +73,7 @@ class VCTools(object):
         # mount
         mount_parser = subparsers.add_parser(
             'mount', parents=[vc_parser],
-            help='Mount ISOs to CD-Rom device'
+            help='Mount ISO to CD-Rom device'
         )
 
         mount_parser.set_defaults(cmd='mount')
@@ -153,6 +153,18 @@ class VCTools(object):
             help='vCenter Datacenter. default: %(default)s'
         )
 
+        # umount
+        umount_parser = subparsers.add_parser(
+            'umount', parents=[vc_parser],
+            help='Unmount ISO from CD-Rom device'
+        )
+
+        umount_parser.set_defaults(cmd='umount')
+
+        umount_parser.add_argument(
+           '--name',
+            help='name attribute of Virtual Machine object.'
+        )
 
         # upload
         upload_parser = subparsers.add_parser(
@@ -358,6 +370,16 @@ class VCTools(object):
                 for key, value in vms.iteritems():
                     print(key, value)
 
+        if self.opts.cmd == 'umount':
+            host = self.query.get_obj(
+                self.virtual_machines.view, self.opts.name
+            )
+
+            print('Unmounting ISO on %s' % (self.opts.name))
+            cdrom_cfg = []
+            cdrom_cfg.append(vmcfg.cdrom_config(umount=True))
+            config = {'deviceChange' : cdrom_cfg}
+            vmcfg.reconfig(host, **config)
 
         if self.opts.cmd == 'upload':
             print('uploading ISO: %s' % (self.opts.iso))
