@@ -3,7 +3,7 @@ from __future__ import print_function
 from random import uniform
 from pyVmomi import vim # pylint: disable=E0611
 #
-from query import Query
+from vctools.query import Query
 #
 import requests
 import sys
@@ -54,13 +54,12 @@ class VMConfig(Query):
         cookie_val = cookie.split('"')[1]
         cookie = {'vmware_soap_session': cookie_val}
 
-        data = {iso_name : open(iso, 'rb')}
         params = {'dcPath' : datacenter, 'dsName' : datastore}
         url = 'https://' + host + dest_folder + '/' + iso_name
 
-        with open(iso, 'rb') as f:
+        with open(iso, 'rb') as data:
             response = requests.put(
-                url, params=params, cookies=cookie, data=f, verify=verify
+                url, params=params, cookies=cookie, data=data, verify=verify
             )
 
         return response.status_code
