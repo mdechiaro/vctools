@@ -163,17 +163,20 @@ class VMConfig(Query):
         return scsi
 
     @classmethod
-    def cdrom_config(cls, datastore=None, iso_path=None):
+    def cdrom_config(cls, datastore=None, iso_path=None, umount=False):
         """
         Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
         then it will create the device.  Otherwise, it will attempt to mount
         the iso.  Iso must reside inside a datastore.  Use the upload_iso()
-        method to use an iso stored locally.
+        method to use an iso stored locally.  If umount is True, then the
+        method will attempt to umount the iso.
 
         :param datastore: string name of datastore
         :param iso_path:  path/to/file.iso
+        :param umount:    boolean
         """
 
+        # mount iso
         if iso_path and datastore:
             cdrom = vim.vm.device.VirtualDeviceSpec()
             cdrom.operation = 'edit'
@@ -196,6 +199,7 @@ class VMConfig(Query):
 
             return cdrom
 
+        # create cdrom
         else:
             cdrom = vim.vm.device.VirtualDeviceSpec()
             cdrom.operation = 'add'
@@ -213,6 +217,27 @@ class VMConfig(Query):
             cdrom.device.connectable.allowGuestControl = True
 
             return cdrom
+
+        # umount iso
+        if umount:
+            cdrom = vim.vm.device.VirtualDeviceSpec()
+            cdrom.operation = 'edit'
+
+            cdrom.device = vim.vm.device.VirtualCdrom()
+            # controllerKey is tied to IDE Controller
+            cdrom.device.controllerKey = 201
+            # key is needed to mount the iso, need to verify if this value
+            # changes per host, and if so, then logic needs to be added to
+            # obtain it
+            cdrom.device.key = 3002
+
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.IsoBackingInfo()
+            cdrom.device.backing.fileName = None
+
+            cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+            cdrom.device.connectable.connected = True
+            cdrom.device.connectable.startConnected = True
+            cdrom.device.connectable.allowGuestControl = True
 
 
     def disk_config(self, container, datastore, size, unit=0,
