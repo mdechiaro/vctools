@@ -175,9 +175,31 @@ class VMConfig(Query):
         :param iso_path:  path/to/file.iso
         :param umount:    boolean
         """
+        # umount iso
+        if umount:
+            cdrom = vim.vm.device.VirtualDeviceSpec()
+            cdrom.operation = 'edit'
+
+            cdrom.device = vim.vm.device.VirtualCdrom()
+            # controllerKey is tied to IDE Controller
+            cdrom.device.controllerKey = 201
+            # key is needed to mount the iso, need to verify if this value
+            # changes per host, and if so, then logic needs to be added to
+            # obtain it
+            cdrom.device.key = 3002
+            
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
+            cdrom.device.backing.exclusive = False
+
+            cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+            cdrom.device.connectable.connected = True
+            cdrom.device.connectable.startConnected = True
+            cdrom.device.connectable.allowGuestControl = True
+
+            return cdrom
 
         # mount iso
-        if iso_path and datastore:
+        if iso_path and datastore and not umount:
             cdrom = vim.vm.device.VirtualDeviceSpec()
             cdrom.operation = 'edit'
 
@@ -218,26 +240,6 @@ class VMConfig(Query):
 
             return cdrom
 
-        # umount iso
-        if umount:
-            cdrom = vim.vm.device.VirtualDeviceSpec()
-            cdrom.operation = 'edit'
-
-            cdrom.device = vim.vm.device.VirtualCdrom()
-            # controllerKey is tied to IDE Controller
-            cdrom.device.controllerKey = 201
-            # key is needed to mount the iso, need to verify if this value
-            # changes per host, and if so, then logic needs to be added to
-            # obtain it
-            cdrom.device.key = 3002
-
-            cdrom.device.backing = vim.vm.device.VirtualCdrom.IsoBackingInfo()
-            cdrom.device.backing.fileName = None
-
-            cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
-            cdrom.device.connectable.connected = True
-            cdrom.device.connectable.startConnected = True
-            cdrom.device.connectable.allowGuestControl = True
 
 
     def disk_config(self, container, datastore, size, unit=0,
