@@ -7,14 +7,14 @@ vctools is a Python module using pyVmomi which aims to simplify command-line ope
   - Generate a HTML5 console url from the command-line
   - Query various information useful for building new VMs, such as datastores, networks, folders.
   - Upload local ISOs to remote datastores
-  - Mount ISOs
+  - Mount and Unmount ISOs
 
 Dependencies:
   - Python 2.6+
   - python-argparse
   - python-requests
   - python-yaml
-  - pyVmomi 
+  - pyVmomi
 
 Usage:
 
@@ -34,6 +34,10 @@ Mount an ISO:
 Query Datastore Info:
 
     ./vctools.py query vcenter --cluster cluster --datastores
+
+Unmount an ISO:
+
+    ./vctools.py umount vcenter --name server
 
 Upload ISO to Datastore:
 
