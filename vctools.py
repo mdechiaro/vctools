@@ -18,6 +18,28 @@ class VCTools(object):
         self.devices = []
         self.folders = None
 
+    @staticmethod
+    def _mkdict(args):
+        """
+        Internal method for converting an argparse string key=value into dict.
+        It passes each value through a for loop to correctly set its type,
+        otherwise it returns it as a string.
+
+        format: key1=val1,key2=val2,key3=val3
+        """
+        args = args.replace(',', ' ').replace('=', ' ').split()
+        params = dict(zip(args[0::2], args[1::2]))
+
+        for key, value in params.iteritems():
+            if params[key].isdigit():
+                params[key] = int(value)
+            else:
+                if params[key] == 'True':
+                    params[key] = True
+                elif params[key] == 'False':
+                    params[key] = False
+
+        return params
 
     def options(self):
         """argparse command line options."""
@@ -152,6 +174,26 @@ class VCTools(object):
            '--datacenter', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
+
+
+        # reconfig
+        reconfig_parser = subparsers.add_parser(
+            'reconfig', parents=[vc_parser],
+            help='Reconfigure Attributes for Virtual Machines.'
+        )
+        reconfig_parser.set_defaults(cmd='reconfig')
+
+        reconfig_parser.add_argument(
+           '--params', metavar='', type=self._mkdict,
+            help='format: key1=val1,key2=val2,key3=val3'
+        )
+
+        reconfig_parser.add_argument(
+           '--name', metavar='',
+            help='name attribute of Virtual Machine object.'
+        )
+
+
 
         # umount
         umount_parser = subparsers.add_parser(
@@ -369,6 +411,12 @@ class VCTools(object):
                 )
                 for key, value in vms.iteritems():
                     print(key, value)
+
+        if self.opts.cmd == 'reconfig':
+            host = self.query.get_obj(
+                self.virtual_machines.view, self.opts.name
+            )
+            vmcfg.reconfig(host, **self.opts.params)
 
         if self.opts.cmd == 'umount':
             host = self.query.get_obj(
