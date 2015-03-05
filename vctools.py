@@ -62,7 +62,7 @@ class VCTools(object):
             help='vCenter host'
         )
         vc_parser.add_argument(
-            '--passwd-file',
+            '--passwd-file', metavar='',
             help='GPG encrypted passwd file'
         )
 
@@ -79,11 +79,11 @@ class VCTools(object):
         )
         console_parser.set_defaults(cmd='console')
         console_parser.add_argument(
-           '--name',
+           '--name', metavar='',
             help='name attribute of Virtual Machine object.'
         )
         console_parser.add_argument(
-           '--datacenter', default='Linux',
+           '--datacenter', metavar='', default='Linux',
            help='vCenter Datacenter. default: %(default)s'
         )
 
@@ -108,17 +108,17 @@ class VCTools(object):
         mount_parser.set_defaults(cmd='mount')
 
         mount_parser.add_argument(
-           '--datastore',
+           '--datastore', metavar='',
             help='Name of datastore where the ISO is located.'
         )
 
         mount_parser.add_argument(
-           '--path',
+           '--path', metavar='',
             help='Path inside datastore where the ISO is located.'
         )
 
         mount_parser.add_argument(
-           '--name',
+           '--name', metavar='',
             help='name attribute of Virtual Machine object.'
         )
 
@@ -136,7 +136,7 @@ class VCTools(object):
 
         )
         power_parser.add_argument(
-           '--name',
+           '--name', metavar='',
             help='name attribute of Virtual Machine object.'
         )
 
@@ -173,12 +173,12 @@ class VCTools(object):
         )
 
         query_parser.add_argument(
-           '--cluster',
+           '--cluster', metavar='',
             help='vCenter ComputeResource.'
         )
 
         query_parser.add_argument(
-           '--datacenter', default='Linux',
+           '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
 
@@ -223,27 +223,27 @@ class VCTools(object):
         upload_parser.set_defaults(cmd='upload')
 
         upload_parser.add_argument(
-           '--iso',
+           '--iso', metavar='',
             help='iso file that needs to be uploaded to vCenter.'
         )
 
         upload_parser.add_argument(
-           '--dest',
+           '--dest', metavar='',
             help='destination folder where the iso will reside.'
         )
 
         upload_parser.add_argument(
-           '--datastore', default='ISO_Templates',
+           '--datastore', metavar='', default='ISO_Templates',
             help='datastore where the iso will reside.  default: %(default)s'
         )
 
         upload_parser.add_argument(
-           '--verify-ssl', default=False,
+           '--verify-ssl', metavar='', default=False,
             help='verify SSL certificate. default: %(default)s'
         )
 
         upload_parser.add_argument(
-           '--datacenter', default='Linux',
+           '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
 
