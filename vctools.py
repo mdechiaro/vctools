@@ -253,6 +253,13 @@ class VCTools(object):
 
 
     def create_containers(self):
+        """
+        Sets up different containers, or views, inside vSphere.
+
+        These containers can then be queried to obtain different information
+        about an object.
+        """
+
         self.datacenters = self.query.create_container(
             self.auth.session, self.auth.session.content.rootFolder,
             [vim.Datacenter], True
