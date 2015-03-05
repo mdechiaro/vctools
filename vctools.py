@@ -1,5 +1,12 @@
 #!/usr/bin/python
-# pylint: disable=no-name-in-module,star-args
+
+"""
+vctools is a Python module using pyVmomi which aims to simplify command-line
+operations inside VMWare vCenter.
+
+https://github.com/mdechiaro/vctools/
+"""
+# pylint: disable=no-name-in-module
 from __future__ import print_function
 import argparse
 import os
@@ -14,6 +21,10 @@ from vctools.query import Query
 
 
 class VCTools(object):
+    """
+    Main VCTools class.
+    """
+    # pylint: disable=too-many-instance-attributes
     def __init__(self):
         self.auth = None
         self.clusters = None
@@ -280,8 +291,13 @@ class VCTools(object):
             [vim.VirtualMachine], True
         )
 
-
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     def main(self):
+        """
+        This is the main method, which parses all the argparse options and runs
+        the necessary code blocks if True.
+        """
+
         self.options()
 
         self.auth = Auth(self.opts.vc)
@@ -335,16 +351,15 @@ class VCTools(object):
                 self.folders.view, spec['vcenter']['folder']
             )
 
-            # convert kb to gb
-            gb = 1024*1024
+            # convert kilobytes to gigabytes
+            kb_to_gb = 1024*1024
 
-            # TODO: increase 4 disk limit
             for scsi, disk in enumerate(spec['devices']['disks']):
                 # setup the first four disks on a separate scsi controller
                 self.devices.append(vmcfg.scsi_config(scsi))
                 self.devices.append(
                     vmcfg.disk_config(
-                        cluster.datastore, datastore, disk*gb, unit=scsi
+                        cluster.datastore, datastore, disk*kb_to_gb, unit=scsi
                     )
                 )
 
@@ -374,6 +389,7 @@ class VCTools(object):
                     )
                 )
                 config = {'deviceChange' : cdrom_cfg}
+                # pylint: disable=star-args
                 vmcfg.reconfig(host, **config)
 
 
@@ -441,6 +457,7 @@ class VCTools(object):
             cdrom_cfg = []
             cdrom_cfg.append(vmcfg.cdrom_config(umount=True))
             config = {'deviceChange' : cdrom_cfg}
+            # pylint: disable=star-args
             vmcfg.reconfig(host, **config)
 
         if self.opts.cmd == 'upload':
@@ -458,11 +475,14 @@ class VCTools(object):
 
             print('This may take some time.')
 
+            # pylint: disable=protected-access
             result = vmcfg.upload_iso(
                 self.opts.vc, self.auth.session._stub.cookie,
                 self.opts.datacenter, self.opts.dest, self.opts.datastore,
                 self.opts.iso, self.opts.verify_ssl
             )
+
+            print('result: %s' % (result))
 
             if result == 200:
                 print('%s uploaded successfully' % (self.opts.iso))
@@ -473,5 +493,6 @@ class VCTools(object):
         self.auth.logout()
 
 if __name__ == '__main__':
+    # pylint: disable=invalid-name
     vc = VCTools()
     sys.exit(vc.main())
