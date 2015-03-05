@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# pylint: disable=no-name-in-module,star-args
 from __future__ import print_function
 import argparse
 import os
@@ -14,9 +15,15 @@ from vctools.query import Query
 
 class VCTools(object):
     def __init__(self):
+        self.auth = None
         self.clusters = None
+        self.datacenters = None
         self.devices = []
         self.folders = None
+        self.help = None
+        self.opts = None
+        self.query = None
+        self.virtual_machines = None
 
     @staticmethod
     def _mkdict(args):
