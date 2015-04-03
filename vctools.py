@@ -484,7 +484,7 @@ class VCTools(object):
 
             print('result: %s' % (result))
 
-            if result == 200:
+            if result == 200 or 201:
                 print('%s uploaded successfully' % (self.opts.iso))
             else:
                 print('%s uploaded failed' % (self.opts.iso))
