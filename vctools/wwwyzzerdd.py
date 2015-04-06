@@ -18,7 +18,7 @@ class Wwwyzzerdd(Cmd):
 
     def __init__(self, intro='wwwyzzerdd!', prompt='# '):
         Cmd.__init__(self)
-        self.auth = None
+        Wwwyzzerdd.auth = None
         self.intro = intro
         self.prompt = prompt
 
@@ -27,13 +27,19 @@ class Wwwyzzerdd(Cmd):
 
     def do_connect(self, vcenter):
         """ connect to vcenter."""
-        self.auth = Auth(vcenter)
-        self.auth.login()
+        Wwwyzzerdd.auth = Auth(vcenter)
+        Wwwyzzerdd.auth.login()
 
     def do_query(self, args):
         """ query sub-category."""
         query_cmds = QueryCMDs()
         query_cmds.cmdloop()
+
+    def do_ticket(self, args):
+        if self.auth:
+            print(self.auth.ticket)
+        else:
+            print(None)
 
     def do_exit(self, args):
         """ exit interactive mode."""
@@ -52,14 +58,18 @@ class QueryCMDs(Cmd):
         self.intro = intro
         self.prompt = prompt
 
-    def do_networks(self, arg):
+    def do_back(self, args):
+        """ exit interactive mode."""
+        return True
+
+    def do_networks(self, args):
         """ show networks associated with cluster."""
         cluster_container = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
+            Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
             [vim.ComputeResource], True
         )
         cluster = self.query.get_obj(
-            cluster_container.view, arg
+            cluster_container.view, args
         )
         networks = self.query.list_obj_attrs(
             cluster.network, 'name', view=False
@@ -68,20 +78,20 @@ class QueryCMDs(Cmd):
         for net in networks:
             print(net)
 
-    def do_datastores(self, arg):
+    def do_datastores(self, args):
         """ show datastores associated with cluster."""
         cluster_container = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
+            Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
             [vim.ComputeResource], True
         )
         self.query.list_datastore_info(
-            cluster_container.view, arg
+            cluster_container.view, args
         )
 
-    def do_folders(self, arg):
+    def do_folders(self, args):
         """ show available folders."""
         folder_container = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
+            Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
             [vim.Folder], True
         )
         folders = self.query.list_obj_attrs(folder_container, 'name')
@@ -89,10 +99,10 @@ class QueryCMDs(Cmd):
         for folder in folders:
             print(folder)
 
-    def do_clusters(self):
+    def do_clusters(self, args):
         """ show available clusters."""
         cluster_container = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
+            Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
             [vim.ComputeResource], True
         )
         clusters = self.query.list_obj_attrs(cluster_container, 'name')
