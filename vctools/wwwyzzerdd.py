@@ -10,7 +10,8 @@ from vctools.query import Query
 
 # pylint: disable=no-self-use
 # pylint: disable=too-many-public-methods
-class WWWYZZERDD(Cmd):
+# pylint: disable=unused-argument
+class Wwwyzzerdd(Cmd):
     """
     It's a Wwwyzzerdd! An interactive wizard for vctools.
     """
@@ -20,7 +21,6 @@ class WWWYZZERDD(Cmd):
         self.auth = None
         self.intro = intro
         self.prompt = prompt
-        self.doc_header = 'interactive wizard for vctools.'
 
     def default(self, arg):
         print('%s: Invalid command. Type "help" for a list.' % (arg))
@@ -35,52 +35,31 @@ class WWWYZZERDD(Cmd):
         query_cmds = QueryCMDs()
         query_cmds.cmdloop()
 
-    def do_create(self, args):
-        """ create sub-category."""
-        create_cmds = CreateCMDs()
-        create_cmds.cmdloop()
-
     def do_exit(self, args):
         """ exit interactive mode."""
-        return True
+        if self.auth:
+            self.auth.logout()
+            return True
+        else:
+            return True
 
 
-class QueryCMDs(WWWYZZERDD):
+class QueryCMDs(Cmd):
     """ sub category of cmd options for querying info."""
-    def __init__(self):
-        self.datacenters = None
-        self.clusters = None
-        self.folders = None
-        self.virtual_machines = None
+    def __init__(self, intro='query commands', prompt='(query) # '):
+        Cmd.__init__(self)
         self.query = Query()
-        WWWYZZERDD.__init__(self, intro='query commands', prompt='(query) # ')
+        self.intro = intro
+        self.prompt = prompt
 
-    def __call__(self):
-        self.datacenters = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
-            [vim.Datacenter], True
-        )
-
-        self.clusters = self.query.create_container(
+    def do_networks(self, arg):
+        """ show networks associated with cluster."""
+        cluster_container = self.query.create_container(
             self.auth.session, self.auth.session.content.rootFolder,
             [vim.ComputeResource], True
         )
-
-        self.folders = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
-            [vim.Folder], True
-        )
-
-        self.virtual_machines = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
-            [vim.VirtualMachine], True
-        )
-
-
-    def do_networks(self, cluster):
-        """ show networks associated with cluster."""
         cluster = self.query.get_obj(
-            self.clusters.view, cluster
+            cluster_container.view, arg
         )
         networks = self.query.list_obj_attrs(
             cluster.network, 'name', view=False
@@ -89,36 +68,35 @@ class QueryCMDs(WWWYZZERDD):
         for net in networks:
             print(net)
 
-    def do_datastores(self, cluster):
+    def do_datastores(self, arg):
         """ show datastores associated with cluster."""
-        self.query.list_datastore_info(
-            self.clusters.view, cluster
+        cluster_container = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder,
+            [vim.ComputeResource], True
         )
-    def do_folders(self):
+        self.query.list_datastore_info(
+            cluster_container.view, arg
+        )
+
+    def do_folders(self, arg):
         """ show available folders."""
-        folders = self.query.list_obj_attrs(self.folders, 'name')
+        folder_container = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder,
+            [vim.Folder], True
+        )
+        folders = self.query.list_obj_attrs(folder_container, 'name')
         folders.sort()
         for folder in folders:
             print(folder)
 
     def do_clusters(self):
         """ show available clusters."""
-        clusters = self.query.list_obj_attrs(self.clusters, 'name')
+        cluster_container = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder,
+            [vim.ComputeResource], True
+        )
+        clusters = self.query.list_obj_attrs(cluster_container, 'name')
         clusters.sort()
         for cluster in clusters:
             print(cluster)
 
-    # pylint: disable=invalid-name
-    def do_VMs(self, datacenter):
-        """ show available virtual machines associated with datacenter."""
-        vms = self.query.list_vm_info(
-            self.datacenters.view, datacenter
-        )
-        for key, value in vms.iteritems():
-            print(key, value)
-
-class CreateCMDs(WWWYZZERDD):
-    """ sub category of cmd options for creating virtual machines."""
-    def __init__(self):
-        self.vmcfg = VMConfig()
-        WWWYZZERDD.__init__(self, intro='create a new VM', prompt='(create) # ')

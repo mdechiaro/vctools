@@ -17,6 +17,7 @@ from pyVmomi import vim
 from vctools.auth import Auth
 from vctools.vmconfig import VMConfig
 from vctools.query import Query
+from vctools.wwwyzzerdd import Wwwyzzerdd
 
 
 class VCTools(object):
@@ -242,6 +243,14 @@ class VCTools(object):
             help='vCenter Datacenter. default: %(default)s'
         )
 
+        # umount
+        wwwyzzerdd_parser = subparsers.add_parser(
+            'wwwyzzerdd',
+            help='interactive wizard'
+        )
+
+        wwwyzzerdd_parser.set_defaults(cmd='wwwyzzerdd')
+
 
         self.opts = parser.parse_args()
         self.help = parser.print_help
@@ -283,6 +292,11 @@ class VCTools(object):
         """
 
         self.options()
+
+        if self.opts.cmd == 'wwwyzzerdd':
+            wizard = Wwwyzzerdd()
+            wizard.cmdloop()
+            sys.exit(0)
 
         self.auth = Auth(self.opts.vc)
         if self.opts.passwd_file:
