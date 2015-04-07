@@ -85,7 +85,7 @@ class QueryCMDs(Cmd):
         self.prompt = prompt
 
     def do_back(self, args):
-        """ exit interactive mode."""
+        """ go back to main menu."""
         return True
 
     @check_auth
