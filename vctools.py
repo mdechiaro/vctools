@@ -244,12 +244,12 @@ class VCTools(object):
         )
 
         # umount
-        wwwyzzerdd_parser = subparsers.add_parser(
-            'wwwyzzerdd',
+        wizard_parser = subparsers.add_parser(
+            'wizard',
             help='interactive wizard'
         )
 
-        wwwyzzerdd_parser.set_defaults(cmd='wwwyzzerdd')
+        wizard_parser.set_defaults(cmd='wizard')
 
 
         self.opts = parser.parse_args()
@@ -293,7 +293,7 @@ class VCTools(object):
 
         self.options()
 
-        if self.opts.cmd == 'wwwyzzerdd':
+        if self.opts.cmd == 'wizard':
             wizard = Wwwyzzerdd()
             wizard.cmdloop()
             sys.exit(0)
