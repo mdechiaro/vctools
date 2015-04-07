@@ -143,10 +143,13 @@ class QueryCMDs(Cmd):
             print('please enter datacenter name.')
         else:
             datacenter_container = self.query.create_container(
-                Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
+                Wwwyzzerdd.auth.session,
+                Wwwyzzerdd.auth.session.content.rootFolder,
                 [vim.Datacenter], True
             )
-            folders = self.query.list_vm_folders(datacenter_container.view, datacenter)
+            folders = self.query.list_vm_folders(
+                datacenter_container.view, datacenter
+            )
             folders.sort()
             for folder in folders:
                 print(folder)
