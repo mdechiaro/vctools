@@ -15,7 +15,6 @@ import yaml
 #
 from pyVmomi import vim
 from vctools.auth import Auth
-from vctools.console import Console
 from vctools.vmconfig import VMConfig
 from vctools.query import Query
 
@@ -82,21 +81,6 @@ class VCTools(object):
         # subparser
         subparsers = parser.add_subparsers(metavar='')
 
-
-        # console
-        console_parser = subparsers.add_parser(
-            'console', parents=[vc_parser],
-            help='Generate CLI Console Url'
-        )
-        console_parser.set_defaults(cmd='console')
-        console_parser.add_argument(
-           '--name', metavar='',
-            help='name attribute of Virtual Machine object.'
-        )
-        console_parser.add_argument(
-           '--datacenter', metavar='', default='Linux',
-           help='vCenter Datacenter. default: %(default)s'
-        )
 
         # create
         create_parser = subparsers.add_parser(
@@ -308,33 +292,8 @@ class VCTools(object):
 
         self.query = Query()
         vmcfg = VMConfig()
-        console = Console()
 
         self.create_containers()
-
-        if self.opts.cmd == 'console':
-            if self.opts.name:
-                vmid = self.query.get_vmid_by_name(
-                    self.datacenters.view, self.opts.datacenter,
-                    self.opts.name
-                )
-                if vmid:
-
-                    thumbprint = console.mkthumbprint(self.auth.ticket)
-
-                    print()
-                    print('enter in this url into any browser.')
-                    print('you must use same IP that you used to authenticate.')
-                    print()
-
-                    command = console.mkurl(
-                        vmid, self.opts.name, self.opts.vc, self.auth.ticket,
-                        thumbprint
-                    )
-                    print(command)
-                else:
-                    print('%s not found in %s' % (self.opts.name, self.opts.vc))
-                    sys.exit(1)
 
 
         if self.opts.cmd == 'create':
