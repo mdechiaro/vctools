@@ -412,7 +412,7 @@ class VCTools(object):
                 )
 
             if self.opts.folders:
-                folders = self.query.list_obj_attrs(self.folders, 'name')
+                folders = self.query.list_vm_folders(self.datacenters.view, self.opts.datacenter)
                 folders.sort()
                 for folder in folders:
                     print(folder)
