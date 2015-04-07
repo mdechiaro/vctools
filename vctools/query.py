@@ -7,8 +7,8 @@ from pyVmomi import vim # pylint: disable=E0611
 
 class Query(object):
     def __init__(self):
-        """ 
-        Class handles queries for information regarding for vms, datastores 
+        """
+        Class handles queries for information regarding for vms, datastores
         and networks.
         """
         pass
@@ -25,7 +25,7 @@ class Query(object):
 
 
     def create_container(self, si, *args):
-        """ 
+        """
         Wrapper method for creating managed objects inside vim.view.ViewManager.
 
         """
@@ -39,9 +39,9 @@ class Query(object):
 
 
     def get_obj(self, container, name):
-        """ 
+        """
         Returns an object inside of ContainerView if it matches name.
-       
+
         """
 
         for obj in container:
@@ -58,6 +58,28 @@ class Query(object):
             return [getattr(obj, attr) for obj in container.view]
         else:
             return [getattr(obj, attr) for obj in container]
+
+
+    def list_vm_folders(self, container, datacenter):
+        """
+        Returns a list of Virtual Machine folders.  Sub folders will be listed 
+        with its parent -> subfolder. Currently it only searches for one
+        level of sub folders.
+
+        container 
+        """
+        obj = self.get_obj(container, datacenter)
+        folders = []
+
+        if hasattr(obj, 'vmFolder'):
+            for folder in obj.vmFolder.childEntity:
+                if hasattr(folder, 'childType'):
+                    folders.append(folder.name)
+                if hasattr(folder, 'childEntity'):
+                    for f in folder.childEntity:
+                        if hasattr(f, 'childType'):
+                            folders.append(f.parent.name + ' -> ' + f.name)
+        return folders
 
 
 
@@ -83,13 +105,13 @@ class Query(object):
                     # type is long(bytes)
                     free = int(datastore.summary.freeSpace)
                     capacity = int(datastore.summary.capacity)
-            
+
                     # uncommitted is sometimes None, so we'll convert that to 0.
                     if not datastore.summary.uncommitted:
                         uncommitted = int(0)
                     else:
                         uncommitted = int(datastore.summary.uncommitted)
-            
+
                     provisioned = int((capacity - free) + uncommitted)
 
                     provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
@@ -145,14 +167,14 @@ class Query(object):
 
         vms = {}
 
-        # recurse through datacenter object attributes looking for vms.  
+        # recurse through datacenter object attributes looking for vms.
         if hasattr(obj, 'vmFolder'):
             for vm in obj.vmFolder.childEntity:
                 if hasattr(vm, 'childEntity'):
                     for v in vm.childEntity:
                         vms.update({v.name:v._moId})
                 else:
-                    vms.update({vm.name:v._moId})    
+                    vms.update({vm.name:v._moId})
 
         return vms
 
