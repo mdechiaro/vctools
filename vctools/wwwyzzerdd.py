@@ -133,20 +133,40 @@ class QueryCMDs(Cmd):
             )
 
     @check_auth
-    def do_folders(self, args):
+    def do_folders(self, datacenter):
         """
         show available folders.
 
-        usage: folders
+        usage: folders <datacenter>
         """
-        folder_container = self.query.create_container(
+        if not datacenter:
+            print('please enter datacenter name.')
+        else:
+            datacenter_container = self.query.create_container(
+                Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
+                [vim.Datacenter], True
+            )
+            folders = self.query.list_vm_folders(datacenter_container.view, datacenter)
+            folders.sort()
+            for folder in folders:
+                print(folder)
+
+    @check_auth
+    def do_datacenters(self, args):
+        """
+        show available datacenters
+
+        usage: datacenters
+        """
+
+        datacenter_container = self.query.create_container(
             Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
-            [vim.Folder], True
+            [vim.Datacenter], True
         )
-        folders = self.query.list_obj_attrs(folder_container, 'name')
-        folders.sort()
-        for folder in folders:
-            print(folder)
+        datacenters = self.query.list_obj_attrs(datacenter_container, 'name')
+        datacenters.sort()
+        for datacenter in datacenters:
+            print(datacenter)
 
     @check_auth
     def do_clusters(self, args):
