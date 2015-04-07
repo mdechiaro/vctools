@@ -11,6 +11,17 @@ from vctools.query import Query
 # pylint: disable=too-many-public-methods
 # pylint: disable=unused-argument
 
+def check_auth(func):
+    """decorator used to verify authenticated session."""
+    def _check(self, *args, **kwargs):
+        """checks to see if class attribute exists."""
+        if Wwwyzzerdd.auth:
+            return func(self, *args, **kwargs)
+        else:
+            print('Please login first.')
+    return _check
+
+
 class Wwwyzzerdd(Cmd):
     """
     It's a Wwwyzzerdd! An interactive wizard for vctools.
@@ -20,6 +31,7 @@ class Wwwyzzerdd(Cmd):
         Cmd.__init__(self)
         self.intro = intro
         self.prompt = prompt
+        Wwwyzzerdd.auth = None
 
     def default(self, arg):
         print('%s: Invalid command. Type "help" for a list.' % (arg))
@@ -51,6 +63,10 @@ class Wwwyzzerdd(Cmd):
         else:
             print(None)
 
+    def do_logout(self, args):
+        """ logout of system."""
+        Wwwyzzerdd.auth.logout()
+
     def do_exit(self, args):
         """ exit interactive mode."""
         if self.auth:
@@ -64,7 +80,6 @@ class QueryCMDs(Cmd):
     """ sub category of cmd options for querying info."""
     def __init__(self, intro='query commands', prompt='(query)'):
         Cmd.__init__(self)
-        CheckAuth.__init__(self)
         self.query = Query()
         self.intro = intro
         self.prompt = prompt
@@ -73,6 +88,7 @@ class QueryCMDs(Cmd):
         """ exit interactive mode."""
         return True
 
+    @check_auth
     def do_networks(self, args):
         """
         show networks associated with cluster.
@@ -83,7 +99,8 @@ class QueryCMDs(Cmd):
             print('please enter cluster name.')
         else:
             cluster_container = self.query.create_container(
-                Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
+                Wwwyzzerdd.auth.session,
+                Wwwyzzerdd.auth.session.content.rootFolder,
                 [vim.ComputeResource], True
             )
             cluster = self.query.get_obj(
@@ -96,6 +113,7 @@ class QueryCMDs(Cmd):
             for net in networks:
                 print(net)
 
+    @check_auth
     def do_datastores(self, args):
         """
         show datastores associated with cluster.
@@ -106,13 +124,15 @@ class QueryCMDs(Cmd):
             print('please enter cluster name.')
         else:
             cluster_container = self.query.create_container(
-                Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
+                Wwwyzzerdd.auth.session,
+                Wwwyzzerdd.auth.session.content.rootFolder,
                 [vim.ComputeResource], True
             )
             self.query.list_datastore_info(
                 cluster_container.view, args
             )
 
+    @check_auth
     def do_folders(self, args):
         """
         show available folders.
@@ -128,10 +148,11 @@ class QueryCMDs(Cmd):
         for folder in folders:
             print(folder)
 
+    @check_auth
     def do_clusters(self, args):
         """
         show available clusters.
-        
+
         usage: clusters
         """
 
