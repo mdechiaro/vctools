@@ -75,14 +75,13 @@ class Wwwyzzerdd(Cmd):
     def do_ls(self, args):
         """ The command we know and love."""
         cmds = []
-        docs = []
         names = self.get_names()
         names.sort()
         for name in names:
             if name[:3] == 'do_':
                 cmd = name[3:]
                 cmds.append(cmd)
-        
+
         print(' '.join(cmds))
 
 class CreateCMDs(Cmd):
