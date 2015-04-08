@@ -84,6 +84,7 @@ class Wwwyzzerdd(Cmd):
 
         print(' '.join(cmds))
 
+
 class CreateCMDs(Cmd):
     """ Subcategory of command options for creating new objects."""
     def __init__(self, auth, host):
@@ -91,7 +92,6 @@ class CreateCMDs(Cmd):
         self.auth = auth
         self.host = host
         self.vmcfg = VMConfig()
-        self.intro = 'Create commands'
         self.ruler = '_'
         if self.auth:
             self.prompt = '(create)(%s)$ ' % (self.host.split('.')[0])
@@ -121,7 +121,6 @@ class QueryCMDs(Cmd):
         self.auth = auth
         self.host = host
         self.query = Query()
-        self.intro = 'Query commands'
         self.ruler = '_'
         if self.auth:
             self.prompt = '(query)(%s)$ ' % (self.host.split('.')[0])
