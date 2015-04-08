@@ -60,13 +60,34 @@ class Query(object):
             return [getattr(obj, attr) for obj in container]
 
 
+    def folders_lookup(self, container, datacenter, name):
+        """
+        Returns the object for a folder name.  Currently, it only searches for
+        the folder through one level of subfolders. This method is needed for
+        building new virtual machines.
+
+        """
+        obj = self.get_obj(container, datacenter)
+        folders = []
+
+        if hasattr(obj, 'vmFolder'):
+            for folder in obj.vmFolder.childEntity:
+                if hasattr(folder, 'childType'):
+                    if folder.name == name:
+                        return folder
+                if hasattr(folder, 'childEntity'):
+                    for f in folder.childEntity:
+                        if hasattr(f, 'childType'):
+                            if f.name == name:
+                                return f
+
     def list_vm_folders(self, container, datacenter):
         """
-        Returns a list of Virtual Machine folders.  Sub folders will be listed 
+        Returns a list of Virtual Machine folders.  Sub folders will be listed
         with its parent -> subfolder. Currently it only searches for one
         level of sub folders.
 
-        container 
+        container
         """
         obj = self.get_obj(container, datacenter)
         folders = []

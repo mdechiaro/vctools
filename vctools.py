@@ -95,6 +95,11 @@ class VCTools(object):
             help='YaML config for creating new Virtual Machines.'
         )
 
+        create_parser.add_argument(
+           '--datacenter', metavar='', default='Linux',
+            help='vCenter Datacenter. default: %(default)s'
+        )
+
         # mount
         mount_parser = subparsers.add_parser(
             'mount', parents=[vc_parser],
@@ -320,8 +325,8 @@ class VCTools(object):
 
             pool = cluster.resourcePool
 
-            folder = self.query.get_obj(
-                self.folders.view, spec['vcenter']['folder']
+            folder = self.query.folders_lookup(
+                self.datacenters.view, self.opts.datacenter, spec['vcenter']['folder']
             )
 
             # convert kilobytes to gigabytes
