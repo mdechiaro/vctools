@@ -7,6 +7,7 @@ vctools is a Python module using pyVmomi which aims to simplify command-line ope
   - Query various information useful for building new VMs, such as datastores, networks, folders.
   - Upload local ISOs to remote datastores
   - Mount and Unmount ISOs
+  - Interactive Wizard
 
 Dependencies:
   - Python 2.6+
