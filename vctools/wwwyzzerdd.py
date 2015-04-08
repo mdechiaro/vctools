@@ -1,24 +1,22 @@
 #!/usr/bin/python
-"""interactive module for vctools."""
+# pylint: disable=no-name-in-module,no-self-use,too-many-public-methods,unused-argument
+"""Interactive module for vctools."""
 from __future__ import print_function
 from cmd import Cmd
-# pylint: disable=no-name-in-module
 from pyVmomi import vim
 from vctools.auth import Auth
+from vctools.vmconfig import VMConfig
 from vctools.query import Query
 
-# pylint: disable=no-self-use
-# pylint: disable=too-many-public-methods
-# pylint: disable=unused-argument
 
 def check_auth(func):
-    """decorator used to verify authenticated session."""
+    """Decorator used to verify authenticated session."""
     def _check(self, *args, **kwargs):
-        """checks to see if class attribute exists."""
-        if Wwwyzzerdd.auth:
+        """Checks to see if class attribute exists."""
+        if self.auth:
             return func(self, *args, **kwargs)
         else:
-            print('Please login first.')
+            print('Error: Please login first.')
     return _check
 
 
@@ -27,80 +25,134 @@ class Wwwyzzerdd(Cmd):
     It's a Wwwyzzerdd! An interactive wizard for vctools.
     """
 
-    def __init__(self, intro='wwwyzzerdd!', prompt='#'):
+    def __init__(self, intro='wwwyzzerdd!', prompt='# ', ruler='_'):
         Cmd.__init__(self)
+        self.auth = None
+        self.host = None
         self.intro = intro
         self.prompt = prompt
-        Wwwyzzerdd.auth = None
+        self.ruler = ruler
 
     def default(self, arg):
-        print('%s: Invalid command. Type "help" for a list.' % (arg))
+        print('Error %s: Type "ls" for a list. or "?" for help' % (arg))
 
     def do_connect(self, args):
-        """
-        connect to vcenter.
-
-        usage: connect <hostname>
-        """
+        """Connect to vcenter.\nUsage: connect <hostname>"""
         if not args:
-            print('please enter host')
+            print('Error: Please enter in a hostname as an argument.')
         else:
-            Wwwyzzerdd.auth = Auth(args)
-            Wwwyzzerdd.auth.login()
+            self.auth = Auth(args)
+            self.auth.login()
 
-            if Wwwyzzerdd.auth.ticket:
-                self.prompt = '$'
+            if self.auth.ticket:
+                self.host = args
+                # show the short hostname in prompt
+                self.prompt = '(%s)$ ' % (self.host.split('.')[0])
 
     def do_query(self, args):
-        """ query sub-category."""
-        query_cmds = QueryCMDs()
+        """ Subcategory of command options for querying info."""
+        query_cmds = QueryCMDs(self.auth, self.host)
         query_cmds.cmdloop()
 
-    def do_ticket(self, args):
-        """ displays current login ticket info."""
-        if self.auth:
-            print(self.auth.ticket)
-        else:
-            print(None)
+    def do_create(self, args):
+        """ Subcategory of command options for creating new objects."""
+        create_cmds = CreateCMDs(self.auth, self.host)
+        create_cmds.cmdloop()
 
+    @check_auth
     def do_logout(self, args):
-        """ logout of system."""
-        Wwwyzzerdd.auth.logout()
+        """ Logout of system."""
+        self.auth.logout()
 
     def do_exit(self, args):
-        """ exit interactive mode."""
+        """ Exit interactive mode."""
         if self.auth:
             self.auth.logout()
             return True
         else:
             return True
 
+    def do_ls(self, args):
+        """ The command we know and love."""
+        cmds = []
+        docs = []
+        names = self.get_names()
+        names.sort()
+        for name in names:
+            if name[:3] == 'do_':
+                cmd = name[3:]
+                cmds.append(cmd)
+        
+        print(' '.join(cmds))
 
-class QueryCMDs(Cmd):
-    """ sub category of cmd options for querying info."""
-    def __init__(self, intro='query commands', prompt='(query)'):
+class CreateCMDs(Cmd):
+    """ Subcategory of command options for creating new objects."""
+    def __init__(self, auth, host):
         Cmd.__init__(self)
-        self.query = Query()
-        self.intro = intro
-        self.prompt = prompt
+        self.auth = auth
+        self.host = host
+        self.vmcfg = VMConfig()
+        self.intro = 'Create commands'
+        self.ruler = '_'
+        if self.auth:
+            self.prompt = '(create)(%s)$ ' % (self.host.split('.')[0])
+        else:
+            self.prompt = '(create) # '
 
     def do_back(self, args):
-        """ go back to main menu."""
+        """ Return to the main menu."""
         return True
+
+    def do_ls(self, args):
+        """ The command we know and love."""
+        cmds = []
+        names = self.get_names()
+        names.sort()
+        for name in names:
+            if name[:3] == 'do_':
+                cmd = name[3:]
+                cmds.append(cmd)
+
+        print(' '.join(cmds))
+
+class QueryCMDs(Cmd):
+    """ Subcategory of command options for querying info."""
+    def __init__(self, auth, host):
+        Cmd.__init__(self)
+        self.auth = auth
+        self.host = host
+        self.query = Query()
+        self.intro = 'Query commands'
+        self.ruler = '_'
+        if self.auth:
+            self.prompt = '(query)(%s)$ ' % (self.host.split('.')[0])
+        else:
+            self.prompt = '(query) # '
+
+    def do_back(self, args):
+        """ Return to the main menu."""
+        return True
+
+    def do_ls(self, args):
+        """ The command we know and love."""
+        cmds = []
+        names = self.get_names()
+        names.sort()
+        for name in names:
+            if name[:3] == 'do_':
+                cmd = name[3:]
+                cmds.append(cmd)
+
+        print(' '.join(cmds))
 
     @check_auth
     def do_networks(self, args):
-        """
-        show networks associated with cluster.
-
-        usage: networks <cluster>
-        """
+        """Show networks in cluster.\n  networks <cluster>"""
         if not args:
-            print('please enter cluster name.')
+            print('Error: please enter cluster name.')
         else:
             cluster_container = self.query.create_container(
-                Wwwyzzerdd.auth.session,
-                Wwwyzzerdd.auth.session.content.rootFolder,
+                self.auth.session, self.auth.session.content.rootFolder,
                 [vim.ComputeResource], True
             )
             cluster = self.query.get_obj(
@@ -115,17 +167,12 @@ class QueryCMDs(Cmd):
 
     @check_auth
     def do_datastores(self, args):
-        """
-        show datastores associated with cluster.
-
-        usage: datastores <cluster>
-        """
+        """Show datastores in cluster.\n  usage: datastores <cluster>"""
         if not args:
             print('please enter cluster name.')
         else:
             cluster_container = self.query.create_container(
-                Wwwyzzerdd.auth.session,
-                Wwwyzzerdd.auth.session.content.rootFolder,
+                self.auth.session, self.auth.session.content.rootFolder,
                 [vim.ComputeResource], True
             )
             self.query.list_datastore_info(
@@ -134,17 +181,12 @@ class QueryCMDs(Cmd):
 
     @check_auth
     def do_folders(self, datacenter):
-        """
-        show available folders.
-
-        usage: folders <datacenter>
-        """
+        """Show folders in datacenter.\n  folders <datacenter>"""
         if not datacenter:
             print('please enter datacenter name.')
         else:
             datacenter_container = self.query.create_container(
-                Wwwyzzerdd.auth.session,
-                Wwwyzzerdd.auth.session.content.rootFolder,
+                self.auth.session, self.auth.session.content.rootFolder,
                 [vim.Datacenter], True
             )
             folders = self.query.list_vm_folders(
@@ -156,14 +198,10 @@ class QueryCMDs(Cmd):
 
     @check_auth
     def do_datacenters(self, args):
-        """
-        show available datacenters
-
-        usage: datacenters
-        """
+        """Show available datacenters.\n  datacenters"""
 
         datacenter_container = self.query.create_container(
-            Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
+            self.auth.session, self.auth.session.content.rootFolder,
             [vim.Datacenter], True
         )
         datacenters = self.query.list_obj_attrs(datacenter_container, 'name')
@@ -180,7 +218,7 @@ class QueryCMDs(Cmd):
         """
 
         cluster_container = self.query.create_container(
-            Wwwyzzerdd.auth.session, Wwwyzzerdd.auth.session.content.rootFolder,
+            self.auth.session, self.auth.session.content.rootFolder,
             [vim.ComputeResource], True
         )
         clusters = self.query.list_obj_attrs(cluster_container, 'name')
