@@ -63,6 +63,7 @@ class Wwwyzzerdd(Cmd):
     def do_logout(self, args):
         """ Logout of system."""
         self.auth.logout()
+        self.prompt = '# '
 
     def do_exit(self, args):
         """ Exit interactive mode."""
@@ -127,9 +128,22 @@ class QueryCMDs(Cmd):
         else:
             self.prompt = '(query) # '
 
+
+    def complete_datastores(self, *ignored):
+        """Returns a list of available clusters in vSphere."""
+        cluster_container = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder,
+            [vim.ComputeResource], True
+        )
+        clusters = self.query.list_obj_attrs(cluster_container, 'name')
+        clusters.sort()
+        return clusters
+
+
     def do_back(self, args):
         """ Return to the main menu."""
         return True
+
 
     def do_ls(self, args):
         """ The command we know and love."""
@@ -142,6 +156,7 @@ class QueryCMDs(Cmd):
                 cmds.append(cmd)
 
         print(' '.join(cmds))
+
 
     @check_auth
     def do_networks(self, args):
@@ -163,6 +178,16 @@ class QueryCMDs(Cmd):
             for net in networks:
                 print(net)
 
+    def complete_networks(self, *ignored):
+        """Returns a list of available clusters in vSphere."""
+        cluster_container = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder,
+            [vim.ComputeResource], True
+        )
+        clusters = self.query.list_obj_attrs(cluster_container, 'name')
+        clusters.sort()
+        return clusters
+
     @check_auth
     def do_datastores(self, args):
         """Show datastores in cluster.\n  usage: datastores <cluster>"""
@@ -176,6 +201,22 @@ class QueryCMDs(Cmd):
             self.query.list_datastore_info(
                 cluster_container.view, args
             )
+
+
+    @check_auth
+    def do_datastore_most_space(self, args):
+        """Finds most free space in cluster.\nusage: best_datastore <cluster>"""
+        if not args:
+            print('please enter cluster name.')
+        else:
+            cluster_container = self.query.create_container(
+                self.auth.session, self.auth.session.content.rootFolder,
+                [vim.ComputeResource], True
+            )
+            self.query.datastore_most_space(
+                cluster_container.view, args
+            )
+
 
     @check_auth
     def do_folders(self, datacenter):
@@ -194,6 +235,18 @@ class QueryCMDs(Cmd):
             for folder in folders:
                 print(folder)
 
+
+    def complete_folders(self, *ignored):
+        """Returns a list of available datacenters in vSphere."""
+        datacenter_container = self.query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder,
+            [vim.Datacenter], True
+        )
+        datacenters = self.query.list_obj_attrs(datacenter_container, 'name')
+        datacenters.sort()
+        return datacenters
+
+
     @check_auth
     def do_datacenters(self, args):
         """Show available datacenters.\n  datacenters"""
@@ -206,6 +259,7 @@ class QueryCMDs(Cmd):
         datacenters.sort()
         for datacenter in datacenters:
             print(datacenter)
+
 
     @check_auth
     def do_clusters(self, args):
@@ -223,4 +277,5 @@ class QueryCMDs(Cmd):
         clusters.sort()
         for cluster in clusters:
             print(cluster)
+
 
