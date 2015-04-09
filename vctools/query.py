@@ -1,16 +1,14 @@
 #!/usr/bin/python
+"""Query class for vctools.  All methods that obtain info should go here."""
 from __future__ import division
 from __future__ import print_function
-#
-from pyVmomi import vim # pylint: disable=E0611
-#
 
 class Query(object):
+    """
+    Class handles queries for information regarding for vms, datastores
+    and networks.
+    """
     def __init__(self):
-        """
-        Class handles queries for information regarding for vms, datastores
-        and networks.
-        """
         pass
 
 
@@ -24,14 +22,14 @@ class Query(object):
             num /= 1024.0
 
 
-    def create_container(self, si, *args):
+    def create_container(self, s_instance, *args):
         """
         Wrapper method for creating managed objects inside vim.view.ViewManager.
 
         """
-        if hasattr(si, 'content'):
-            if hasattr(si.content, 'viewManager'):
-                return si.content.viewManager.CreateContainerView(*args)
+        if hasattr(s_instance, 'content'):
+            if hasattr(s_instance.content, 'viewManager'):
+                return s_instance.content.viewManager.CreateContainerView(*args)
             else:
                 raise Exception
         else:
@@ -49,7 +47,7 @@ class Query(object):
                 return obj
 
 
-    def list_obj_attrs(self, container, attr, view = True):
+    def list_obj_attrs(self, container, attr, view=True):
         """
         Returns a list of attributes inside of container.
 
@@ -68,7 +66,6 @@ class Query(object):
 
         """
         obj = self.get_obj(container, datacenter)
-        folders = []
 
         if hasattr(obj, 'vmFolder'):
             for folder in obj.vmFolder.childEntity:
@@ -76,18 +73,17 @@ class Query(object):
                     if folder.name == name:
                         return folder
                 if hasattr(folder, 'childEntity'):
-                    for f in folder.childEntity:
-                        if hasattr(f, 'childType'):
-                            if f.name == name:
-                                return f
+                    for item in folder.childEntity:
+                        if hasattr(item, 'childType'):
+                            if item.name == name:
+                                return item
 
     def list_vm_folders(self, container, datacenter):
         """
         Returns a list of Virtual Machine folders.  Sub folders will be listed
         with its parent -> subfolder. Currently it only searches for one
-        level of sub folders.
+        level of subfolders.
 
-        container
         """
         obj = self.get_obj(container, datacenter)
         folders = []
@@ -97,21 +93,39 @@ class Query(object):
                 if hasattr(folder, 'childType'):
                     folders.append(folder.name)
                 if hasattr(folder, 'childEntity'):
-                    for f in folder.childEntity:
-                        if hasattr(f, 'childType'):
-                            folders.append(f.parent.name + ' -> ' + f.name)
+                    for item in folder.childEntity:
+                        if hasattr(item, 'childType'):
+                            folders.append(item.parent.name+' -> '+item.name)
         return folders
 
 
+    def datastore_most_space(self, container, cluster):
+        """Attempts to find the datastore with the most free space."""
+        obj = self.get_obj(container, cluster)
+        datastores = {}
+        for datastore in obj.datastore:
+            # if datastore is a VMware File System
+            if datastore.summary.type == 'VMFS':
+                free = int(datastore.summary.freeSpace)
+                datastores.update({datastore.name:free})
 
-    def list_datastore_info(self, container, datacenter, filter = None):
+
+        most = max(datastores.itervalues())
+        for key, value in datastores.iteritems():
+            if value == most:
+                print(key)
+
+
+
+    # pylint: disable=too-many-locals
+    def list_datastore_info(self, container, cluster, filter=None):
         """
         Returns a summary of disk space for datastores listed inside a
-        datacenter.
+        cluster.
 
         """
 
-        obj = self.get_obj(container, datacenter)
+        obj = self.get_obj(container, cluster)
 
         datastore_info = []
         header = [
@@ -175,6 +189,7 @@ class Query(object):
 
 
         for row in datastore_info:
+            # pylint: disable=star-args
             print ('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
 
 
@@ -190,14 +205,16 @@ class Query(object):
 
         # recurse through datacenter object attributes looking for vms.
         if hasattr(obj, 'vmFolder'):
-            for vm in obj.vmFolder.childEntity:
-                if hasattr(vm, 'childEntity'):
-                    for v in vm.childEntity:
-                        vms.update({v.name:v._moId})
+            for virtmachine in obj.vmFolder.childEntity:
+                # pylint: disable=protected-access
+                if hasattr(virtmachine, 'childEntity'):
+                    for virt in virtmachine.childEntity:
+                        vms.update({virt.name:virt._moId})
                 else:
-                    vms.update({vm.name:v._moId})
+                    vms.update({virtmachine.name:virt._moId})
 
         return vms
+
 
     def get_vmid_by_name(self, container, datacenter, name):
         """
@@ -207,17 +224,16 @@ class Query(object):
 
         obj = self.get_obj(container, datacenter)
 
-        vms = {}
-
         # recurse through datacenter object attributes looking for vm that
         # matches hostname.
         if hasattr(obj, 'vmFolder'):
-            for vm in obj.vmFolder.childEntity:
-                if hasattr(vm, 'childEntity'):
-                    for v in vm.childEntity:
-                        if v.name == name:
-                            return v._moId
+            for virtmachine in obj.vmFolder.childEntity:
+                # pylint: disable=protected-access
+                if hasattr(virtmachine, 'childEntity'):
+                    for virt in virtmachine.childEntity:
+                        if virt.name == name:
+                            return virt._moId
                 else:
-                    if v.name == name:
-                        return v._moId
+                    if virt.name == name:
+                        return virt._moId
 
