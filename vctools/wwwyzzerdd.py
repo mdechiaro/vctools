@@ -129,7 +129,7 @@ class QueryCMDs(Cmd):
             self.prompt = '(query) # '
 
 
-    def complete_datastores(self, *ignored):
+    def complete_datastores(self, text, line, begidx, endidx):
         """Returns a list of available clusters in vSphere."""
         cluster_container = self.query.create_container(
             self.auth.session, self.auth.session.content.rootFolder,
@@ -137,7 +137,7 @@ class QueryCMDs(Cmd):
         )
         clusters = self.query.list_obj_attrs(cluster_container, 'name')
         clusters.sort()
-        return clusters
+        return [item for item in clusters if item.startswith(text)]
 
 
     def do_back(self, args):
@@ -178,7 +178,8 @@ class QueryCMDs(Cmd):
             for net in networks:
                 print(net)
 
-    def complete_networks(self, *ignored):
+
+    def complete_networks(self, text, line, begidx, endidx):
         """Returns a list of available clusters in vSphere."""
         cluster_container = self.query.create_container(
             self.auth.session, self.auth.session.content.rootFolder,
@@ -186,7 +187,8 @@ class QueryCMDs(Cmd):
         )
         clusters = self.query.list_obj_attrs(cluster_container, 'name')
         clusters.sort()
-        return clusters
+        return [item for item in clusters if item.startswith(text)]
+
 
     @check_auth
     def do_datastores(self, args):
@@ -236,7 +238,7 @@ class QueryCMDs(Cmd):
                 print(folder)
 
 
-    def complete_folders(self, *ignored):
+    def complete_folders(self, text, line, begidx, endidx):
         """Returns a list of available datacenters in vSphere."""
         datacenter_container = self.query.create_container(
             self.auth.session, self.auth.session.content.rootFolder,
@@ -244,7 +246,7 @@ class QueryCMDs(Cmd):
         )
         datacenters = self.query.list_obj_attrs(datacenter_container, 'name')
         datacenters.sort()
-        return datacenters
+        return [item for item in datacenters if item.startswith(text)]
 
 
     @check_auth
