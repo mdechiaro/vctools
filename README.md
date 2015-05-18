@@ -31,6 +31,17 @@ Query Datastore Info:
 
     ./vctools.py query vcenter --cluster cluster --datastores
 
+Reconfig Parameters
+
+    ./vctools.py reconfig vcenter --params key1=value1,key2=value2 --name hostname
+
+    Parameters can be mostly any key value option listed under the ConfigSpec class
+    inside the VMWare SDK.
+
+    The format is key=value, and multiple options can be set by
+    separating with a comma.  For example, use "numCPUs=2,memoryMB=8192" to
+    change the memory and CPU allocation on a VM.
+
 Unmount an ISO:
 
     ./vctools.py umount vcenter --name server
