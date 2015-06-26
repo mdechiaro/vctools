@@ -42,6 +42,9 @@ class VMConfig(Query):
             host.AnswerVM(qid, str(answer))
 
 
+    # pylint: disable=too-many-arguments
+    @classmethod
+    def upload_iso(cls, host, cookie, datacenter, dest_folder, datastore,
                    iso, verify=False):
         """
         Method uploads iso to dest_folder.
