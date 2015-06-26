@@ -1,4 +1,5 @@
 #!/usr/bin/python
+"""Various config options for Virtual Machines."""
 from __future__ import print_function
 from random import uniform
 from pyVmomi import vim # pylint: disable=E0611
@@ -8,6 +9,7 @@ from vctools.query import Query
 import requests
 import sys
 
+# pylint: disable=too-many-public-methods
 class VMConfig(Query):
     """
     Class simplifies VM builds outside of using the client or Web App.
@@ -105,6 +107,7 @@ class VMConfig(Query):
 
         print()
 
+
     @classmethod
     def assign_ip(cls, dhcp=False, *static):
         """
@@ -123,7 +126,12 @@ class VMConfig(Query):
 
             return nic
         else:
-            ipaddr, netmask, gateway, domain, dns1, dns2 = static
+            ipaddr = static[0]
+            netmask = static[1]
+            gateway = static[2]
+            domain = static[3]
+            dns1 = static[4]
+            dns2 = static[5]
             nic.adapter = vim.vm.customization.IPSettings()
             nic.adapter.ip = vim.vm.customization.FixedIp()
             nic.adapter.ip.ipAddress = ipaddr
@@ -187,7 +195,8 @@ class VMConfig(Query):
             # changes per host, and if so, then logic needs to be added to
             # obtain it
             cdrom.device.key = 3002
-            
+
+            # pylint: disable=line-too-long
             cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
@@ -230,6 +239,7 @@ class VMConfig(Query):
             # controllerKey is tied to IDE Controller
             cdrom.device.controllerKey = 201
 
+            # pylint: disable=line-too-long
             cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
@@ -241,7 +251,7 @@ class VMConfig(Query):
             return cdrom
 
 
-
+    # pylint: disable=too-many-arguments
     def disk_config(self, container, datastore, size, unit=0,
                     mode='persistent', thin=True):
         """
@@ -293,6 +303,7 @@ class VMConfig(Query):
 
         nic.device = vim.vm.device.VirtualVmxnet3()
 
+        # pylint: disable=line-too-long
         nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
         nic.device.backing.network = self.get_obj(container, network)
         nic.device.backing.deviceName = network
