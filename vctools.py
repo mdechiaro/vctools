@@ -333,7 +333,8 @@ class VCTools(object):
             pool = cluster.resourcePool
 
             folder = self.query.folders_lookup(
-                self.datacenters.view, self.opts.datacenter, spec['vcenter']['folder']
+                self.datacenters.view, self.opts.datacenter,
+                spec['vcenter']['folder']
             )
 
             # convert kilobytes to gigabytes
@@ -397,7 +398,9 @@ class VCTools(object):
                 )
 
             if self.opts.folders:
-                folders = self.query.list_vm_folders(self.datacenters.view, self.opts.datacenter)
+                folders = self.query.list_vm_folders(
+                    self.datacenters.view, self.opts.datacenter
+                )
                 folders.sort()
                 for folder in folders:
                     print(folder)
