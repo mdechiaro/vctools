@@ -26,6 +26,7 @@ class VCTools(object):
     """
     # pylint: disable=too-many-instance-attributes
     def __init__(self):
+        self.__version__ = '1.0'
         self.auth = None
         self.clusters = None
         self.datacenters = None
@@ -64,6 +65,12 @@ class VCTools(object):
 
         parser = argparse.ArgumentParser(
             description='vCenter Tools CLI'
+        )
+
+        parser.add_argument(
+            '--version', '-v', action='version',
+            version=self.__version__,
+            help='version number'
         )
 
         # vc (parent)
