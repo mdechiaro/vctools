@@ -7,6 +7,7 @@ from pyVmomi import vim # pylint: disable=E0611
 from vctools.query import Query
 #
 import requests
+import textwrap
 import sys
 
 # pylint: disable=too-many-public-methods
@@ -24,7 +25,23 @@ class VMConfig(Query):
         self.scsi_key = None
 
 
-    def upload_iso(self, host, cookie, datacenter, dest_folder, datastore,
+    @classmethod
+    def question_and_answer(cls, host):
+        """
+        Method handles the questions and answers provided by the program.
+        """
+        if host.runtime.question:
+            qid = host.runtime.question.id
+            print('\n')
+            print('\n'.join(textwrap.wrap(host.runtime.question.text, 80)))
+            for option in host.runtime.question.choice.choiceInfo:
+                print('\t%s: %s' % (option.key, option.label))
+
+            answer = raw_input('\nPlease select number: ').strip()
+
+            host.AnswerVM(qid, str(answer))
+
+
                    iso, verify=False):
         """
         Method uploads iso to dest_folder.
@@ -67,10 +84,18 @@ class VMConfig(Query):
         return response.status_code
 
 
-    def task_monitor(self, task):
-        """ method monitors the state of called task and outputs info. """
+    def task_monitor(self, task, question=True, host=False):
+        """
+        Method monitors the state of called task and outputs the current status.
+        Some tasks require that questions be answered before completion, and are
+        optional arguments in the case that some tasks don't require them.  The
+        VM object is required if the question argument is True.
+        """
         while task.info.state == 'running':
             while task.info.progress:
+                # Continually check to see if a question was raised.
+                if question and host:
+                    self.question_and_answer(host)
                 # Ensure it's an integer before printing, otherwise None
                 # Tracebacks appear.
                 if isinstance(task.info.progress, int):
@@ -342,7 +367,7 @@ class VMConfig(Query):
 
         print('Creating VM %s' % config['name'])
 
-        self.task_monitor(task)
+        self.task_monitor(task, False)
 
 
     def reconfig(self, host, **config):
@@ -364,23 +389,23 @@ class VMConfig(Query):
             )
         )
 
-        self.task_monitor(task)
+        self.task_monitor(task, True, host)
 
 
     def power(self, host, state):
         """Method manages power states."""
         if state == 'off':
-            self.task_monitor(host.PowerOff())
+            self.task_monitor(host.PowerOff(), True, host)
 
         if state == 'on':
-            self.task_monitor(host.PowerOn())
+            self.task_monitor(host.PowerOn(), True, host)
 
         if state == 'reset':
-            self.task_monitor(host.Reset())
+            self.task_monitor(host.Reset(), True, host)
 
         if state == 'reboot':
-            self.task_monitor(host.RebootGuest())
+            self.task_monitor(host.RebootGuest(), True, host)
 
         if state == 'shutdown':
-            self.task_monitor(host.ShutdownGuest())
+            self.task_monitor(host.ShutdownGuest(), True, host)
 
