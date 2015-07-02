@@ -303,182 +303,190 @@ class VCTools(object):
         the necessary code blocks if True.
         """
 
-        self.options()
+        try:
+            self.options()
 
-        if self.opts.cmd == 'wizard':
-            wizard = Wwwyzzerdd()
-            wizard.cmdloop()
-            sys.exit(0)
+            if self.opts.cmd == 'wizard':
+                wizard = Wwwyzzerdd()
+                wizard.cmdloop()
+                sys.exit(0)
 
-        self.auth = Auth(self.opts.vc)
-        if self.opts.passwd_file:
-            self.auth.login(self.opts.passwd_file)
-        else:
-            self.auth.login()
+            self.auth = Auth(self.opts.vc)
+            if self.opts.passwd_file:
+                self.auth.login(self.opts.passwd_file)
+            else:
+                self.auth.login()
 
-        self.query = Query()
-        vmcfg = VMConfig()
+            self.query = Query()
+            vmcfg = VMConfig()
 
-        self.create_containers()
+            self.create_containers()
 
 
-        if self.opts.cmd == 'create':
-            spec = yaml.load(self.opts.config)
-            datastore = spec['vcenter']['datastore']
+            if self.opts.cmd == 'create':
+                spec = yaml.load(self.opts.config)
+                datastore = spec['vcenter']['datastore']
 
-            cluster = self.query.get_obj(
-                self.clusters.view, spec['vcenter']['cluster']
-            )
-
-            pool = cluster.resourcePool
-
-            folder = self.query.folders_lookup(
-                self.datacenters.view, self.opts.datacenter,
-                spec['vcenter']['folder']
-            )
-
-            # convert kilobytes to gigabytes
-            kb_to_gb = 1024*1024
-
-            for scsi, disk in enumerate(spec['devices']['disks']):
-                # setup the first four disks on a separate scsi controller
-                self.devices.append(vmcfg.scsi_config(scsi))
-                self.devices.append(
-                    vmcfg.disk_config(
-                        cluster.datastore, datastore, disk*kb_to_gb, unit=scsi
-                    )
+                cluster = self.query.get_obj(
+                    self.clusters.view, spec['vcenter']['cluster']
                 )
 
-            for nic in spec['devices']['nics']:
-                self.devices.append(vmcfg.nic_config(cluster.network, nic))
+                pool = cluster.resourcePool
 
-            self.devices.append(vmcfg.cdrom_config())
+                folder = self.query.folders_lookup(
+                    self.datacenters.view, self.opts.datacenter,
+                    spec['vcenter']['folder']
+                )
 
-            vmcfg.create(
-                folder, pool, datastore, *self.devices, **spec['config']
-            )
+                # convert kilobytes to gigabytes
+                kb_to_gb = 1024*1024
+
+                for scsi, disk in enumerate(spec['devices']['disks']):
+                    # setup the first four disks on a separate scsi controller
+                    self.devices.append(vmcfg.scsi_config(scsi))
+                    self.devices.append(
+                        vmcfg.disk_config(
+                            cluster.datastore, datastore, disk*kb_to_gb,
+                            unit=scsi
+                        )
+                    )
+
+                for nic in spec['devices']['nics']:
+                    self.devices.append(vmcfg.nic_config(cluster.network, nic))
+
+                self.devices.append(vmcfg.cdrom_config())
+
+                vmcfg.create(
+                    folder, pool, datastore, *self.devices, **spec['config']
+                )
 
 
-        if self.opts.cmd == 'mount':
-            if self.opts.datastore and self.opts.path and self.opts.name:
+            if self.opts.cmd == 'mount':
+                if self.opts.datastore and self.opts.path and self.opts.name:
+                    host = self.query.get_obj(
+                        self.virtual_machines.view, self.opts.name
+                    )
+
+                    print('Mounting [%s] %s on %s' % (
+                        self.opts.datastore, self.opts.path, self.opts.name
+                        )
+                    )
+                    cdrom_cfg = []
+                    cdrom_cfg.append(vmcfg.cdrom_config(
+                        self.opts.datastore, self.opts.path
+                        )
+                    )
+                    config = {'deviceChange' : cdrom_cfg}
+                    # pylint: disable=star-args
+                    vmcfg.reconfig(host, **config)
+
+
+            if self.opts.cmd == 'power':
+                if self.opts.name:
+                    host = self.query.get_obj(
+                        self.virtual_machines.view, self.opts.name
+                    )
+                    print('%s changing power state to %s' % (
+                        self.opts.name, self.opts.power
+                        )
+                    )
+                    vmcfg.power(host, self.opts.power)
+
+
+            if self.opts.cmd == 'query':
+                if self.opts.datastores:
+                    self.query.list_datastore_info(
+                        self.clusters.view, self.opts.cluster
+                    )
+
+                if self.opts.folders:
+                    folders = self.query.list_vm_folders(
+                        self.datacenters.view, self.opts.datacenter
+                    )
+                    folders.sort()
+                    for folder in folders:
+                        print(folder)
+
+                if self.opts.clusters:
+                    clusters = self.query.list_obj_attrs(self.clusters, 'name')
+                    clusters.sort()
+                    for cluster in clusters:
+                        print(cluster)
+
+
+                if self.opts.networks:
+                    cluster = self.query.get_obj(
+                        self.clusters.view, self.opts.cluster
+                    )
+                    networks = self.query.list_obj_attrs(
+                        cluster.network, 'name', view=False
+                    )
+                    networks.sort()
+                    for net in networks:
+                        print(net)
+
+                if self.opts.vms:
+                    vms = self.query.list_vm_info(
+                            self.datacenters.view, self.opts.datacenter
+                    )
+                    for key, value in vms.iteritems():
+                        print(key, value)
+
+            if self.opts.cmd == 'reconfig':
+                host = self.query.get_obj(
+                    self.virtual_machines.view, self.opts.name
+                )
+                vmcfg.reconfig(host, **self.opts.params)
+
+            if self.opts.cmd == 'umount':
                 host = self.query.get_obj(
                     self.virtual_machines.view, self.opts.name
                 )
 
-                print('Mounting [%s] %s on %s' % (
-                    self.opts.datastore, self.opts.path, self.opts.name
-                    )
-                )
+                print('Unmounting ISO on %s' % (self.opts.name))
                 cdrom_cfg = []
-                cdrom_cfg.append(vmcfg.cdrom_config(
-                    self.opts.datastore, self.opts.path
-                    )
-                )
+                cdrom_cfg.append(vmcfg.cdrom_config(umount=True))
                 config = {'deviceChange' : cdrom_cfg}
                 # pylint: disable=star-args
                 vmcfg.reconfig(host, **config)
 
-
-        if self.opts.cmd == 'power':
-            if self.opts.name:
-                host = self.query.get_obj(
-                    self.virtual_machines.view, self.opts.name
-                )
-                print('%s changing power state to %s' % (
-                    self.opts.name, self.opts.power
+            if self.opts.cmd == 'upload':
+                print('uploading ISO: %s' % (self.opts.iso))
+                print('file size: %s' % (
+                    self.query.disk_size_format(
+                        os.path.getsize(self.opts.iso)
+                        )
                     )
                 )
-                vmcfg.power(host, self.opts.power)
-
-
-        if self.opts.cmd == 'query':
-            if self.opts.datastores:
-                self.query.list_datastore_info(
-                    self.clusters.view, self.opts.cluster
-                )
-
-            if self.opts.folders:
-                folders = self.query.list_vm_folders(
-                    self.datacenters.view, self.opts.datacenter
-                )
-                folders.sort()
-                for folder in folders:
-                    print(folder)
-
-            if self.opts.clusters:
-                clusters = self.query.list_obj_attrs(self.clusters, 'name')
-                clusters.sort()
-                for cluster in clusters:
-                    print(cluster)
-
-
-            if self.opts.networks:
-                cluster = self.query.get_obj(
-                    self.clusters.view, self.opts.cluster
-                )
-                networks = self.query.list_obj_attrs(
-                    cluster.network, 'name', view=False
-                )
-                networks.sort()
-                for net in networks:
-                    print(net)
-
-            if self.opts.vms:
-                vms = self.query.list_vm_info(
-                        self.datacenters.view, self.opts.datacenter
-                )
-                for key, value in vms.iteritems():
-                    print(key, value)
-
-        if self.opts.cmd == 'reconfig':
-            host = self.query.get_obj(
-                self.virtual_machines.view, self.opts.name
-            )
-            vmcfg.reconfig(host, **self.opts.params)
-
-        if self.opts.cmd == 'umount':
-            host = self.query.get_obj(
-                self.virtual_machines.view, self.opts.name
-            )
-
-            print('Unmounting ISO on %s' % (self.opts.name))
-            cdrom_cfg = []
-            cdrom_cfg.append(vmcfg.cdrom_config(umount=True))
-            config = {'deviceChange' : cdrom_cfg}
-            # pylint: disable=star-args
-            vmcfg.reconfig(host, **config)
-
-        if self.opts.cmd == 'upload':
-            print('uploading ISO: %s' % (self.opts.iso))
-            print('file size: %s' % (
-                self.query.disk_size_format(
-                    os.path.getsize(self.opts.iso)
+                print('remote location: [%s] %s' % (
+                    self.opts.datastore, self.opts.dest
                     )
                 )
-            )
-            print('remote location: [%s] %s' % (
-                self.opts.datastore, self.opts.dest
+
+                print('This may take some time.')
+
+                # pylint: disable=protected-access
+                result = vmcfg.upload_iso(
+                    self.opts.vc, self.auth.session._stub.cookie,
+                    self.opts.datacenter, self.opts.dest, self.opts.datastore,
+                    self.opts.iso, self.opts.verify_ssl
                 )
-            )
 
-            print('This may take some time.')
+                print('result: %s' % (result))
 
-            # pylint: disable=protected-access
-            result = vmcfg.upload_iso(
-                self.opts.vc, self.auth.session._stub.cookie,
-                self.opts.datacenter, self.opts.dest, self.opts.datastore,
-                self.opts.iso, self.opts.verify_ssl
-            )
-
-            print('result: %s' % (result))
-
-            if result == 200 or 201:
-                print('%s uploaded successfully' % (self.opts.iso))
-            else:
-                print('%s uploaded failed' % (self.opts.iso))
+                if result == 200 or 201:
+                    print('%s uploaded successfully' % (self.opts.iso))
+                else:
+                    print('%s uploaded failed' % (self.opts.iso))
 
 
-        self.auth.logout()
+            self.auth.logout()
+
+        except KeyboardInterrupt:
+            print('Exiting.')
+            self.auth.logout()
+            sys.exit(1)
+
 
 if __name__ == '__main__':
     # pylint: disable=invalid-name
