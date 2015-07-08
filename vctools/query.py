@@ -121,7 +121,7 @@ class Query(object):
 
 
     # pylint: disable=too-many-locals
-    def list_datastore_info(self, container, cluster, filter=None):
+    def list_datastore_info(self, container, cluster, limit=None):
         """
         Returns a summary of disk space for datastores listed inside a
         cluster.
@@ -136,9 +136,9 @@ class Query(object):
         ]
         datastore_info.append(header)
 
-        if filter:
+        if limit:
             for datastore in obj.datastore:
-                if filter in datastore.name:
+                if limit in datastore.name:
                     info = []
                     # type is long(bytes)
                     free = int(datastore.summary.freeSpace)
