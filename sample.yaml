@@ -22,20 +22,6 @@ devices:
 # These are command line options that can be automated as part of the server
 # process.  Options are vctools command-line options.
 vctools_cmds:
-    mkbootiso:
-        config:
-            iso: /mnt/iso/rhel7/
-        # Insert all supported kickstart options here.  Add any extras under options.
-        kickstart:
-            ks: 'http://www.hostname.com/ks'
-        options:
-            hostname: 'host.domain.com'
-            ip: '10.10.10.10'
-            netmask: '255.255.255.0'
-            gateway: '10.10.10.1'
-            dns: '4.2.2.2'
-            ksdevice: 'eth0'
-            vlan: '100'
     # upload iso to datastore
     upload:
         # sub-options for uploading an iso

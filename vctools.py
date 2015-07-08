@@ -367,9 +367,6 @@ class VCTools(object):
                     # 3. mount the iso
                     # 4. power on
                     # 5. umount the iso (some point in the future)
-                    if spec['vctools_cmds']['mkbootiso']:
-                        # create the iso
-                        pass
                     if spec['vctools_cmds']['upload']:
                         # upload iso
                         iso = spec['vctools_cmds']['upload']['iso']
