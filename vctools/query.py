@@ -22,7 +22,8 @@ class Query(object):
             num /= 1024.0
 
 
-    def create_container(self, s_instance, *args):
+    @classmethod
+    def create_container(cls, s_instance, *args):
         """
         Wrapper method for creating managed objects inside vim.view.ViewManager.
 
@@ -36,7 +37,8 @@ class Query(object):
             raise Exception
 
 
-    def get_obj(self, container, name):
+    @classmethod
+    def get_obj(cls, container, name):
         """
         Returns an object inside of ContainerView if it matches name.
 
@@ -47,7 +49,8 @@ class Query(object):
                 return obj
 
 
-    def list_obj_attrs(self, container, attr, view=True):
+    @classmethod
+    def list_obj_attrs(cls, container, attr, view=True):
         """
         Returns a list of attributes inside of container.
 
