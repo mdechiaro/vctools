@@ -483,7 +483,7 @@ class VCTools(object):
             self.auth.logout()
 
         except KeyboardInterrupt:
-            print('Exiting.')
+            print('Interrupt caught, logging out and exiting.')
             self.auth.logout()
             sys.exit(1)
 
