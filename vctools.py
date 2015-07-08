@@ -360,6 +360,102 @@ class VCTools(object):
                     folder, pool, datastore, *self.devices, **spec['config']
                 )
 
+                if spec['vctools_cmds']:
+                    # order should be the following if all are called.
+                    # 1. create the iso
+                    # 2. upload the iso
+                    # 3. mount the iso
+                    # 4. power on
+                    # 5. umount the iso (some point in the future)
+                    if spec['vctools_cmds']['mkbootiso']:
+                        # create the iso
+                        pass
+                    if spec['vctools_cmds']['upload']:
+                        # upload iso
+                        iso = spec['vctools_cmds']['upload']['iso']
+                        dest = spec['vctools_cmds']['upload']['dest']
+                        datastore = spec['vctools_cmds']['upload']['datastore']
+                        # pylint: disable=line-too-long
+                        verify_ssl = spec['vctools_cmds']['upload']['verify_ssl']
+                        datacenter = spec['vctools_cmds']['upload']['datacenter']
+
+                        print('uploading ISO: %s' % (iso))
+                        print('file size: %s' % (
+                            self.query.disk_size_format(
+                                os.path.getsize(iso)
+                                )
+                            )
+                        )
+                        print('remote location: [%s] %s' % (
+                            datastore, dest
+                            )
+                        )
+
+                        print('This may take some time.')
+
+                        # pylint: disable=protected-access
+                        result = vmcfg.upload_iso(
+                            self.opts.vc, self.auth.session._stub.cookie,
+                            datacenter, dest, datastore,
+                            iso, verify_ssl
+                        )
+
+                        print('result: %s' % (result))
+
+                        if result == 200 or 201:
+                            print('%s uploaded successfully' % (iso))
+                        else:
+                            print('%s uploaded failed' % (iso))
+
+                    if spec['vctools_cmds']['mount']:
+                        # mount iso
+                        name = spec['vcenter']['config']['name']
+                        datastore = spec['vctools_cmds']['mount']['datastore']
+                        path = spec['vctools_cmds']['mount']['path']
+                        #
+                        host = self.query.get_obj(
+                            self.virtual_machines.view, name
+                        )
+                        #
+                        print('Mounting [%s] %s on %s' % (
+                            datastore, path, name
+                            )
+                        )
+                        cdrom_cfg = []
+                        cdrom_cfg.append(vmcfg.cdrom_config(
+                            datastore, path
+                            )
+                        )
+                        config = {'deviceChange' : cdrom_cfg}
+                        # pylint: disable=star-args
+                        vmcfg.reconfig(host, **config)
+
+                    if spec['vctools_cmds']['power']:
+                        # change power state
+                        name = spec['vcenter']['config']['name']
+                        host = self.query.get_obj(
+                            self.virtual_machines.view, name
+                        )
+                        print('%s changing power state to %s' % (
+                            name, self.opts.power
+                            )
+                        )
+                        vmcfg.power(
+                            host, spec['vctools_cmds']['power']
+                        )
+
+                    if spec['vctools_cmds']['umount']:
+                        name = spec['vcenter']['config']['name']
+                        host = self.query.get_obj(
+                            self.virtual_machines.view, name
+                        )
+                        print('Unmounting ISO on %s' % (name))
+                        cdrom_cfg = []
+                        cdrom_cfg.append(vmcfg.cdrom_config(umount=True))
+                        config = {'deviceChange' : cdrom_cfg}
+                        # pylint: disable=star-args
+                        vmcfg.reconfig(host, **config)
+
 
             if self.opts.cmd == 'mount':
                 if self.opts.datastore and self.opts.path and self.opts.name:
