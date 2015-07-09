@@ -1,0 +1,34 @@
+# vim: tabstop=4 shiftwidth=4 expandtab
+# .vctoolsrc
+# Add your default options here, and use the command-line for overrides.
+#
+# mount options for isos
+[mount]
+# sub-options for mounting an iso
+#
+# datastore: Name of datastore where the ISO is located.
+# path: Path inside datastore where the ISO is located.
+# name: name attribute of Virtual Machine object
+datastore=name_of_datastore
+path=path/to/isofolder
+
+[upload]
+# sub-options for uploading an iso
+#
+# dest: destination folder where the iso will reside.
+# datastore: datastore where the iso will resides
+# verify-ssl: verify SSL certificate.
+# datacenter: vCenter Datacenter.
+dest=path/to/isofolder
+datastore=name_of_datastore
+verify-ssl=False
+datacenter=Linux
+
+# call umount action in a set time period in the future.
+[umount]
+# TODO seconds in the future
+# schedule: 900
+# whether to power on the VM as part of the creation process.
+[power]
+state=on
+
