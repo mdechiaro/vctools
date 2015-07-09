@@ -1,5 +1,5 @@
-!/.gitignore
 .*
+!.vctoolsrc
 *.pyc
 *.log
 *.asc
