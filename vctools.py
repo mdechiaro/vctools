@@ -13,6 +13,7 @@ import os
 import sys
 import yaml
 #
+from ConfigParser import SafeConfigParser
 from pyVmomi import vim
 from vctools.auth import Auth
 from vctools.vmconfig import VMConfig
@@ -60,6 +61,8 @@ class VCTools(object):
 
         return params
 
+
+    # pylint: disable=too-many-statements
     def options(self):
         """argparse command line options."""
 
@@ -263,10 +266,25 @@ class VCTools(object):
 
         wizard_parser.set_defaults(cmd='wizard')
 
+        # override options with defaults in dotfiles
+        dotrc_parser = SafeConfigParser()
+        dotrc_name = '~/.vctoolsrc'
+        dotrc_path = os.path.expanduser(dotrc_name)
+
+        dotrc_parser.read(dotrc_path)
+
+        # set defaults for argparse options using a dotfile config
+        upload_parser.set_defaults(**dict(dotrc_parser.items('upload')))
+        mount_parser.set_defaults(**dict(dotrc_parser.items('mount')))
 
         self.opts = parser.parse_args()
         self.help = parser.print_help
 
+        # mount path needs to point to an iso, and it doesn't make sense to add
+        # to the dotrc file, so this will append the self.opts.name value to it
+        if self.opts.cmd == 'mount':
+            if not self.opts.path.endswith('.iso'):
+                self.opts.path = self.opts.path + '/' + self.opts.name + '.iso'
 
     def create_containers(self):
         """
