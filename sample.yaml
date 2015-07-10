@@ -19,35 +19,7 @@ devices:
       - 30
     nics:
       - vlan_1234_test_network
-# These are command line options that can be automated as part of the server
-# process.  Options are vctools command-line options.
-vctools_cmds:
-    # upload iso to datastore
-    upload:
-        # sub-options for uploading an iso
-        #
-        # iso: iso file that needs to be uploaded to vCenter.
-        # dest: destination folder where the iso will reside.
-        # datastore: datastore where the iso will reside. default: ISO_Templates
-        # verify-ssl: verify SSL certificate. default: False
-        # datacenter: vCenter Datacenter. default: Linux
-        iso: /tmp/hostname.iso
-        dest: path/to/isofolder
-        datastore: name_of_datastore
-        verify-ssl: False
-        datacenter: Linux
-    # mount newly created iso
-    mount:
-        # sub-options for mounting an iso
-        #
-        # datastore: Name of datastore where the ISO is located.
-        # path: Path inside datastore where the ISO is located.
-        # name: name attribute of Virtual Machine objec
-        datastore: name_of_datastore
-        path: path/to/isofolder/hostname.iso
-    # call umount action in a set time period in the future.
-    umount:
-        # seconds in the future
-        schedule: 900
-    # whether to power on the VM as part of the creation process.
-    power: on
+#
+upload: /tmp/hostname.iso
+mount:
+power: on
