@@ -77,12 +77,12 @@ class VCTools(object):
         )
 
         # vc (parent)
-        vc_parser = argparse.ArgumentParser(add_help=False)
-        vc_parser.add_argument(
+        general_parser = argparse.ArgumentParser(add_help=False)
+        general_parser.add_argument(
             'vc',
             help='vCenter host'
         )
-        vc_parser.add_argument(
+        general_parser.add_argument(
             '--passwd-file', metavar='',
             help='GPG encrypted passwd file'
         )
@@ -95,7 +95,7 @@ class VCTools(object):
 
         # create
         create_parser = subparsers.add_parser(
-            'create', parents=[vc_parser],
+            'create', parents=[general_parser],
             help='Create Virtual Machines'
         )
         create_parser.set_defaults(cmd='create')
@@ -112,7 +112,7 @@ class VCTools(object):
 
         # mount
         mount_parser = subparsers.add_parser(
-            'mount', parents=[vc_parser],
+            'mount', parents=[general_parser],
             help='Mount ISO to CD-Rom device'
         )
 
@@ -136,7 +136,7 @@ class VCTools(object):
 
         # power
         power_parser = subparsers.add_parser(
-            'power', parents=[vc_parser],
+            'power', parents=[general_parser],
             help='Power Management for Virtual Machines'
         )
         power_parser.set_defaults(cmd='power')
@@ -153,7 +153,7 @@ class VCTools(object):
 
         # query
         query_parser = subparsers.add_parser(
-            'query', parents=[vc_parser],
+            'query', parents=[general_parser],
             help='Query Info'
         )
         query_parser.set_defaults(cmd='query')
@@ -196,7 +196,7 @@ class VCTools(object):
 
         # reconfig
         reconfig_parser = subparsers.add_parser(
-            'reconfig', parents=[vc_parser],
+            'reconfig', parents=[general_parser],
             help='Reconfigure Attributes for Virtual Machines.'
         )
         reconfig_parser.set_defaults(cmd='reconfig')
@@ -215,7 +215,7 @@ class VCTools(object):
 
         # umount
         umount_parser = subparsers.add_parser(
-            'umount', parents=[vc_parser],
+            'umount', parents=[general_parser],
             help='Unmount ISO from CD-Rom device'
         )
 
@@ -228,7 +228,7 @@ class VCTools(object):
 
         # upload
         upload_parser = subparsers.add_parser(
-            'upload', parents=[vc_parser],
+            'upload', parents=[general_parser],
             help='Upload File'
         )
         upload_parser.set_defaults(cmd='upload')
@@ -274,7 +274,7 @@ class VCTools(object):
         dotrc_parser.read(dotrc_path)
 
         # set defaults for argparse options using a dotfile config
-        vc_parser.set_defaults(**dict(dotrc_parser.items('general')))
+        general_parser.set_defaults(**dict(dotrc_parser.items('general')))
         upload_parser.set_defaults(**dict(dotrc_parser.items('upload')))
         mount_parser.set_defaults(**dict(dotrc_parser.items('mount')))
 
