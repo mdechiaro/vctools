@@ -371,6 +371,10 @@ class VCTools(object):
                 spec = yaml.load(self.opts.config)
                 datastore = spec['vcenter']['datastore']
 
+                # allow overrides of the datacenter in config
+                if 'datacenter' in spec['vcenter']:
+                    self.opts.datacenter = spec['vcenter']['datacenter']
+
                 cluster = self.query.get_obj(
                     self.clusters.view, spec['vcenter']['cluster']
                 )
