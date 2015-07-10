@@ -289,6 +289,20 @@ class VCTools(object):
                     self.opts.path = self.opts.path + self.opts.name + '.iso'
                 else:
                     self.opts.path = self.opts.path +'/'+ self.opts.name +'.iso'
+            # path is relative in vsphere, so we strip off the first character.
+            if self.opts.path.startswith('/'):
+                self.opts.path = self.opts.path.lstrip('/')
+
+        if self.opts.cmd == 'upload':
+            # trailing slash is in upload method, so we strip it out here.
+            if self.opts.dest.endswith('/'):
+                self.opts.dest = self.opts.dest.rstrip('/')
+            # path is relative in vsphere, so we strip off the first character.
+            if self.opts.dest.startswith('/'):
+                self.opts.dest = self.opts.dest.lstrip('/')
+            if self.opts.verify_ssl:
+                self.opts.verify_ssl = dotrc_parser.getboolean(
+                    'upload', 'verify_ssl')
 
 
     def create_containers(self):
