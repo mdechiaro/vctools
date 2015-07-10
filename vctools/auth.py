@@ -1,4 +1,5 @@
 #!/usr/bin/python
+"""Authentication Class for vctools."""
 from __future__ import print_function
 #
 from getpass import getpass, getuser
@@ -9,9 +10,9 @@ import os
 import subprocess
 
 class Auth(object):
+    """Authentication Class."""
     def __init__(self, host=None, port=443):
         """
-        Authenication Class.
         :param host:       This string is the vSphere host host.
         :param port:       Port to connect to host.
         """
@@ -23,7 +24,9 @@ class Auth(object):
         self.ticket = None
 
 
-    def decrypt_gpg_file(self, passwd_file):
+    @classmethod
+    def decrypt_gpg_file(cls, passwd_file):
+        """Decrypts a gpg file containing a password for auth."""
         if passwd_file.startswith('~'):
             passwd_file = os.path.expanduser(passwd_file)
 
@@ -83,6 +86,7 @@ class Auth(object):
 
 
     def logout(self):
+        """Logout of vSphere."""
         Disconnect(self.session)
         print ('\nlog out successful')
 
