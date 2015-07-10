@@ -9,22 +9,15 @@ import os
 import subprocess
 
 class Auth(object):
-    def __init__(self, host=None, port=443, domain='adlocal', user=None,
-                 passwd=None):
+    def __init__(self, host=None, port=443):
         """
         Authenication Class.
         :param host:       This string is the vSphere host host.
         :param port:       Port to connect to host.
-        :param domain:     This is for changing the domain to login if needed.
-        :param user:       Username to connect to host.
-        :param passwd:     Password to connect to host.
         """
 
         self.host = host
         self.port = port
-        self.domain = domain
-        self.user = user
-        self.passwd = passwd
         #
         self.session = None
         self.ticket = None
@@ -41,35 +34,36 @@ class Auth(object):
         return output
 
 
-    def login(self, passwd_file=None):
+    def login(self, user=None, domain=None, passwd_file=None):
         """
         Login to vSphere host
 
         :param passwd_file: path to GPG encrypted passwd file
+        :param domain:     This is for changing the domain to login if needed.
+        :param user:       Username to connect to host.
         """
 
-        if self.user:
-            if self.domain:
-                self.user = self.domain + '\\' + self.user
+        if user:
+            if domain:
+                user = domain + '\\' + user
             else:
                 pass
         else:
-            if self.domain:
-                self.user = self.domain + '\\' + getuser()
+            if domain:
+                user = domain + '\\' + getuser()
             else:
-                self.user = getuser()
+                user = getuser()
 
-        print ('Logging in as %s' % self.user)
+        print ('Logging in as %s' % user)
 
         if passwd_file:
             passwd = self.decrypt_gpg_file(passwd_file)
         else:
-            if not self.passwd:
-                passwd = getpass()
+            passwd = getpass()
 
         try:
             self.session = SmartConnect(
-                host=self.host, user=self.user, pwd=passwd, port=self.port
+                host=self.host, user=user, pwd=passwd, port=self.port
             )
 
             session_mgr = self.session.content.sessionManager
@@ -83,7 +77,7 @@ class Auth(object):
             passwd = None
 
         except vim.fault.InvalidLogin as loginerr:
-            self.user = None
+            user = None
             passwd = None
             print ('error: %s' % (loginerr))
 

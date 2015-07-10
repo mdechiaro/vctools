@@ -357,10 +357,9 @@ class VCTools(object):
                 sys.exit(0)
 
             self.auth = Auth(self.opts.vc)
-            if self.opts.passwd_file:
-                self.auth.login(self.opts.passwd_file)
-            else:
-                self.auth.login()
+            self.auth.login(
+                self.opts.user, self.opts.domain, self.opts.passwd_file
+            )
 
             self.query = Query()
             vmcfg = VMConfig()
