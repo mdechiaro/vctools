@@ -86,6 +86,14 @@ class VCTools(object):
             '--passwd-file', metavar='',
             help='GPG encrypted passwd file'
         )
+        general_parser.add_argument(
+            '--user', metavar='',
+            help='username'
+        )
+        general_parser.add_argument(
+            '--domain', metavar='',
+            help='domain'
+        )
 
 
 
