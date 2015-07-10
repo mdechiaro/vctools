@@ -76,7 +76,7 @@ class VCTools(object):
             help='version number'
         )
 
-        # vc (parent)
+        # general (parent)
         general_parser = argparse.ArgumentParser(add_help=False)
         general_parser.add_argument(
             'vc',
