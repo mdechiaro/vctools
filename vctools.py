@@ -274,6 +274,7 @@ class VCTools(object):
         dotrc_parser.read(dotrc_path)
 
         # set defaults for argparse options using a dotfile config
+        vc_parser.set_defaults(**dict(dotrc_parser.items('general')))
         upload_parser.set_defaults(**dict(dotrc_parser.items('upload')))
         mount_parser.set_defaults(**dict(dotrc_parser.items('mount')))
 
@@ -284,7 +285,11 @@ class VCTools(object):
         # to the dotrc file, so this will append the self.opts.name value to it
         if self.opts.cmd == 'mount':
             if not self.opts.path.endswith('.iso'):
-                self.opts.path = self.opts.path + '/' + self.opts.name + '.iso'
+                if self.opts.path.endswith('/'):
+                    self.opts.path = self.opts.path + self.opts.name + '.iso'
+                else:
+                    self.opts.path = self.opts.path +'/'+ self.opts.name +'.iso'
+
 
     def create_containers(self):
         """
