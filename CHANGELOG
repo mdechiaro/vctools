@@ -1,0 +1,9 @@
+# vim: ts=4 sw=4 expandtab syntax=text
+
+version: 1.1
+    2551f56786: bugfix: Adding exception handler for SIGINT in main method. 
+    041fa91c72: feature: Adding dotrc config using ConfigParser module.
+    5056339c53: bugfix: Auth changes allow for user and pass to be passed.
+    4b9e37e14d: feature: Adding initial .vctoolsrc
+version: 1.0
+    6f85648308: feature: Support for Q&A (Questions and Answers) handling.
