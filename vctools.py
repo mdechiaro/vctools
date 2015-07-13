@@ -283,6 +283,7 @@ class VCTools(object):
 
         # set defaults for argparse options using a dotfile config
         general_parser.set_defaults(**dict(dotrc_parser.items('general')))
+        create_parser.set_defaults(**dict(dotrc_parser.items('create')))
         upload_parser.set_defaults(**dict(dotrc_parser.items('upload')))
         mount_parser.set_defaults(**dict(dotrc_parser.items('mount')))
 
@@ -308,9 +309,11 @@ class VCTools(object):
             # path is relative in vsphere, so we strip off the first character.
             if self.opts.dest.startswith('/'):
                 self.opts.dest = self.opts.dest.lstrip('/')
+            # verify_ssl needs to be a boolean value.
             if self.opts.verify_ssl:
                 self.opts.verify_ssl = dotrc_parser.getboolean(
-                    'upload', 'verify_ssl')
+                    'upload', 'verify_ssl'
+                )
 
 
     def create_containers(self):
