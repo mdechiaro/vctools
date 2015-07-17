@@ -1,6 +1,5 @@
 # vim: shiftwidth=4 tabstop=4 expandtab
 # sample yaml for creating servers
-# v1.2 vctools required
 ---
 vcenter:
     cluster: 1234_test_cluster
@@ -19,7 +18,3 @@ devices:
       - 30
     nics:
       - vlan_1234_test_network
-#
-upload: /tmp/hostname.iso
-mount:
-power: on
