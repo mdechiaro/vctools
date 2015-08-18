@@ -4,7 +4,9 @@
 vcenter:
     cluster: 1234_test_cluster
     folder: 'Linux'
-    datastore: Test_Datastore_01
+    # If datastore is not provided then you will be prompted during the 
+    # creation process.
+    # datastore: Test_Datastore_01
 config:
     name: hostname
     guestId: rhel6_64Guest
