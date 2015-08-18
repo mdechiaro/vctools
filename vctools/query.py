@@ -9,7 +9,7 @@ class Query(object):
     and networks.
     """
     def __init__(self):
-        pass
+        self.datastore_info = None
 
 
     @classmethod
@@ -118,6 +118,84 @@ class Query(object):
             if value == most:
                 print(key)
 
+
+    # pylint: disable=too-many-locals
+    def return_datastores(self, container, cluster, header=True, limit=None):
+        """
+        Returns a summary of disk space for datastores listed inside a
+        cluster. Identical to list_datastore_info, but returns the datastores
+        as an list object instead of printing them to stdout.
+        """
+
+        obj = self.get_obj(container, cluster)
+
+        self.datastore_info = []
+
+        if header:
+            header = [
+            'Datastore', 'Capacity', 'Provisioned', 'Pct', 'Free Space', 'Pct'
+            ]
+            self.datastore_info.append(header)
+
+        if limit:
+            for datastore in obj.datastore:
+                if limit in datastore.name:
+                    info = []
+                    # type is long(bytes)
+                    free = int(datastore.summary.freeSpace)
+                    capacity = int(datastore.summary.capacity)
+
+                    # uncommitted is sometimes None, so we'll convert that to 0.
+                    if not datastore.summary.uncommitted:
+                        uncommitted = int(0)
+                    else:
+                        uncommitted = int(datastore.summary.uncommitted)
+
+                    provisioned = int((capacity - free) + uncommitted)
+
+                    provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
+                    free_pct = '{0:.2%}'.format((free / capacity))
+
+                    info.append(datastore.name)
+                    info.append(self.disk_size_format(capacity))
+                    info.append(self.disk_size_format(provisioned))
+                    info.append(provisioned_pct)
+                    info.append(self.disk_size_format(free))
+                    info.append(free_pct)
+
+                    self.datastore_info.append(info)
+        else:
+            for datastore in obj.datastore:
+                info = []
+                # type is long(bytes)
+                free = int(datastore.summary.freeSpace)
+                capacity = int(datastore.summary.capacity)
+
+                # uncommitted is sometimes None, so we'll convert that to 0.
+                if not datastore.summary.uncommitted:
+                    uncommitted = int(0)
+                else:
+                    uncommitted = int(datastore.summary.uncommitted)
+
+                provisioned = int((capacity - free) + uncommitted)
+
+                provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
+                free_pct = '{0:.2%}'.format((free / capacity))
+
+                info.append(datastore.name)
+                info.append(self.disk_size_format(capacity))
+                info.append(self.disk_size_format(provisioned))
+                info.append(provisioned_pct)
+                info.append(self.disk_size_format(free))
+                info.append(free_pct)
+
+                self.datastore_info.append(info)
+
+
+        # sort by datastore name
+        self.datastore_info.sort(key=lambda x: x[0])
+
+        return self.datastore_info
 
 
     # pylint: disable=too-many-locals
