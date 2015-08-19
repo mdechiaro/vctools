@@ -37,6 +37,7 @@ class VCTools(object):
         self.opts = None
         self.query = None
         self.virtual_machines = None
+        self.vmcfg = None
 
     @staticmethod
     def _mkdict(args):
@@ -109,7 +110,7 @@ class VCTools(object):
         create_parser.set_defaults(cmd='create')
 
         create_parser.add_argument(
-           'config', type=file,
+           'config', nargs='+', type=file,
             help='YaML config for creating new Virtual Machines.'
         )
 
@@ -137,7 +138,7 @@ class VCTools(object):
         )
 
         mount_parser.add_argument(
-           '--name', metavar='',
+           '--name', nargs='+', metavar='',
             help='name attribute of Virtual Machine object.'
         )
 
@@ -155,7 +156,7 @@ class VCTools(object):
 
         )
         power_parser.add_argument(
-           '--name', metavar='',
+           '--name', nargs='+', metavar='',
             help='name attribute of Virtual Machine object.'
         )
 
@@ -230,7 +231,7 @@ class VCTools(object):
         umount_parser.set_defaults(cmd='umount')
 
         umount_parser.add_argument(
-           '--name',
+           '--name', nargs='+',
             help='name attribute of Virtual Machine object.'
         )
 
@@ -344,7 +345,207 @@ class VCTools(object):
             [vim.VirtualMachine], True
         )
 
-    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
+
+    # pylint: disable=too-many-branches,too-many-locals
+    def create_wrapper(self, *yaml_cfg):
+        """
+        Wrapper method for creating multiple VMs.  If vcenter['datastore']
+        is not provided in the yaml config, then the client will be prompted to
+        select one.
+
+        Args:
+            yaml_cfg (file): A yaml file containing the necessary information
+                for creating a new VM.
+        """
+
+        for cfg in yaml_cfg:
+            spec = yaml.load(cfg)
+
+            # allow overrides of the datacenter in config
+            if 'datacenter' in spec['vcenter']:
+                self.opts.datacenter = spec['vcenter']['datacenter']
+
+
+            if 'datastore' in spec['vcenter']:
+                datastore = spec['vcenter']['datastore']
+            else:
+                # prompt user for datastore if not provided in config
+                datastores = self.query.return_datastores(
+                    self.clusters.view, spec['vcenter']['cluster']
+                )
+
+                print('\n')
+                if (len(datastores) -1) == 0:
+                    print('No Datastores Found.')
+                    sys.exit(1)
+                else:
+                    print('%s Datastores Found.\n' % (len(datastores) - 1))
+
+                for num, opt in enumerate(datastores):
+                    # the first item is the header information, so we will
+                    # not allow it as an option.
+                    if num == 0:
+                        print('\t%s' % (
+                            # pylint: disable=star-args,line-too-long
+                            '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)
+                            )
+                        )
+                    else:
+                        print('%s: %s' % (
+                            num,
+                            # pylint: disable=star-args,line-too-long
+                            '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)
+                            )
+                        )
+                while True:
+                    val = int(raw_input('\nPlease select number: ').strip())
+                    if val > 0 and val <= (len(datastores) - 1):
+                        break
+                    else:
+                        print('Invalid number')
+                        continue
+
+                datastore = datastores[val][0]
+                print('\n%s selected.' % (datastore))
+
+
+            cluster = self.query.get_obj(
+                self.clusters.view, spec['vcenter']['cluster']
+            )
+
+            pool = cluster.resourcePool
+
+            folder = self.query.folders_lookup(
+                self.datacenters.view, self.opts.datacenter,
+                spec['vcenter']['folder']
+            )
+
+            # convert kilobytes to gigabytes
+            kb_to_gb = 1024*1024
+
+            for scsi, disk in enumerate(spec['devices']['disks']):
+                # setup the first four disks on a separate scsi controller
+                self.devices.append(self.vmcfg.scsi_config(scsi))
+                self.devices.append(
+                    self.vmcfg.disk_config(
+                        cluster.datastore, datastore, disk*kb_to_gb,
+                        unit=scsi
+                    )
+                )
+
+            for nic in spec['devices']['nics']:
+                self.devices.append(self.vmcfg.nic_config(cluster.network, nic))
+
+            self.devices.append(self.vmcfg.cdrom_config())
+
+            # pylint: disable=star-args
+            self.vmcfg.create(
+                folder, pool, datastore, *self.devices, **spec['config']
+            )
+
+
+    def mount_wrapper(self, *names):
+        """
+        Wrapper method for mounting isos on multiple VMs.
+
+        Args:
+            names (str): a tuple of VM names in vCenter.
+        """
+        for name in names:
+            host = self.query.get_obj(
+                self.virtual_machines.view, name
+            )
+
+            print('Mounting [%s] %s on %s' % (
+                self.opts.datastore, self.opts.path, name
+                )
+            )
+            cdrom_cfg = []
+            cdrom_cfg.append(self.vmcfg.cdrom_config(
+                self.opts.datastore, self.opts.path
+                )
+            )
+            config = {'deviceChange' : cdrom_cfg}
+            # pylint: disable=star-args
+            self.vmcfg.reconfig(host, **config)
+
+
+    def power_wrapper(self, *names):
+        """
+        Wrapper method for changing the power state on multiple VMs.
+
+        Args:
+            names (str): a tuple of VM names in vCenter.
+        """
+        for name in names:
+            host = self.query.get_obj(
+                self.virtual_machines.view, name
+            )
+            print('%s changing power state to %s' % (
+                self.opts.name, self.opts.power
+                )
+            )
+            self.vmcfg.power(host, self.opts.power)
+
+
+    def umount_wrapper(self, *names):
+        """
+        Wrapper method for un-mounting isos on multiple VMs.
+
+        Args:
+            names (str): a tuple of VM names in vCenter.
+        """
+        for name in names:
+            host = self.query.get_obj(
+                self.virtual_machines.view, name
+            )
+
+            print('Unmounting ISO on %s' % (name))
+            cdrom_cfg = []
+            cdrom_cfg.append(self.vmcfg.cdrom_config(umount=True))
+            config = {'deviceChange' : cdrom_cfg}
+            # pylint: disable=star-args
+            self.vmcfg.reconfig(host, **config)
+
+
+    def upload_wrapper(self, *isos):
+        """
+        Wrapper method for uploading multiple isos into a datastore.
+
+        Args:
+            isos (str): a tuple of isos locally on machine that will be
+                uploaded.  The path for each iso should be absolute.
+        """
+        for iso in isos:
+            print('uploading ISO: %s' % (iso))
+            print('file size: %s' % (
+                self.query.disk_size_format(
+                    os.path.getsize(iso)
+                    )
+                )
+            )
+            print('remote location: [%s] %s' % (
+                self.opts.datastore, self.opts.dest
+                )
+            )
+
+            print('This may take some time.')
+
+            # pylint: disable=protected-access
+            result = self.vmcfg.upload_iso(
+                self.opts.vc, self.auth.session._stub.cookie,
+                self.opts.datacenter, self.opts.dest, self.opts.datastore,
+                iso, self.opts.verify_ssl
+            )
+
+            print('result: %s' % (result))
+
+            if result == 200 or 201:
+                print('%s uploaded successfully' % (iso))
+            else:
+                print('%s uploaded failed' % (iso))
+
+
     def main(self):
         """
         This is the main method, which parses all the argparse options and runs
@@ -365,128 +566,29 @@ class VCTools(object):
             )
 
             self.query = Query()
-            vmcfg = VMConfig()
-
+            self.vmcfg = VMConfig()
             self.create_containers()
 
-
             if self.opts.cmd == 'create':
-                spec = yaml.load(self.opts.config)
-
-
-                # allow overrides of the datacenter in config
-                if 'datacenter' in spec['vcenter']:
-                    self.opts.datacenter = spec['vcenter']['datacenter']
-
-
-                if 'datastore' in spec['vcenter']:
-                    datastore = spec['vcenter']['datastore']
-                else:
-                    # prompt user for datastore if not provided in config
-                    datastores = self.query.return_datastores(
-                        self.clusters.view, spec['vcenter']['cluster']
-                    )
-
-                    print('\n')
-                    if (len(datastores) -1) == 0:
-                        print('No Datastores Found.')
-                        sys.exit(1)
-                    else:
-                        print('%s Datastores Found.\n' % (len(datastores) - 1))
-
-                    for num, opt in enumerate(datastores):
-                        # the first item is the header information, so we will
-                        # not allow it as an option.
-                        if num == 0:
-                            print('\t%s' % (
-                                # pylint: disable=star-args,line-too-long
-                                '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)
-                                )
-                            )
-                        else:
-                            print('%s: %s' % (
-                                num,
-                                # pylint: disable=star-args,line-too-long
-                                '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)
-                                )
-                            )
-                    while True:
-                        val = int(raw_input('\nPlease select number: ').strip())
-                        if val > 0 and val <= (len(datastores) - 1):
-                            break
-                        else:
-                            print('Invalid number')
-                            continue
-
-                    datastore = datastores[val][0]
-                    print('\n%s selected.' % (datastore))
-
-
-                cluster = self.query.get_obj(
-                    self.clusters.view, spec['vcenter']['cluster']
-                )
-
-                pool = cluster.resourcePool
-
-                folder = self.query.folders_lookup(
-                    self.datacenters.view, self.opts.datacenter,
-                    spec['vcenter']['folder']
-                )
-
-                # convert kilobytes to gigabytes
-                kb_to_gb = 1024*1024
-
-                for scsi, disk in enumerate(spec['devices']['disks']):
-                    # setup the first four disks on a separate scsi controller
-                    self.devices.append(vmcfg.scsi_config(scsi))
-                    self.devices.append(
-                        vmcfg.disk_config(
-                            cluster.datastore, datastore, disk*kb_to_gb,
-                            unit=scsi
-                        )
-                    )
-
-                for nic in spec['devices']['nics']:
-                    self.devices.append(vmcfg.nic_config(cluster.network, nic))
-
-                self.devices.append(vmcfg.cdrom_config())
-
-                vmcfg.create(
-                    folder, pool, datastore, *self.devices, **spec['config']
-                )
-
+                self.create_wrapper(*self.opts.config)
 
             if self.opts.cmd == 'mount':
-                if self.opts.datastore and self.opts.path and self.opts.name:
-                    host = self.query.get_obj(
-                        self.virtual_machines.view, self.opts.name
-                    )
-
-                    print('Mounting [%s] %s on %s' % (
-                        self.opts.datastore, self.opts.path, self.opts.name
-                        )
-                    )
-                    cdrom_cfg = []
-                    cdrom_cfg.append(vmcfg.cdrom_config(
-                        self.opts.datastore, self.opts.path
-                        )
-                    )
-                    config = {'deviceChange' : cdrom_cfg}
-                    # pylint: disable=star-args
-                    vmcfg.reconfig(host, **config)
-
+                self.create_wrapper(*self.opts.name)
 
             if self.opts.cmd == 'power':
-                if self.opts.name:
-                    host = self.query.get_obj(
-                        self.virtual_machines.view, self.opts.name
-                    )
-                    print('%s changing power state to %s' % (
-                        self.opts.name, self.opts.power
-                        )
-                    )
-                    vmcfg.power(host, self.opts.power)
+                self.power_wrapper(*self.opts.name)
 
+            if self.opts.cmd == 'umount':
+                self.umount_wrapper(*self.opts.name)
+
+            if self.opts.cmd == 'upload':
+                self.upload_wrapper(*self.opts.name)
+
+            if self.opts.cmd == 'reconfig':
+                host = self.query.get_obj(
+                    self.virtual_machines.view, self.opts.name
+                )
+                self.vmcfg.reconfig(host, **self.opts.params)
 
             if self.opts.cmd == 'query':
                 if self.opts.datastores:
@@ -508,7 +610,6 @@ class VCTools(object):
                     for cluster in clusters:
                         print(cluster)
 
-
                 if self.opts.networks:
                     cluster = self.query.get_obj(
                         self.clusters.view, self.opts.cluster
@@ -526,53 +627,6 @@ class VCTools(object):
                     )
                     for key, value in vms.iteritems():
                         print(key, value)
-
-            if self.opts.cmd == 'reconfig':
-                host = self.query.get_obj(
-                    self.virtual_machines.view, self.opts.name
-                )
-                vmcfg.reconfig(host, **self.opts.params)
-
-            if self.opts.cmd == 'umount':
-                host = self.query.get_obj(
-                    self.virtual_machines.view, self.opts.name
-                )
-
-                print('Unmounting ISO on %s' % (self.opts.name))
-                cdrom_cfg = []
-                cdrom_cfg.append(vmcfg.cdrom_config(umount=True))
-                config = {'deviceChange' : cdrom_cfg}
-                # pylint: disable=star-args
-                vmcfg.reconfig(host, **config)
-
-            if self.opts.cmd == 'upload':
-                print('uploading ISO: %s' % (self.opts.iso))
-                print('file size: %s' % (
-                    self.query.disk_size_format(
-                        os.path.getsize(self.opts.iso)
-                        )
-                    )
-                )
-                print('remote location: [%s] %s' % (
-                    self.opts.datastore, self.opts.dest
-                    )
-                )
-
-                print('This may take some time.')
-
-                # pylint: disable=protected-access
-                result = vmcfg.upload_iso(
-                    self.opts.vc, self.auth.session._stub.cookie,
-                    self.opts.datacenter, self.opts.dest, self.opts.datastore,
-                    self.opts.iso, self.opts.verify_ssl
-                )
-
-                print('result: %s' % (result))
-
-                if result == 200 or 201:
-                    print('%s uploaded successfully' % (self.opts.iso))
-                else:
-                    print('%s uploaded failed' % (self.opts.iso))
 
 
             self.auth.logout()

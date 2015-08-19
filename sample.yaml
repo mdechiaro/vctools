@@ -4,7 +4,7 @@
 vcenter:
     cluster: 1234_test_cluster
     folder: 'Linux'
-    # If datastore is not provided then you will be prompted during the 
+    # If datastore is not provided then you will be prompted during the
     # creation process.
     # datastore: Test_Datastore_01
 config:
@@ -20,3 +20,21 @@ devices:
       - 30
     nics:
       - vlan_1234_test_network
+# Autobuild allows you to append additional argparse commands to fully automate
+# the build process using one login session.
+#
+# Add the necessary commands you wish to run after creating the VM.  Only
+# argparse args are supported. The commands will run using default values from
+# .vctoolsrc, or you can add overrides here.  Add the sub-commands for each
+# argparse option as follows:
+# mount:
+#     datastore: ISO_Folder
+#     path: /path/to/remote/ISO/folder
+# upload:
+#     iso: /the/new/path/hostname.iso
+autobuild:
+    upload:
+        iso: /tmp/hostname.iso
+    mount:
+    power:
+        state: on
