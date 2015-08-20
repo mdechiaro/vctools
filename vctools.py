@@ -48,7 +48,8 @@ class VCTools(object):
         It passes each value through a for loop to correctly set its type,
         otherwise it returns it as a string.
 
-        format: key1=val1,key2=val2,key3=val3
+        Example:
+            key1=val1,key2=val2,key3=val3
         """
         args = args.replace(',', ' ').replace('=', ' ').split()
         params = dict(zip(args[0::2], args[1::2]))
@@ -360,7 +361,7 @@ class VCTools(object):
             cluster (str): Name of cluster
 
         Returns:
-            networks (list): A list of selected networks
+            selected_networks (list): A list of selected networks
         """
         cluster = self.query.get_obj(
             self.clusters.view, cluster
@@ -547,8 +548,8 @@ class VCTools(object):
                     )
                 iso = spec['upload']['iso']
 
-                print(datastore, dest, verify_ssl, iso)
                 self.upload_wrapper(datastore, dest, verify_ssl, iso)
+                print('\n')
 
             if 'mount' in spec:
                 datastore = self.dotrc_parser.get('mount', 'datastore')
@@ -563,13 +564,14 @@ class VCTools(object):
                 if path.startswith('/'):
                     path = path.lstrip('/')
 
-                print(datastore, path, name)
                 self.mount_wrapper(datastore, path, name)
+                print('\n')
 
             if 'power' in spec:
                 state = spec['power']['state']
                 name = spec['config']['name']
                 self.power_wrapper(state, name)
+                print('\n')
 
 
     def mount_wrapper(self, datastore, path, *names):
