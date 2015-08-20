@@ -27,7 +27,7 @@ class VCTools(object):
     """
     # pylint: disable=too-many-instance-attributes
     def __init__(self):
-        self.__version__ = '0.1.1'
+        self.__version__ = '0.1.2'
         self.auth = None
         self.clusters = None
         self.datacenters = None
