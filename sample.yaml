@@ -27,13 +27,7 @@ devices:
 #
 # Add the necessary commands you wish to run after creating the VM.  Only
 # argparse args are supported. The commands will run using default values from
-# .vctoolsrc, or you can add overrides here.  Add the sub-commands for each
-# argparse option as follows if necessary:
-# mount:
-#     datastore: ISO_Folder
-#     path: /path/to/remote/ISO/folder
-# upload:
-#     iso: /the/new/path/hostname.iso
+# .vctoolsrc.
 upload:
     iso: /tmp/hostname.iso
 mount:
