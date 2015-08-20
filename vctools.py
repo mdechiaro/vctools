@@ -31,6 +31,7 @@ class VCTools(object):
         self.auth = None
         self.clusters = None
         self.datacenters = None
+        self.dotrc_parser = None
         self.devices = []
         self.folders = None
         self.help = None
@@ -244,7 +245,7 @@ class VCTools(object):
         upload_parser.set_defaults(cmd='upload')
 
         upload_parser.add_argument(
-           '--iso', metavar='',
+           '--iso', nargs='+', metavar='',
             help='iso file that needs to be uploaded to vCenter.'
         )
 
@@ -277,17 +278,17 @@ class VCTools(object):
         wizard_parser.set_defaults(cmd='wizard')
 
         # override options with defaults in dotfiles
-        dotrc_parser = SafeConfigParser()
+        self.dotrc_parser = SafeConfigParser()
         dotrc_name = '~/.vctoolsrc'
         dotrc_path = os.path.expanduser(dotrc_name)
 
-        dotrc_parser.read(dotrc_path)
+        self.dotrc_parser.read(dotrc_path)
 
         # set defaults for argparse options using a dotfile config
-        general_parser.set_defaults(**dict(dotrc_parser.items('general')))
-        create_parser.set_defaults(**dict(dotrc_parser.items('create')))
-        upload_parser.set_defaults(**dict(dotrc_parser.items('upload')))
-        mount_parser.set_defaults(**dict(dotrc_parser.items('mount')))
+        general_parser.set_defaults(**dict(self.dotrc_parser.items('general')))
+        create_parser.set_defaults(**dict(self.dotrc_parser.items('create')))
+        upload_parser.set_defaults(**dict(self.dotrc_parser.items('upload')))
+        mount_parser.set_defaults(**dict(self.dotrc_parser.items('mount')))
 
         self.opts = parser.parse_args()
         self.help = parser.print_help
@@ -313,7 +314,7 @@ class VCTools(object):
                 self.opts.dest = self.opts.dest.lstrip('/')
             # verify_ssl needs to be a boolean value.
             if self.opts.verify_ssl:
-                self.opts.verify_ssl = dotrc_parser.getboolean(
+                self.opts.verify_ssl = self.dotrc_parser.getboolean(
                     'upload', 'verify_ssl'
                 )
 
@@ -476,21 +477,21 @@ class VCTools(object):
         for cfg in yaml_cfg:
             spec = yaml.load(cfg)
 
-            # allow overrides of the datacenter in config
+            # Allow overrides of the datacenter in config.
             if 'datacenter' in spec['vcenter']:
                 self.opts.datacenter = spec['vcenter']['datacenter']
 
+            # Check for datastore value in cfg and prompt user if empty.
             if 'datastore' in spec['vcenter']:
                 datastore = spec['vcenter']['datastore']
             else:
-                # prompt user for datastore if not provided in config
                 datastore = self.prompt_datastores(spec['vcenter']['cluster'])
                 print('\n%s selected.' % (datastore))
 
+            # Check for network value in cfg and prompt user if empty.
             if 'nics' in spec['vcenter']:
                 nics = spec['vcenter']['nics']
             else:
-                # prompt user for networks if not provided in config
                 nics = self.prompt_networks(spec['vcenter']['cluster'])
                 print('\n%s selected.' % (','.join(nics)))
 
@@ -530,22 +531,54 @@ class VCTools(object):
 
             # Run additional argparse options if declared in yaml cfg.
             if 'upload' in spec:
+                datastore = self.dotrc_parser.get('upload', 'datastore')
+                dest = self.dotrc_parser.get('upload', 'dest')
+                verify_ssl = self.dotrc_parser.get('upload', 'verify_ssl')
+                # trailing slash is in upload method, so we strip it out here.
+                if dest.endswith('/'):
+                    dest = dest.rstrip('/')
+                # path is relative (strip first character)
+                if dest.startswith('/'):
+                    dest = dest.lstrip('/')
+                # verify_ssl needs to be a boolean value.
+                if verify_ssl:
+                    verify_ssl = self.dotrc_parser.getboolean(
+                        'upload', 'verify_ssl'
+                    )
                 iso = spec['upload']['iso']
-                self.upload_wrapper(*iso)
+
+                print(datastore, dest, verify_ssl, iso)
+                self.upload_wrapper(datastore, dest, verify_ssl, iso)
+
             if 'mount' in spec:
+                datastore = self.dotrc_parser.get('mount', 'datastore')
+                path = self.dotrc_parser.get('mount', 'path')
                 name = spec['config']['name']
-                self.mount_wrapper(*name)
+                if not path.endswith('.iso'):
+                    if path.endswith('/'):
+                        path = path + name + '.iso'
+                    else:
+                        path = path +'/'+ name +'.iso'
+                # path is relative (strip first character)
+                if path.startswith('/'):
+                    path = path.lstrip('/')
+
+                print(datastore, path, name)
+                self.mount_wrapper(datastore, path, name)
+
             if 'power' in spec:
                 state = spec['power']['state']
                 name = spec['config']['name']
-                self.power_wrapper(state, *name)
+                self.power_wrapper(state, name)
 
 
-    def mount_wrapper(self, *names):
+    def mount_wrapper(self, datastore, path, *names):
         """
         Wrapper method for mounting isos on multiple VMs.
 
         Args:
+            datastore (str): Name of datastore where the ISO is located.
+            path (str): Path inside datastore where the ISO is located.
             names (str): A tuple of VM names in vCenter.
         """
         for name in names:
@@ -554,14 +587,12 @@ class VCTools(object):
             )
 
             print('Mounting [%s] %s on %s' % (
-                self.opts.datastore, self.opts.path, name
+                datastore, path, name
                 )
             )
             cdrom_cfg = []
-            cdrom_cfg.append(self.vmcfg.cdrom_config(
-                self.opts.datastore, self.opts.path
-                )
-            )
+            cdrom_cfg.append(self.vmcfg.cdrom_config(datastore, path))
+
             config = {'deviceChange' : cdrom_cfg}
             # pylint: disable=star-args
             self.vmcfg.reconfig(host, **config)
@@ -580,10 +611,10 @@ class VCTools(object):
                 self.virtual_machines.view, name
             )
             print('%s changing power state to %s' % (
-                self.opts.name, state
+                name, state
                 )
             )
-            self.vmcfg.power(host, self.opts.power)
+            self.vmcfg.power(host, state)
 
 
     def umount_wrapper(self, *names):
@@ -606,7 +637,7 @@ class VCTools(object):
             self.vmcfg.reconfig(host, **config)
 
 
-    def upload_wrapper(self, *isos):
+    def upload_wrapper(self, datastore, dest, verify_ssl, *isos):
         """
         Wrapper method for uploading multiple isos into a datastore.
 
@@ -622,18 +653,15 @@ class VCTools(object):
                     )
                 )
             )
-            print('remote location: [%s] %s' % (
-                self.opts.datastore, self.opts.dest
-                )
-            )
+            print('remote location: [%s] %s' % (datastore, dest))
 
             print('This may take some time.')
 
             # pylint: disable=protected-access
             result = self.vmcfg.upload_iso(
                 self.opts.vc, self.auth.session._stub.cookie,
-                self.opts.datacenter, self.opts.dest, self.opts.datastore,
-                iso, self.opts.verify_ssl
+                self.opts.datacenter, dest, datastore,
+                iso, verify_ssl
             )
 
             print('result: %s' % (result))
@@ -671,7 +699,9 @@ class VCTools(object):
                 self.create_wrapper(*self.opts.config)
 
             if self.opts.cmd == 'mount':
-                self.create_wrapper(*self.opts.name)
+                self.mount_wrapper(
+                    self.opts.datastore, self.opts.path, *self.opts.name
+                )
 
             if self.opts.cmd == 'power':
                 self.power_wrapper(self.opts.power, *self.opts.name)
@@ -680,7 +710,10 @@ class VCTools(object):
                 self.umount_wrapper(*self.opts.name)
 
             if self.opts.cmd == 'upload':
-                self.upload_wrapper(*self.opts.name)
+                self.upload_wrapper(
+                    self.opts.datastore, self.opts.dest,
+                    self.opts.verify_ssl, **self.opts.iso
+                )
 
             if self.opts.cmd == 'reconfig':
                 host = self.query.get_obj(
