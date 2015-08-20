@@ -347,6 +347,67 @@ class VCTools(object):
         )
 
 
+    def prompt_networks(self, cluster):
+        """
+        Method will prompt user to select a networks. Since multiple networks
+        can be added to a VM, it will prompt the user to exit or add more.
+        The networks should be selected in the order of which they want the
+        interfaces set on the VM. For example, the first network selected will
+        be configured on eth0 on the VM.
+
+        Args:
+            cluster (str): Name of cluster
+
+        Returns:
+            networks (list): A list of selected networks
+        """
+        cluster = self.query.get_obj(
+            self.clusters.view, cluster
+        )
+        networks = self.query.list_obj_attrs(
+            cluster.network, 'name', view=False
+        )
+        networks.sort()
+
+        print('\n')
+        print('%s Networks Found.\n' % (len(networks)))
+
+        for num, opt in enumerate(networks, start=1):
+            print('%s: %s' % (num, opt))
+
+        selected_networks = []
+
+        while True:
+            if selected_networks:
+                print('selected: ' + ','.join(selected_networks))
+
+            val = raw_input(
+                '\nPlease select number:\n(Q)uit (S)how Networks\n'
+                ).strip()
+
+            # need to test whether selection is an integer or not.
+            try:
+                if int(val) <= len(networks):
+                    # need to substract 1 since we start enumeration at 1.
+                    val = int(val) - 1
+                    selected_networks.append(networks[val])
+                    continue
+                else:
+                    print('Invalid number.')
+                    continue
+            except ValueError:
+                if val == 'Q':
+                    break
+                elif val == 'S':
+                    for num, opt in enumerate(networks, start=1):
+                        print('%s: %s' % (num, opt))
+                else:
+                    print('Invalid option.')
+                    continue
+
+        return selected_networks
+
+
     def prompt_datastores(self, cluster):
         """
         Method will prompt user to select a datastore from a cluster
@@ -400,7 +461,7 @@ class VCTools(object):
         return datastore
 
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-locals
     def create_wrapper(self, *yaml_cfg):
         """
         Wrapper method for creating multiple VMs. If certain information was
@@ -426,6 +487,13 @@ class VCTools(object):
                 datastore = self.prompt_datastores(spec['vcenter']['cluster'])
                 print('\n%s selected.' % (datastore))
 
+            if 'nics' in spec['vcenter']:
+                nics = spec['vcenter']['nics']
+            else:
+                # prompt user for networks if not provided in config
+                nics = self.prompt_networks(spec['vcenter']['cluster'])
+                print('\n%s selected.' % (','.join(nics)))
+
             cluster = self.query.get_obj(
                 self.clusters.view, spec['vcenter']['cluster']
             )
@@ -450,7 +518,7 @@ class VCTools(object):
                     )
                 )
 
-            for nic in spec['devices']['nics']:
+            for nic in nics:
                 self.devices.append(self.vmcfg.nic_config(cluster.network, nic))
 
             self.devices.append(self.vmcfg.cdrom_config())
