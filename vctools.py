@@ -487,7 +487,7 @@ class VCTools(object):
             self.vmcfg.reconfig(host, **config)
 
 
-    def power_wrapper(self, *names):
+    def power_wrapper(self, state, *names):
         """
         Wrapper method for changing the power state on multiple VMs.
 
@@ -500,7 +500,7 @@ class VCTools(object):
                 self.virtual_machines.view, name
             )
             print('%s changing power state to %s' % (
-                self.opts.name, self.opts.power
+                self.opts.name, state
                 )
             )
             self.vmcfg.power(host, self.opts.power)
@@ -594,7 +594,7 @@ class VCTools(object):
                 self.create_wrapper(*self.opts.name)
 
             if self.opts.cmd == 'power':
-                self.power_wrapper(*self.opts.name)
+                self.power_wrapper(self.opts.power, *self.opts.name)
 
             if self.opts.cmd == 'umount':
                 self.umount_wrapper(*self.opts.name)
