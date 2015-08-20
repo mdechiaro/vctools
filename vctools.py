@@ -460,6 +460,18 @@ class VCTools(object):
                 folder, pool, datastore, *self.devices, **spec['config']
             )
 
+            # Run additional argparse options if declared in yaml cfg.
+            if 'upload' in spec:
+                iso = spec['upload']['iso']
+                self.upload_wrapper(*iso)
+            if 'mount' in spec:
+                name = spec['config']['name']
+                self.mount_wrapper(*name)
+            if 'power' in spec:
+                state = spec['power']['state']
+                name = spec['config']['name']
+                self.power_wrapper(state, *name)
+
 
     def mount_wrapper(self, *names):
         """
