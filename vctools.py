@@ -32,7 +32,6 @@ class VCTools(object):
         self.clusters = None
         self.datacenters = None
         self.dotrc_parser = None
-        self.devices = []
         self.folders = None
         self.help = None
         self.opts = None
@@ -510,37 +509,41 @@ class VCTools(object):
             # convert kilobytes to gigabytes
             kb_to_gb = 1024*1024
 
+            devices = []
+
             for scsi, disk in enumerate(spec['devices']['disks']):
                 # setup the first four disks on a separate scsi controller
-                self.devices.append(self.vmcfg.scsi_config(scsi))
-                self.devices.append(
+                devices.append(self.vmcfg.scsi_config(scsi))
+                devices.append(
                     self.vmcfg.disk_config(
-                        cluster.datastore, datastore, disk*kb_to_gb,
-                        unit=scsi
+                        cluster.datastore, datastore, disk*kb_to_gb, unit=scsi
                     )
                 )
 
             for nic in nics:
-                self.devices.append(self.vmcfg.nic_config(cluster.network, nic))
+                devices.append(self.vmcfg.nic_config(cluster.network, nic))
 
-            self.devices.append(self.vmcfg.cdrom_config())
+            devices.append(self.vmcfg.cdrom_config())
 
             # pylint: disable=star-args
             self.vmcfg.create(
-                folder, pool, datastore, *self.devices, **spec['config']
+                folder, pool, datastore, *devices, **spec['config']
             )
 
-            # Run additional argparse options if declared in yaml cfg.
+            # run additional argparse options if declared in yaml cfg.
             if 'upload' in spec:
                 datastore = self.dotrc_parser.get('upload', 'datastore')
                 dest = self.dotrc_parser.get('upload', 'dest')
                 verify_ssl = self.dotrc_parser.get('upload', 'verify_ssl')
+
                 # trailing slash is in upload method, so we strip it out here.
                 if dest.endswith('/'):
                     dest = dest.rstrip('/')
+
                 # path is relative (strip first character)
                 if dest.startswith('/'):
                     dest = dest.lstrip('/')
+
                 # verify_ssl needs to be a boolean value.
                 if verify_ssl:
                     verify_ssl = self.dotrc_parser.getboolean(
@@ -555,11 +558,13 @@ class VCTools(object):
                 datastore = self.dotrc_parser.get('mount', 'datastore')
                 path = self.dotrc_parser.get('mount', 'path')
                 name = spec['config']['name']
+
                 if not path.endswith('.iso'):
                     if path.endswith('/'):
                         path = path + name + '.iso'
                     else:
                         path = path +'/'+ name +'.iso'
+
                 # path is relative (strip first character)
                 if path.startswith('/'):
                     path = path.lstrip('/')
@@ -570,6 +575,7 @@ class VCTools(object):
             if 'power' in spec:
                 state = spec['power']['state']
                 name = spec['config']['name']
+
                 self.power_wrapper(state, name)
                 print('\n')
 
