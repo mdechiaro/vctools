@@ -622,9 +622,17 @@ class VCTools(object):
 
             if self.opts.cmd == 'query':
                 if self.opts.datastores:
-                    self.query.list_datastore_info(
+                    datastores = self.query.return_datastores(
                         self.clusters.view, self.opts.cluster
                     )
+
+                    for row in datastores:
+                        # pylint: disable=star-args
+                        print(
+                            '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
+                            format(*row)
+                        )
+
 
                 if self.opts.folders:
                     folders = self.query.list_vm_folders(
