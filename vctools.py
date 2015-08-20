@@ -347,7 +347,60 @@ class VCTools(object):
         )
 
 
-    # pylint: disable=too-many-branches,too-many-locals
+    def prompt_datastores(self, cluster):
+        """
+        Method will prompt user to select a datastore from a cluster
+
+        Args:
+            cluster (str): Name of cluster
+
+        Returns:
+            datastore (str): Name of selected datastore
+        """
+        datastores = self.query.return_datastores(
+            self.clusters.view, cluster
+        )
+
+        print('\n')
+        if (len(datastores) -1) == 0:
+            print('No Datastores Found.')
+            sys.exit(1)
+        else:
+            print('%s Datastores Found.\n' % (len(datastores) - 1))
+
+        for num, opt in enumerate(datastores):
+            # the first item is the header information, so we will
+            # not allow it as an option.
+            if num == 0:
+                print('\t%s' % (
+                    # pylint: disable=star-args
+                    '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
+                        format(*opt)
+                    )
+                )
+            else:
+                print('%s: %s' % (
+                    num,
+                    # pylint: disable=star-args
+                    '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
+                        format(*opt)
+                    )
+                )
+
+        while True:
+            val = int(raw_input('\nPlease select number: ').strip())
+            if val > 0 and val <= (len(datastores) - 1):
+                break
+            else:
+                print('Invalid number')
+                continue
+
+        datastore = datastores[val][0]
+
+        return datastore
+
+
+    # pylint: disable=too-many-branches
     def create_wrapper(self, *yaml_cfg):
         """
         Wrapper method for creating multiple VMs. If certain information was
@@ -366,49 +419,12 @@ class VCTools(object):
             if 'datacenter' in spec['vcenter']:
                 self.opts.datacenter = spec['vcenter']['datacenter']
 
-
             if 'datastore' in spec['vcenter']:
                 datastore = spec['vcenter']['datastore']
             else:
                 # prompt user for datastore if not provided in config
-                datastores = self.query.return_datastores(
-                    self.clusters.view, spec['vcenter']['cluster']
-                )
-
-                print('\n')
-                if (len(datastores) -1) == 0:
-                    print('No Datastores Found.')
-                    sys.exit(1)
-                else:
-                    print('%s Datastores Found.\n' % (len(datastores) - 1))
-
-                for num, opt in enumerate(datastores):
-                    # the first item is the header information, so we will
-                    # not allow it as an option.
-                    if num == 0:
-                        print('\t%s' % (
-                            # pylint: disable=star-args,line-too-long
-                            '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)
-                            )
-                        )
-                    else:
-                        print('%s: %s' % (
-                            num,
-                            # pylint: disable=star-args,line-too-long
-                            '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)
-                            )
-                        )
-                while True:
-                    val = int(raw_input('\nPlease select number: ').strip())
-                    if val > 0 and val <= (len(datastores) - 1):
-                        break
-                    else:
-                        print('Invalid number')
-                        continue
-
-                datastore = datastores[val][0]
+                datastore = self.prompt_datastores(spec['vcenter']['cluster'])
                 print('\n%s selected.' % (datastore))
-
 
             cluster = self.query.get_obj(
                 self.clusters.view, spec['vcenter']['cluster']
