@@ -39,6 +39,7 @@ class VCTools(object):
         self.virtual_machines = None
         self.vmcfg = None
 
+
     @staticmethod
     def _mkdict(args):
         """
@@ -65,7 +66,7 @@ class VCTools(object):
 
     # pylint: disable=too-many-statements
     def options(self):
-        """argparse command line options."""
+        """Argparse command line options."""
 
         parser = argparse.ArgumentParser(
             description='vCenter Tools CLI'
@@ -349,9 +350,9 @@ class VCTools(object):
     # pylint: disable=too-many-branches,too-many-locals
     def create_wrapper(self, *yaml_cfg):
         """
-        Wrapper method for creating multiple VMs.  If vcenter['datastore']
-        is not provided in the yaml config, then the client will be prompted to
-        select one.
+        Wrapper method for creating multiple VMs. If certain information was
+        not provided in the yaml config (like a datastore), then the client
+        will be prompted to select one.
 
         Args:
             yaml_cfg (file): A yaml file containing the necessary information
@@ -449,7 +450,7 @@ class VCTools(object):
         Wrapper method for mounting isos on multiple VMs.
 
         Args:
-            names (str): a tuple of VM names in vCenter.
+            names (str): A tuple of VM names in vCenter.
         """
         for name in names:
             host = self.query.get_obj(
@@ -475,6 +476,7 @@ class VCTools(object):
         Wrapper method for changing the power state on multiple VMs.
 
         Args:
+            state (str): choices: on, off, reset, reboot, shutdown
             names (str): a tuple of VM names in vCenter.
         """
         for name in names:
