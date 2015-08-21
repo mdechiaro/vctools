@@ -31,5 +31,4 @@ devices:
 upload:
     iso: /tmp/hostname.iso
 mount:
-power:
-    state: on
+power: 'on'
