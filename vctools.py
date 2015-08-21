@@ -8,290 +8,40 @@ https://github.com/mdechiaro/vctools/
 """
 # pylint: disable=no-name-in-module
 from __future__ import print_function
-import argparse
 import os
 import sys
 import yaml
 #
-from ConfigParser import SafeConfigParser
 from pyVmomi import vim
+from vctools.argparser import ArgParser
 from vctools.auth import Auth
 from vctools.vmconfig import VMConfig
 from vctools.query import Query
 from vctools.wwwyzzerdd import Wwwyzzerdd
 
-
-class VCTools(object):
+# pylint: disable=too-many-instance-attributes
+class VCTools(ArgParser):
     """
     Main VCTools class.
     """
-    # pylint: disable=too-many-instance-attributes
+
     def __init__(self):
-        self.__version__ = '0.1.2'
+        ArgParser.__init__(self)
         self.auth = None
         self.clusters = None
         self.datacenters = None
-        self.dotrc_parser = None
         self.folders = None
-        self.help = None
-        self.opts = None
         self.query = None
         self.virtual_machines = None
         self.vmcfg = None
 
 
-    @staticmethod
-    def _mkdict(args):
-        """
-        Internal method for converting an argparse string key=value into dict.
-        It passes each value through a for loop to correctly set its type,
-        otherwise it returns it as a string.
-
-        Example:
-            key1=val1,key2=val2,key3=val3
-        """
-        args = args.replace(',', ' ').replace('=', ' ').split()
-        params = dict(zip(args[0::2], args[1::2]))
-
-        for key, value in params.iteritems():
-            if params[key].isdigit():
-                params[key] = int(value)
-            else:
-                if params[key] == 'True':
-                    params[key] = True
-                elif params[key] == 'False':
-                    params[key] = False
-
-        return params
-
-
-    # pylint: disable=too-many-statements
     def options(self):
         """Argparse command line options."""
 
-        parser = argparse.ArgumentParser(
-            description='vCenter Tools CLI'
-        )
-
-        parser.add_argument(
-            '--version', '-v', action='version',
-            version=self.__version__,
-            help='version number'
-        )
-
-        # general (parent)
-        general_parser = argparse.ArgumentParser(add_help=False)
-        general_parser.add_argument(
-            'vc',
-            help='vCenter host'
-        )
-        general_parser.add_argument(
-            '--passwd-file', metavar='',
-            help='GPG encrypted passwd file'
-        )
-        general_parser.add_argument(
-            '--user', metavar='',
-            help='username'
-        )
-        general_parser.add_argument(
-            '--domain', metavar='',
-            help='domain'
-        )
-
-
-
-        # subparser
-        subparsers = parser.add_subparsers(metavar='')
-
-
-        # create
-        create_parser = subparsers.add_parser(
-            'create', parents=[general_parser],
-            help='Create Virtual Machines'
-        )
-        create_parser.set_defaults(cmd='create')
-
-        create_parser.add_argument(
-           'config', nargs='+', type=file,
-            help='YaML config for creating new Virtual Machines.'
-        )
-
-        create_parser.add_argument(
-           '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
-        )
-
-        # mount
-        mount_parser = subparsers.add_parser(
-            'mount', parents=[general_parser],
-            help='Mount ISO to CD-Rom device'
-        )
-
-        mount_parser.set_defaults(cmd='mount')
-
-        mount_parser.add_argument(
-           '--datastore', metavar='',
-            help='Name of datastore where the ISO is located.'
-        )
-
-        mount_parser.add_argument(
-           '--path', metavar='',
-            help='Path inside datastore where the ISO is located.'
-        )
-
-        mount_parser.add_argument(
-           '--name', nargs='+', metavar='',
-            help='name attribute of Virtual Machine object.'
-        )
-
-
-        # power
-        power_parser = subparsers.add_parser(
-            'power', parents=[general_parser],
-            help='Power Management for Virtual Machines'
-        )
-        power_parser.set_defaults(cmd='power')
-
-        power_parser.add_argument(
-            'power', choices=['on', 'off', 'reset', 'reboot', 'shutdown'],
-            help='change power state of VM'
-
-        )
-        power_parser.add_argument(
-           '--name', nargs='+', metavar='',
-            help='name attribute of Virtual Machine object.'
-        )
-
-        # query
-        query_parser = subparsers.add_parser(
-            'query', parents=[general_parser],
-            help='Query Info'
-        )
-        query_parser.set_defaults(cmd='query')
-
-        query_parser.add_argument(
-           '--datastores', action='store_true',
-            help='Returns information about Datastores.'
-        )
-
-        query_parser.add_argument(
-           '--vms', action='store_true',
-            help='Returns information about Virtual Machines.'
-        )
-
-        query_parser.add_argument(
-           '--folders', action='store_true',
-            help='Returns information about Folders.'
-        )
-
-        query_parser.add_argument(
-           '--networks', action='store_true',
-            help='Returns information about Networks.'
-        )
-
-        query_parser.add_argument(
-           '--clusters', action='store_true',
-            help='Returns information about ComputeResources.'
-        )
-
-        query_parser.add_argument(
-           '--cluster', metavar='',
-            help='vCenter ComputeResource.'
-        )
-
-        query_parser.add_argument(
-           '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
-        )
-
-
-        # reconfig
-        reconfig_parser = subparsers.add_parser(
-            'reconfig', parents=[general_parser],
-            help='Reconfigure Attributes for Virtual Machines.'
-        )
-        reconfig_parser.set_defaults(cmd='reconfig')
-
-        reconfig_parser.add_argument(
-           '--params', metavar='', type=self._mkdict,
-            help='format: key1=val1,key2=val2,key3=val3'
-        )
-
-        reconfig_parser.add_argument(
-           '--name', metavar='',
-            help='name attribute of Virtual Machine object.'
-        )
-
-
-
-        # umount
-        umount_parser = subparsers.add_parser(
-            'umount', parents=[general_parser],
-            help='Unmount ISO from CD-Rom device'
-        )
-
-        umount_parser.set_defaults(cmd='umount')
-
-        umount_parser.add_argument(
-           '--name', nargs='+',
-            help='name attribute of Virtual Machine object.'
-        )
-
-        # upload
-        upload_parser = subparsers.add_parser(
-            'upload', parents=[general_parser],
-            help='Upload File'
-        )
-        upload_parser.set_defaults(cmd='upload')
-
-        upload_parser.add_argument(
-           '--iso', nargs='+', metavar='',
-            help='iso file that needs to be uploaded to vCenter.'
-        )
-
-        upload_parser.add_argument(
-           '--dest', metavar='',
-            help='destination folder where the iso will reside.'
-        )
-
-        upload_parser.add_argument(
-           '--datastore', metavar='', default='ISO_Templates',
-            help='datastore where the iso will reside.  default: %(default)s'
-        )
-
-        upload_parser.add_argument(
-           '--verify-ssl', metavar='', default=False,
-            help='verify SSL certificate. default: %(default)s'
-        )
-
-        upload_parser.add_argument(
-           '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
-        )
-
-        # umount
-        wizard_parser = subparsers.add_parser(
-            'wizard',
-            help='interactive wizard'
-        )
-
-        wizard_parser.set_defaults(cmd='wizard')
-
-        # override options with defaults in dotfiles
-        self.dotrc_parser = SafeConfigParser()
-        dotrc_name = '~/.vctoolsrc'
-        dotrc_path = os.path.expanduser(dotrc_name)
-
-        self.dotrc_parser.read(dotrc_path)
-
-        # set defaults for argparse options using a dotfile config
-        general_parser.set_defaults(**dict(self.dotrc_parser.items('general')))
-        create_parser.set_defaults(**dict(self.dotrc_parser.items('create')))
-        upload_parser.set_defaults(**dict(self.dotrc_parser.items('upload')))
-        mount_parser.set_defaults(**dict(self.dotrc_parser.items('mount')))
-
-        self.opts = parser.parse_args()
-        self.help = parser.print_help
+        self.setup_args()
+        self.opts = self.parser.parse_args()
+        self.help = self.parser.print_help
 
         # mount path needs to point to an iso, and it doesn't make sense to add
         # to the dotrc file, so this will append the self.opts.name value to it
