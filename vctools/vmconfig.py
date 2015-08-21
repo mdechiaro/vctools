@@ -29,7 +29,11 @@ class VMConfig(Query):
     def question_and_answer(cls, host):
         """
         Method handles the questions and answers provided by the program.
+
+        Args:
+            host (obj): VirtualMachine object
         """
+
         if host.runtime.question:
             qid = host.runtime.question.id
             print('\n')
@@ -49,15 +53,14 @@ class VMConfig(Query):
         """
         Method uploads iso to dest_folder.
 
-        :param host:        vCenter host
-        :param cookie:      Cookie from Service Instance
-                            example: auth.session._stub.cookie
-        :param datacenter:  Datacenter that has access to the datastore.
-        :param dest_folder: Folder that will store the iso.
-        :param datastore:   Datastore that will store the iso.
-        :param iso:         ISO file
-        :param verify:      Enable or disable SSL certificate validation.
-
+        Args:
+            host (str):        vCenter host
+            cookie (attr):     Session Class Cookie (auth.session._stub.cookie)
+            datacenter (str):  Name of Datacenter that has access to datastore.
+            dest_folder (str): Folder that will store the iso.
+            datastore (str):   Datastore that will store the iso.
+            iso (str):         Absolute path of ISO file
+            verify (bool):     Enable or disable SSL certificate validation.
         """
 
         # we need the absolute path to open the binary locally, but only the
@@ -93,7 +96,13 @@ class VMConfig(Query):
         Some tasks require that questions be answered before completion, and are
         optional arguments in the case that some tasks don't require them.  The
         VM object is required if the question argument is True.
+
+        Args:
+            task (obj):      TaskManager object
+            question (bool): Enable or Disable Question
+            host (obj):      VirtualMachine object
         """
+
         while task.info.state == 'running':
             while task.info.progress:
                 # Continually check to see if a question was raised.
@@ -141,11 +150,14 @@ class VMConfig(Query):
         """
         Method uploads iso to dest_folder.
 
-        :param dhcp:   enable DHCP
-        :param static: a list that contains [ipaddr, netmask, gateway, domain,
-                       dns1, dns2]
-        :param dns:    A list that contains DNS IPs
+        Args:
+            dhcp (bool):    Enable or Disable DHCP
+            static (list): A list that contains the following:
+                ipaddr, netmask, gateway, domain, dns1, dns2
 
+        Returns:
+            nic (obj): A configured object for IP assignments.  this should be
+                appended to ConfigSpec devices attribute.
         """
 
         if dhcp:
@@ -175,11 +187,14 @@ class VMConfig(Query):
         """
         Method creates a SCSI Controller on the VM
 
-        :param bus_number: Bus number associated with this controller.
-        :param shared_bus: Mode for sharing the SCSI bus.
-                           physicalSharing
-                           virtualSharing
-                           noSharing
+        Args:
+            bus_number (int): Bus number associated with this controller.
+            shared_bus (str): Mode for sharing the SCSI bus.
+                Valid Modes:
+                    physicalSharing, virtualSharing, noSharing
+        Returns:
+            scsi (obj): A configured object for a SCSI Controller.  this should
+                be appended to ConfigSpec devices attribute.
         """
 
         # randomize key for multiple scsi controllers
@@ -207,10 +222,16 @@ class VMConfig(Query):
         method to use an iso stored locally.  If umount is True, then the
         method will attempt to umount the iso.
 
-        :param datastore: string name of datastore
-        :param iso_path:  path/to/file.iso
-        :param umount:    boolean
+        Args:
+            datastore (str): Name of datastore
+            iso_path (str):  path/to/file.iso
+            umount (bool):   If True, then method will umount any existing ISO.
+                If False, then method will create or mount the ISO.
+        Returns:
+            cdrom (obj): A configured object for a CD-Rom device.  this should
+                be appended to ConfigSpec devices attribute.
         """
+
         # umount iso
         if umount:
             cdrom = vim.vm.device.VirtualDeviceSpec()
@@ -285,17 +306,23 @@ class VMConfig(Query):
         """
         Method returns configured VirtualDisk object
 
-        :param datastore: string datastore for the disk files location.
-        :param size:      integer of disk in kilobytes
-        :param unit:      unitNumber of device.
-        :param mode:      The disk persistence mode. Valid modes are:
-                          persistent
-                          independent_persistent
-                          independent_nonpersistent
-                          nonpersistent
-		          undoable
-                          append
-        :param thin:      enable thin provisioning
+        Args:
+            datastore (str): Name of datastore for the disk files location.
+            size (int):      Integer of disk in kilobytes
+            unit (int):      unitNumber of device.
+            mode (str):      The disk persistence mode.
+                Valid modes are:
+                    persistent
+                    independent_persistent
+                    independent_nonpersistent
+                    nonpersistent
+		    undoable
+                    append
+            thin (bool):     If True, then it enables thin provisioning
+
+        Returns:
+            disk (obj): A configured object for a VMDK Disk.  this should
+                be appended to ConfigSpec devices attribute.
         """
 
         disk = vim.vm.device.VirtualDeviceSpec()
@@ -323,7 +350,21 @@ class VMConfig(Query):
         """
         Method returns configured object for network interface.
 
-        :param network: string network to add to VM.
+        Args:
+            container (obj):  ContainerView object.
+            network (str):    Name of network to add to VM.
+            connected (bool): Indicates that the device is currently
+                connected. Valid only while the virtual machine is running.
+            start_connected (bool):
+                Specifies whether or not to connect the device when the
+                virtual machine starts.
+            allow_guest_control (bool):
+                Allows the guest to control whether the connectable device
+                is connected.
+
+        Returns:
+            nic (obj): A configured object for a Network device.  this should
+                be appended to ConfigSpec devices attribute.
         """
 
         nic = vim.vm.device.VirtualDeviceSpec()
@@ -343,17 +384,19 @@ class VMConfig(Query):
 
         return nic
 
+
     def create(self, folder, pool, datastore, *devices, **config):
         """
         Method creates the VM.
 
-        :param folder:    Folder object where the VM will reside
-        :param pool:      ResourcePool object
-        :param datastore: datastore for vmx files
-        :param config:    dictionary of vim.vm.ConfigSpec attributes and their
-                          values, excluding devices.
-        :param devices:   list of configured devices.  See scsi_config,
-                          cdrom_config, and disk_config.
+        Args:
+            folder (obj):    Folder object where the VM will reside
+            pool (obj):      ResourcePool object
+            datastore (str): Datastore for vmx files
+            config (dict):   A dict containing vim.vm.ConfigSpec attributes and
+                their values, excluding devices.
+            devices (list):  A list of configured devices.  See scsi_config,
+                cdrom_config, and disk_config.
         """
 
         vmxfile = vim.vm.FileInfo(
@@ -377,9 +420,10 @@ class VMConfig(Query):
         """
         Method reconfigures a VM.
 
-        :param host:      VirtualMachine object
-        :param config:    dictionary of vim.vm.ConfigSpec attributes and their
-                          values.
+        Args:
+            host (obj):    VirtualMachine object
+            config (dict): A dictionary of vim.vm.ConfigSpec attributes and
+                their values.
         """
 
         task = host.ReconfigVM_Task(
@@ -396,7 +440,13 @@ class VMConfig(Query):
 
 
     def power(self, host, state):
-        """Method manages power states."""
+        """
+        Method manages power states.
+
+        Args:
+            host (obj):  VirtualMachine object
+            state (str): options are: on,off,reset,rebootshutdown
+        """
         if state == 'off':
             self.task_monitor(host.PowerOff(), True, host)
 
