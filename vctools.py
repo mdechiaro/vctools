@@ -212,7 +212,7 @@ class VCTools(ArgParser):
         return datastore
 
 
-    # pylint: disable=too-many-branches,too-many-locals
+    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     def create_wrapper(self, *yaml_cfg):
         """
         Wrapper method for creating multiple VMs. If certain information was
@@ -491,7 +491,6 @@ class VCTools(ArgParser):
                             '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
                             format(*row)
                         )
-
 
                 if self.opts.folders:
                     folders = self.query.list_vm_folders(
