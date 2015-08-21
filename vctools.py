@@ -227,18 +227,18 @@ class VCTools(ArgParser):
         for cfg in yaml_cfg:
             spec = yaml.load(cfg)
 
-            # Allow overrides of the datacenter in config.
+            # allow overrides of the datacenter in config.
             if 'datacenter' in spec['vcenter']:
                 self.opts.datacenter = spec['vcenter']['datacenter']
 
-            # Check for datastore value in cfg and prompt user if empty.
+            # check for datastore value in cfg and prompt user if empty.
             if 'datastore' in spec['vcenter']:
                 datastore = spec['vcenter']['datastore']
             else:
                 datastore = self.prompt_datastores(spec['vcenter']['cluster'])
                 print('\n%s selected.' % (datastore))
 
-            # Check for network value in cfg and prompt user if empty.
+            # check for network value in cfg and prompt user if empty.
             if 'nics' in spec['vcenter']:
                 nics = spec['vcenter']['nics']
             else:
