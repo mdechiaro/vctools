@@ -323,7 +323,7 @@ class VCTools(ArgParser):
                 print('\n')
 
             if 'power' in spec:
-                state = spec['power']['state']
+                state = spec['power']
                 name = spec['config']['name']
 
                 self.power_wrapper(state, name)
