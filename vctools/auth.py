@@ -14,8 +14,9 @@ class Auth(object):
     """Authentication Class."""
     def __init__(self, host=None, port=443):
         """
-        :param host:       This string is the vSphere host host.
-        :param port:       Port to connect to host.
+        Args:
+            host (str): This string is the vSphere host host.
+            port (int): Port to connect to host.
         """
 
         self.host = host
@@ -27,7 +28,13 @@ class Auth(object):
 
     @classmethod
     def decrypt_gpg_file(cls, passwd_file):
-        """Decrypts a gpg file containing a password for auth."""
+        """
+        Decrypts a gpg file containing a password for auth.
+
+        Args:
+            passwd_file (str): Name of file that contains an encrypted passwd.
+                Path should be included if file resides outside of module.
+        """
         if passwd_file.startswith('~'):
             passwd_file = os.path.expanduser(passwd_file)
 
@@ -42,9 +49,11 @@ class Auth(object):
         """
         Login to vSphere host
 
-        :param passwd_file: path to GPG encrypted passwd file
-        :param domain:     This is for changing the domain to login if needed.
-        :param user:       Username to connect to host.
+        Args:
+            user (str):        Username
+            domain (str):      Domain name
+            passwd_file (str): Name of file that contains an encrypted passwd.
+                Path should be included if file resides outside of module.
         """
 
         if user:
