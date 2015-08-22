@@ -200,7 +200,7 @@ class QueryCMDs(Cmd):
                 self.auth.session, self.auth.session.content.rootFolder,
                 [vim.ComputeResource], True
             )
-            self.query.list_datastore_info(
+            self.query.return_datastores(
                 cluster_container.view, args
             )
 
