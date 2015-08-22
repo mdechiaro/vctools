@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# vim: tabstop=4 shiftwidth=4 expandtab
 """ Class for handling argparse parsers. """
 import argparse
 import os

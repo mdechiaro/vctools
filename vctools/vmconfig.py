@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# vim: tabstop=4 shiftwidth=4 expandtab
 """Various config options for Virtual Machines."""
 from __future__ import print_function
 from random import uniform

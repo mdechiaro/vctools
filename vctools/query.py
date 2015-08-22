@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# vim: tabstop=4 shiftwidth=4 expandtab
 """Query class for vctools.  All methods that obtain info should go here."""
 from __future__ import division
 from __future__ import print_function

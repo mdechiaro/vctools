@@ -1,5 +1,6 @@
 #!/usr/bin/python
 """Authentication Class for vctools."""
+# vim: tabstop=4 shiftwidth=4 expandtab
 from __future__ import print_function
 #
 from getpass import getpass, getuser
