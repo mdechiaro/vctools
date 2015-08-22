@@ -213,6 +213,7 @@ class VMConfig(Query):
 
         return scsi
 
+
     @classmethod
     def cdrom_config(cls, datastore=None, iso_path=None, umount=False):
         """
@@ -245,8 +246,8 @@ class VMConfig(Query):
             # obtain it
             cdrom.device.key = 3002
 
-            # pylint: disable=line-too-long
-            cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.\
+                RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
             cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
@@ -288,8 +289,8 @@ class VMConfig(Query):
             # controllerKey is tied to IDE Controller
             cdrom.device.controllerKey = 201
 
-            # pylint: disable=line-too-long
-            cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.\
+                RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
             cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
@@ -372,8 +373,8 @@ class VMConfig(Query):
 
         nic.device = vim.vm.device.VirtualVmxnet3()
 
-        # pylint: disable=line-too-long
-        nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+        nic.device.backing = vim.vm.device.VirtualEthernetCard.\
+            NetworkBackingInfo()
         nic.device.backing.network = self.get_obj(container, network)
         nic.device.backing.deviceName = network
 
