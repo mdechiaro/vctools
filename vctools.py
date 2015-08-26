@@ -239,8 +239,8 @@ class VCTools(ArgParser):
                 print('\n%s selected.' % (datastore))
 
             # check for network value in cfg and prompt user if empty.
-            if 'nics' in spec['vcenter']:
-                nics = spec['vcenter']['nics']
+            if 'nics' in spec['devices']:
+                nics = spec['devices']['nics']
             else:
                 nics = self.prompt_networks(spec['vcenter']['cluster'])
                 print('\n%s selected.' % (','.join(nics)))
