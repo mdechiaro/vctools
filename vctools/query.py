@@ -15,7 +15,12 @@ class Query(object):
 
     @classmethod
     def disk_size_format(cls, num):
-        """Method converts datastore size in bytes to human readable format."""
+        """
+        Method converts datastore size in bytes to human readable format.
+
+        Args:
+            num (int): Number
+        """
 
         for attr in ['bytes', 'KB', 'MB', 'GB', 'TB']:
             if num < 1024.0:
@@ -28,6 +33,9 @@ class Query(object):
         """
         Wrapper method for creating managed objects inside vim.view.ViewManager.
 
+        Args:
+            s_instance (obj): ServiceInstance
+            args(list):
         """
         if hasattr(s_instance, 'content'):
             if hasattr(s_instance.content, 'viewManager'):
@@ -43,6 +51,9 @@ class Query(object):
         """
         Returns an object inside of ContainerView if it matches name.
 
+        Args:
+            container (obj):  Container object
+            name (str):       Name of Container
         """
 
         for obj in container:
@@ -55,6 +66,10 @@ class Query(object):
         """
         Returns a list of attributes inside of container.
 
+        Args:
+            container (obj):  Container object
+            attr (str):       Name of attribute within Container
+            view (bool):      True appends view attribute to Container
         """
         if view:
             return [getattr(obj, attr) for obj in container.view]
@@ -68,7 +83,12 @@ class Query(object):
         the folder through one level of subfolders. This method is needed for
         building new virtual machines.
 
+        Args:
+            container (obj):  Container object
+            datacenter (str): Name of datacenter
+            name (str):       Name of folder
         """
+
         obj = self.get_obj(container, datacenter)
 
         if hasattr(obj, 'vmFolder'):
@@ -88,6 +108,9 @@ class Query(object):
         with its parent -> subfolder. Currently it only searches for one
         level of subfolders.
 
+        Args:
+            container (obj):  Container object
+            datacenter (str): Name of datacenter
         """
         obj = self.get_obj(container, datacenter)
         folders = []
@@ -104,7 +127,14 @@ class Query(object):
 
 
     def datastore_most_space(self, container, cluster):
-        """Attempts to find the datastore with the most free space."""
+        """
+        Attempts to find the datastore with the most free space.
+
+        Args:
+            container (obj): Container object
+            cluster (str):   Name of cluster
+
+        """
         obj = self.get_obj(container, cluster)
         datastores = {}
         for datastore in obj.datastore:
@@ -126,6 +156,11 @@ class Query(object):
         Returns a summary of disk space for datastores listed inside a
         cluster. Identical to list_datastore_info, but returns the datastores
         as an list object instead of printing them to stdout.
+
+        Args:
+            container (obj): Container object
+            cluster (str):   Name of cluster
+            header (bool):   Enables a header of info to datastore list.
         """
 
         obj = self.get_obj(container, cluster)
