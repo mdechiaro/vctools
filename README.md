@@ -20,9 +20,17 @@ allows for shorter command-line arguments. Put this file in your $HOME.
 Dependencies:
   - Python 2.6+
   - python-argparse
+  - python-configparser
+  - python-pip
   - python-requests
   - python-yaml
   - pyVmomi
+
+
+Quick Install (on Linux Mint 17.2):
+    sudo apt-get install python-yaml python-configparser python-pip
+    sudo pip install pyVmomi
+    cp .vctoolsrc ~/
 
 Usage:
 
