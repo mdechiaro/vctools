@@ -10,6 +10,10 @@ from pyVmomi import vim # pylint: disable=E0611
 import os
 import subprocess
 
+# disable SSL warnings
+import requests
+requests.packages.urllib3.disable_warnings()
+
 class Auth(object):
     """Authentication Class."""
     def __init__(self, host=None, port=443):
