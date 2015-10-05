@@ -470,7 +470,7 @@ class VCTools(ArgParser):
             if self.opts.cmd == 'upload':
                 self.upload_wrapper(
                     self.opts.datastore, self.opts.dest,
-                    self.opts.verify_ssl, **self.opts.iso
+                    self.opts.verify_ssl, *self.opts.iso
                 )
 
             if self.opts.cmd == 'reconfig':
