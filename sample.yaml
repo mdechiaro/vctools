@@ -2,25 +2,39 @@
 # sample yaml for creating servers
 ---
 vcenter:
-    cluster: 1234_test_cluster
-    folder: 'Linux'
-    # If datastore is not provided then you will be prompted during the
-    # creation process.
-    # datastore: Test_Datastore_01
+  cluster: 1234_test_cluster
+  folder: 'Linux'
+  # If datastore is not provided then you will be prompted during the
+  # creation process.
+  # datastore: Test_Datastore_01
 config:
-    name: hostname
-    guestId: rhel6_64Guest
-    numCPUs: 1
-    memoryMB: 4096
-    memoryHotAddEnabled: True
-    cpuHotAddEnabled: True
+  name: hostname
+  guestId: rhel6_64Guest
+  numCPUs: 1
+  memoryMB: 4096
+  memoryHotAddEnabled: True
+  cpuHotAddEnabled: True
 devices:
-    # Can support up to 4 disks, with each disk on a separate SCSI Controller.
-    disks:
-      - 30
-    nics:
-      - vlan_1234_test_network
-
+  # Can support up to 4 disks, with each disk on a separate SCSI Controller.
+  disks:
+    - 30
+  nics:
+    - vlan_1234_test_network
+# mkbootiso plugin
+mkbootiso:
+  # An extracted "isolinux" directory path from a vendor ISO
+  source: '/mnt/isos/rhel7/'
+  kickstart:
+    ks: 'http://ks.hostname.com/rhel7-ks.cfg'
+  # all valid kickstart options
+  options:
+    hostname: 'hostname.domain.com'
+    ip: '10.1.2.3'
+    netmask: '255.255.255.0'
+    gateway: '10.1.2.1'
+    nameserver: '4.2.2.2'
+    net.ifnames: '0'
+    biosdevname: '0'
 # This config file allows you to append additional argparse commands to fully
 # automate the build process using one login session.  This is useful if you
 # to run a few steps to create the server and install the OS.
@@ -29,6 +43,6 @@ devices:
 # argparse args are supported. The commands will run using default values from
 # .vctoolsrc.
 upload:
-    iso: /tmp/hostname.iso
+  iso: /tmp/hostname.iso
 mount:
 power: 'on'
