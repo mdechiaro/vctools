@@ -18,6 +18,7 @@ from vctools.auth import Auth
 from vctools.vmconfig import VMConfig
 from vctools.query import Query
 from vctools.wwwyzzerdd import Wwwyzzerdd
+from vctools.plugins.mkbootiso import MkBootISO
 
 # pylint: disable=too-many-instance-attributes
 class VCTools(ArgParser):
@@ -279,6 +280,22 @@ class VCTools(ArgParser):
             self.vmcfg.create(
                 folder, pool, datastore, *devices, **spec['config']
             )
+
+            # if mkbootiso is in the spec, then create the iso
+            if 'mkbootiso' in spec:
+                source = spec['mkbootiso']['source']
+                ks_url = spec['mkbootiso']['ks']
+                ks_opts = spec['mkbootiso']['options']
+                iso_name = spec['config']['name'] + '.iso'
+
+                if 'destination' in spec['mkbootiso']:
+                    destination = spec['mkbootiso']['destination']
+                else:
+                    destination = '/tmp'
+
+                # pylint: disable=star-args
+                MkBootISO.updateiso(source, ks_url, **ks_opts)
+                MkBootISO.createiso(source, destination, iso_name)
 
             # run additional argparse options if declared in yaml cfg.
             if 'upload' in spec:
