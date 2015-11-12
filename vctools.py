@@ -294,7 +294,7 @@ class VCTools(ArgParser):
 
                 # pylint: disable=star-args
                 MkBootISO.updateiso(
-                    mkbootiso['source'], mkbootiso['ks'], **mkbootiso['ks_opts']
+                    mkbootiso['source'], mkbootiso['ks'], **mkbootiso['options']
                 )
                 MkBootISO.createiso(mkbootiso['source'], iso_dest, iso_name)
 
