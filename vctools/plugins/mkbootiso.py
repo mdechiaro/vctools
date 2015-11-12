@@ -1,7 +1,6 @@
 #!/usr/bin/python
 """Plugin for creating a boot iso on a per server basis."""
 import subprocess
-import sys
 import textwrap
 
 class MkBootISO(object):
@@ -14,7 +13,7 @@ class MkBootISO(object):
         pass
 
     @classmethod
-    def updateiso(cls, source, **kwargs):
+    def updateiso(cls, source, ks_url, **kwargs):
         """
         Update iso image with host specific parameters.
         All kickstart options will be added from a yaml file.
@@ -24,16 +23,13 @@ class MkBootISO(object):
             default vesamenu.c32
             display boot.msg
             timeout 5
-            label iso created by %s
+            label iso created by mkbootiso
             menu default
             kernel vmlinuz
             append initrd=initrd.img %s %s
 
-            """ % (sys.argv[0],
-                ' '.join("%s=%s" % (key, val)
-                    for (key, val) in kwargs['kickstart'].iteritems()),
-                ' '.join("%s=%s" % (key, val)
-                    for (key, val) in kwargs['options'].iteritems())
+            """ % (ks_url, ' '.join("%s=%s" % (key, val)
+                for (key, val) in kwargs.iteritems())
             )
 
         with open(source + '/isolinux/isolinux.cfg', 'w') as iso_cfg:
@@ -46,7 +42,7 @@ class MkBootISO(object):
         cmd = ['/usr/bin/genisoimage',
                '-J',
                '-T',
-               '-o', output + filename,
+               '-o', output + '/' + filename,
                '-b', 'isolinux/isolinux.bin',
                '-c', 'isolinux/boot.cat',
                '-no-emul-boot',
