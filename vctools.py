@@ -283,19 +283,20 @@ class VCTools(ArgParser):
 
             # if mkbootiso is in the spec, then create the iso
             if 'mkbootiso' in spec:
-                source = spec['mkbootiso']['source']
-                ks_url = spec['mkbootiso']['ks']
-                ks_opts = spec['mkbootiso']['options']
+                mkbootiso = spec['mkbootiso']
                 iso_name = spec['config']['name'] + '.iso'
 
+                # where mkbootiso should write the iso file
                 if 'destination' in spec['mkbootiso']:
-                    destination = spec['mkbootiso']['destination']
+                    iso_dest = spec['mkbootiso']['destination']
                 else:
-                    destination = '/tmp'
+                    iso_dest = '/tmp'
 
                 # pylint: disable=star-args
-                MkBootISO.updateiso(source, ks_url, **ks_opts)
-                MkBootISO.createiso(source, destination, iso_name)
+                MkBootISO.updateiso(
+                    mkbootiso['source'], mkbootiso['ks'], **mkbootiso['ks_opts']
+                )
+                MkBootISO.createiso(mkbootiso['source'], iso_dest, iso_name)
 
             # run additional argparse options if declared in yaml cfg.
             if 'upload' in spec:
@@ -316,6 +317,7 @@ class VCTools(ArgParser):
                     verify_ssl = self.dotrc_parser.getboolean(
                         'upload', 'verify_ssl'
                     )
+
                 iso = spec['upload']['iso']
 
                 self.upload_wrapper(datastore, dest, verify_ssl, iso)
