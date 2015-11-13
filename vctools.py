@@ -17,6 +17,7 @@ from vctools.argparser import ArgParser
 from vctools.auth import Auth
 from vctools.vmconfig import VMConfig
 from vctools.query import Query
+from vctools.prompts import Prompts
 from vctools.wwwyzzerdd import Wwwyzzerdd
 from vctools.plugins.mkbootiso import MkBootISO
 
@@ -98,165 +99,106 @@ class VCTools(ArgParser):
             [vim.VirtualMachine], True
         )
 
-
-    def prompt_networks(self, cluster):
+    # pylint: disable=too-many-branches
+    def cfg_checker(self, cfg):
         """
-        Method will prompt user to select a networks. Since multiple networks
-        can be added to a VM, it will prompt the user to exit or add more.
-        The networks should be selected in the order of which they want the
-        interfaces set on the VM. For example, the first network selected will
-        be configured on eth0 on the VM.
+        Checks config for a valid configuration, and prompts user if
+        information is missing
 
         Args:
-            cluster (str): Name of cluster
-
-        Returns:
-            selected_networks (list): A list of selected networks
+            cfg    (obj): Yaml object
+            write (bool): Boolean writes answers to yaml file.
+            output (str): Absolute path of output yaml file
         """
-        cluster = self.query.get_obj(
-            self.clusters.view, cluster
-        )
-        networks = self.query.list_obj_attrs(
-            cluster.network, 'name', view=False
-        )
-        networks.sort()
-
-        print('\n')
-        print('%s Networks Found.\n' % (len(networks)))
-
-        for num, opt in enumerate(networks, start=1):
-            print('%s: %s' % (num, opt))
-
-        selected_networks = []
-
-        while True:
-            if selected_networks:
-                print('selected: ' + ','.join(selected_networks))
-
-            val = raw_input(
-                '\nPlease select number:\n(Q)uit (S)how Networks\n'
-                ).strip()
-
-            # need to test whether selection is an integer or not.
-            try:
-                if int(val) <= len(networks):
-                    # need to substract 1 since we start enumeration at 1.
-                    val = int(val) - 1
-                    selected_networks.append(networks[val])
-                    continue
-                else:
-                    print('Invalid number.')
-                    continue
-            except ValueError:
-                if val == 'Q':
-                    break
-                elif val == 'S':
-                    for num, opt in enumerate(networks, start=1):
-                        print('%s: %s' % (num, opt))
-                else:
-                    print('Invalid option.')
-                    continue
-
-        return selected_networks
-
-
-    def prompt_datastores(self, cluster):
-        """
-        Method will prompt user to select a datastore from a cluster
-
-        Args:
-            cluster (str): Name of cluster
-
-        Returns:
-            datastore (str): Name of selected datastore
-        """
-        datastores = self.query.return_datastores(
-            self.clusters.view, cluster
-        )
-
-        print('\n')
-        if (len(datastores) -1) == 0:
-            print('No Datastores Found.')
-            sys.exit(1)
+        # name
+        if 'config' in cfg:
+            if 'name' in cfg['config']:
+                name = cfg['config']['name']
+            else:
+                name = Prompts.name()
         else:
-            print('%s Datastores Found.\n' % (len(datastores) - 1))
+            name = Prompts.name()
 
-        for num, opt in enumerate(datastores):
-            # the first item is the header information, so we will
-            # not allow it as an option.
-            if num == 0:
-                print('\t%s' % (
-                    # pylint: disable=star-args
-                    '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
-                        format(*opt)
-                    )
-                )
+        # datacenter
+        if not self.opts.datacenter:
+            datacenter = Prompts.datacenters(self.auth.session)
+            print('\n%s selected.' % (datacenter))
+        else:
+            datacenter = self.opts.datacenter
+
+        # cluster
+        if 'vcenter' in cfg:
+            if 'cluster' in cfg['vcenter']:
+                cluster = cfg['vcenter']['cluster']
+        else:
+            cluster = Prompts.clusters(self.auth.session)
+            print('\n%s selected.' % (cluster))
+
+        # datastore
+        if 'vcenter' in cfg:
+            if 'datastore' in cfg['vcenter']:
+                datastore = cfg['vcenter']['datastore']
+        else:
+            datastore = Prompts.datastores(self.auth.session, cluster)
+            print('\n%s selected.' % (datastore))
+
+        # nics
+        if 'devices' in cfg:
+            if 'nics' in cfg['devices']:
+                nics = cfg['devices']['nics']
+                print('nics: %s' % (nics))
             else:
-                print('%s: %s' % (
-                    num,
-                    # pylint: disable=star-args
-                    '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
-                        format(*opt)
-                    )
-                )
+                nics = Prompts.networks(self.auth.session, cluster)
+                print('\n%s selected.' % (','.join(nics)))
+        else:
+            nics = Prompts.networks(self.auth.session, cluster)
+            print('\n%s selected.' % (','.join(nics)))
 
-        while True:
-            val = int(raw_input('\nPlease select number: ').strip())
-            if val > 0 and val <= (len(datastores) - 1):
-                break
-            else:
-                print('Invalid number')
-                continue
+        # folder
+        if 'vcenter' in cfg:
+            if 'folder' in cfg['vcenter']:
+                folder = cfg['vcenter']['folder']
+        else:
+            folder = Prompts.folders(self.auth.session, datacenter)
+            print('\n%s selected.' % (folder))
 
-        datastore = datastores[val][0]
+        return (name, cluster, datastore, nics, folder)
 
-        return datastore
 
 
     # pylint: disable=too-many-branches,too-many-locals,too-many-statements
-    def create_wrapper(self, *yaml_cfg):
+    def create_wrapper(self, *yaml_cfg, **defaults):
         """
         Wrapper method for creating multiple VMs. If certain information was
         not provided in the yaml config (like a datastore), then the client
-        will be prompted to select one.
+        will be prompted to select one inside the cfg_checker method.
 
         Args:
+            prompt   (bool): True will prompt the user to accept the cfg
+                before creating the VM.
             yaml_cfg (file): A yaml file containing the necessary information
                 for creating a new VM.
+            defaults (dict): A dict of default values from ConfigParser dotrc.
         """
 
         for cfg in yaml_cfg:
             spec = yaml.load(cfg)
 
-            # allow overrides of the datacenter in config.
-            if 'datacenter' in spec['vcenter']:
-                self.opts.datacenter = spec['vcenter']['datacenter']
+            print(defaults)
+            spec.update(defaults)
+            print(spec)
+            # sanitize the config and prompt for more info if necessary
+            results = self.cfg_checker(spec)
+            spec['config'].update({'name':results[0]})
+            cluster = results[1]
+            datastore = results[2]
+            nics = results[3]
+            folder = results[4]
 
-            # check for datastore value in cfg and prompt user if empty.
-            if 'datastore' in spec['vcenter']:
-                datastore = spec['vcenter']['datastore']
-            else:
-                datastore = self.prompt_datastores(spec['vcenter']['cluster'])
-                print('\n%s selected.' % (datastore))
+            spec['devices'].update({'nics':nics})
 
-            # check for network value in cfg and prompt user if empty.
-            if 'nics' in spec['devices']:
-                nics = spec['devices']['nics']
-            else:
-                nics = self.prompt_networks(spec['vcenter']['cluster'])
-                print('\n%s selected.' % (','.join(nics)))
-
-            cluster = self.query.get_obj(
-                self.clusters.view, spec['vcenter']['cluster']
-            )
-
-            pool = cluster.resourcePool
-
-            folder = self.query.folders_lookup(
-                self.datacenters.view, self.opts.datacenter,
-                spec['vcenter']['folder']
-            )
-
+            cluster_obj = Query.get_obj(self.clusters.view, cluster)
+            pool = cluster_obj.resourcePool
             # convert kilobytes to gigabytes
             kb_to_gb = 1024*1024
 
@@ -267,14 +209,26 @@ class VCTools(ArgParser):
                 devices.append(self.vmcfg.scsi_config(scsi))
                 devices.append(
                     self.vmcfg.disk_config(
-                        cluster.datastore, datastore, disk*kb_to_gb, unit=scsi
+                        cluster_obj.datastore, datastore, disk*kb_to_gb,
                     )
                 )
 
             for nic in nics:
-                devices.append(self.vmcfg.nic_config(cluster.network, nic))
+                devices.append(self.vmcfg.nic_config(cluster_obj.network, nic))
 
             devices.append(self.vmcfg.cdrom_config())
+
+            print(yaml.dump(spec, default_flow_style=False))
+            answer = raw_input('Do you accept this config? [y|n]:')
+            while True:
+                if answer == 'y':
+                    break
+                if answer == 'n':
+                    print('VM creation canceled by the user.')
+                    sys.exit(1)
+
+            # break for testing
+            sys.exit(1)
 
             # pylint: disable=star-args
             self.vmcfg.create(
@@ -347,7 +301,7 @@ class VCTools(ArgParser):
 
             if 'power' in spec:
                 state = spec['power']
-                name = spec['config']['name']
+                name = spec['name']
 
                 self.power_wrapper(state, name)
                 print('\n')
@@ -477,7 +431,13 @@ class VCTools(ArgParser):
             self.create_containers()
 
             if self.opts.cmd == 'create':
-                self.create_wrapper(*self.opts.config)
+                # add default settings from dotrc file
+                if self.vmconfig:
+                    print('vmconfig: %s' % (self.vmconfig))
+                    self.create_wrapper(*self.opts.config, **self.vmconfig)
+                else:
+                    print('no vmconfig')
+                    self.create_wrapper(*self.opts.config)
 
             if self.opts.cmd == 'mount':
                 self.mount_wrapper(
