@@ -102,9 +102,6 @@ class Prompts(object):
             session, session.content.rootFolder,
             [vim.ComputeResource], True
         )
-        cluster = Query.get_obj(
-            clusters.view, cluster
-        )
         datastores = Query.return_datastores(
             clusters.view, cluster
         )
