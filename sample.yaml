@@ -24,8 +24,7 @@ devices:
 mkbootiso:
   # An extracted "isolinux" directory path from a vendor ISO
   source: '/mnt/isos/rhel7/'
-  kickstart:
-    ks: 'http://ks.hostname.com/rhel7-ks.cfg'
+  ks: 'http://ks.hostname.com/rhel7-ks.cfg'
   # all valid kickstart options
   options:
     hostname: 'hostname.domain.com'
