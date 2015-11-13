@@ -12,6 +12,7 @@ class ArgParser(object):
         self.__version__ = '0.1.2'
         self.help = None
         self.opts = None
+        self.vmconfig = None
 
         self.parser = argparse.ArgumentParser(
             description='vCenter Tools CLI'
@@ -134,7 +135,7 @@ class ArgParser(object):
 
 
     def power_parser(self, parent):
-        """Mount Parser."""
+        """Power Parser."""
         # power
         power_parser = self.subparsers.add_parser(
             'power', parents=[parent],
@@ -154,7 +155,7 @@ class ArgParser(object):
 
 
     def query_parser(self, parent):
-        """Mount Parser."""
+        """Query Parser."""
         # query
         query_parser = self.subparsers.add_parser(
             'query', parents=[parent],
@@ -283,6 +284,22 @@ class ArgParser(object):
 
     def setup_args(self):
         """Method loads all the argparse parsers."""
+        self.vmconfig = {}
+        self.vmconfig['config'] = dict(self.dotrc_parser.items('vmconfig'))
+        if 'disks' in self.vmconfig['config']:
+            self.vmconfig['devices'] = {}
+            disks = [
+                int(item) for item in self.vmconfig['config']['disks'].\
+                    split(',')
+            ]
+            self.vmconfig['devices'].update({'disks':disks})
+            del self.vmconfig['config']['disks']
+        elif 'nics' in self.vmconfig['config']:
+            nics = [item for item in self.vmconfig['config']['nics'].split(',')]
+            self.vmconfig['devices'].update({'nics':nics})
+            del self.vmconfig['config']['nics']
+
+
         general_parser = self.general_parser()
         self.create_parser(general_parser)
         self.mount_parser(general_parser)
