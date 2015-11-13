@@ -37,3 +37,16 @@ verify_ssl=False
 # path: Path inside datastore where the ISO is located.
 datastore=ISO_Folder
 path=/path/to/remote/ISO/folder
+
+[vmconfig]
+# default config values for VM creations
+# these are valid attributes inside ConfigSpec:
+guestId=rhel6_64Guest
+numCPUs=1
+memoryMB=4096
+memoryHotAddEnabled=True
+cpuHotAddEnabled=True
+# disk sizes are in GB, separated by comma
+disks=30,20
+# network names, separated by comma
+nics=vlan_1234_network,vlan_backup_network
