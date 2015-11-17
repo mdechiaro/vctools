@@ -210,9 +210,9 @@ class VMConfig(Query):
         scsi.device.busNumber = bus_number
 
         # grab defined key so devices can use it to connect to it.
-        self.scsi_key = scsi.device.key
+        key = scsi.device.key
 
-        return scsi
+        return (key, scsi)
 
 
     @classmethod
