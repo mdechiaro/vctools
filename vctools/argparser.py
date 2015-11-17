@@ -3,8 +3,8 @@
 """ Class for handling argparse parsers. """
 import argparse
 import os
+import yaml
 #
-from ConfigParser import SafeConfigParser
 
 class ArgParser(object):
     """Placeholder."""
@@ -27,11 +27,9 @@ class ArgParser(object):
         # subparser
         self.subparsers = self.parser.add_subparsers(metavar='')
         # override options with defaults in dotfiles
-        self.dotrc_parser = SafeConfigParser()
-        dotrc_name = '~/.vctoolsrc'
-        dotrc_path = os.path.expanduser(dotrc_name)
-
-        self.dotrc_parser.read(dotrc_path)
+        dotrc_name = '~/.vctoolsrc.yaml'
+        dotrc_yaml = open(os.path.expanduser(dotrc_name))
+        self.dotrc = yaml.dump(dotrc_yaml)
 
 
     @staticmethod
@@ -82,7 +80,7 @@ class ArgParser(object):
         )
 
         # ConfigParser overrides
-        general_parser.set_defaults(**dict(self.dotrc_parser.items('general')))
+        general_parser.set_defaults(**self.dotrc['general'])
 
         return general_parser
 
@@ -104,7 +102,7 @@ class ArgParser(object):
            '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
-        create_parser.set_defaults(**dict(self.dotrc_parser.items('create')))
+        create_parser.set_defaults(**self.dotrc['create'])
 
 
     def mount_parser(self, parent):
@@ -131,7 +129,7 @@ class ArgParser(object):
            '--name', nargs='+', metavar='',
             help='name attribute of Virtual Machine object.'
         )
-        mount_parser.set_defaults(**dict(self.dotrc_parser.items('mount')))
+        mount_parser.set_defaults(**self.dotrc['mount'])
 
 
     def power_parser(self, parent):
@@ -268,7 +266,7 @@ class ArgParser(object):
            '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
-        upload_parser.set_defaults(**dict(self.dotrc_parser.items('upload')))
+        upload_parser.set_defaults(**self.dotrc['upload'])
 
 
     def wizard_parser(self):
@@ -285,7 +283,7 @@ class ArgParser(object):
     def setup_args(self):
         """Method loads all the argparse parsers."""
         self.vmconfig = {}
-        self.vmconfig['config'] = dict(self.dotrc_parser.items('vmconfig'))
+        self.vmconfig['config'] = self.dotrc['vmconfig']
         if 'disks' in self.vmconfig['config']:
             self.vmconfig['devices'] = {}
             disks = [
