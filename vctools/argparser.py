@@ -282,21 +282,10 @@ class ArgParser(object):
 
     def setup_args(self):
         """Method loads all the argparse parsers."""
-        self.vmconfig = {}
-        self.vmconfig['config'] = self.dotrc['vmconfig']
-        if 'disks' in self.vmconfig['config']:
-            self.vmconfig['devices'] = {}
-            disks = [
-                int(item) for item in self.vmconfig['config']['disks'].\
-                    split(',')
-            ]
-            self.vmconfig['devices'].update({'disks':disks})
-            del self.vmconfig['config']['disks']
-        elif 'nics' in self.vmconfig['config']:
-            nics = [item for item in self.vmconfig['config']['nics'].split(',')]
-            self.vmconfig['devices'].update({'nics':nics})
-            del self.vmconfig['config']['nics']
 
+        # default settings for VMs
+        self.vmconfig = {}
+        self.vmconfig = self.dotrc['vmconfig']
 
         general_parser = self.general_parser()
         self.create_parser(general_parser)
