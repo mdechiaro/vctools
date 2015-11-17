@@ -66,9 +66,7 @@ class VCTools(ArgParser):
                 self.opts.dest = self.opts.dest.lstrip('/')
             # verify_ssl needs to be a boolean value.
             if self.opts.verify_ssl:
-                self.opts.verify_ssl = self.dotrc_parser.getboolean(
-                    'upload', 'verify_ssl'
-                )
+                self.opts.verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
 
 
     def create_containers(self):
@@ -255,9 +253,9 @@ class VCTools(ArgParser):
 
             # run additional argparse options if declared in yaml cfg.
             if 'upload' in spec:
-                datastore = self.dotrc_parser.get('upload', 'datastore')
-                dest = self.dotrc_parser.get('upload', 'dest')
-                verify_ssl = self.dotrc_parser.get('upload', 'verify_ssl')
+                datastore = self.dotrc['upload']['datastore']
+                dest = self.dotrc['upload']['dest']
+                verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
 
                 # trailing slash is in upload method, so we strip it out here.
                 if dest.endswith('/'):
@@ -269,9 +267,7 @@ class VCTools(ArgParser):
 
                 # verify_ssl needs to be a boolean value.
                 if verify_ssl:
-                    verify_ssl = self.dotrc_parser.getboolean(
-                        'upload', 'verify_ssl'
-                    )
+                    verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
 
                 if iso_path:
                     iso = iso_path + '/' + iso_name
@@ -282,8 +278,8 @@ class VCTools(ArgParser):
                 print('\n')
 
             if 'mount' in spec:
-                datastore = self.dotrc_parser.get('mount', 'datastore')
-                path = self.dotrc_parser.get('mount', 'path')
+                datastore = self.dotrc['mount']['datastore']
+                path = self.dotrc['mount']['path']
                 name = spec['config']['name']
 
                 if not path.endswith('.iso'):
