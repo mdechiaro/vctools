@@ -183,8 +183,8 @@ class VMConfig(Query):
 
             return nic
 
-
-    def scsi_config(self, bus_number=0, shared_bus='noSharing'):
+    @classmethod
+    def scsi_config(cls, bus_number=0, shared_bus='noSharing'):
         """
         Method creates a SCSI Controller on the VM
 
@@ -216,7 +216,8 @@ class VMConfig(Query):
 
 
     @classmethod
-    def cdrom_config(cls, datastore=None, iso_path=None, umount=False):
+    def cdrom_config(
+            cls, datastore=None, iso_path=None, iso_name=None, umount=False):
         """
         Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
         then it will create the device.  Otherwise, it will attempt to mount
@@ -226,100 +227,74 @@ class VMConfig(Query):
 
         Args:
             datastore (str): Name of datastore
-            iso_path (str):  path/to/file.iso
+            iso_path (str):  Path to ISO
+            iso_name (str):  Name of ISO on datastore
             umount (bool):   If True, then method will umount any existing ISO.
                 If False, then method will create or mount the ISO.
         Returns:
             cdrom (obj): A configured object for a CD-Rom device.  this should
                 be appended to ConfigSpec devices attribute.
         """
+        cdrom = vim.vm.device.VirtualDeviceSpec()
+        cdrom.device = vim.vm.device.VirtualCdrom()
+        cdrom.device.controllerKey = 201
+        cdrom.device.key = 3002
+        cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
+        cdrom.device.connectable.connected = True
+        cdrom.device.connectable.startConnected = True
+        cdrom.device.connectable.allowGuestControl = True
 
         # umount iso
         if umount:
-            cdrom = vim.vm.device.VirtualDeviceSpec()
             cdrom.operation = 'edit'
-
-            cdrom.device = vim.vm.device.VirtualCdrom()
-            # controllerKey is tied to IDE Controller
-            cdrom.device.controllerKey = 201
-            # key is needed to mount the iso, need to verify if this value
-            # changes per host, and if so, then logic needs to be added to
-            # obtain it
-            cdrom.device.key = 3002
 
             cdrom.device.backing = vim.vm.device.VirtualCdrom.\
                 RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
-            cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
-            cdrom.device.connectable.connected = True
-            cdrom.device.connectable.startConnected = True
-            cdrom.device.connectable.allowGuestControl = True
-
             return cdrom
 
         # mount iso
-        if iso_path and datastore and not umount:
-            cdrom = vim.vm.device.VirtualDeviceSpec()
+        if iso_path and iso_name and datastore and not umount:
             cdrom.operation = 'edit'
 
-            cdrom.device = vim.vm.device.VirtualCdrom()
-            # controllerKey is tied to IDE Controller
-            cdrom.device.controllerKey = 201
-            # key is needed to mount the iso, need to verify if this value
-            # changes per host, and if so, then logic needs to be added to
-            # obtain it
-            cdrom.device.key = 3002
+            if iso_path.endswith('/'):
+                iso_path = iso_path + iso_name
+            else:
+                iso_path = iso_path + '/' + iso_name
+
+            # path is relative, so we strip off the first character.
+            if iso_path.startswith('/'):
+                iso_path = iso_path.lstrip('/')
 
             cdrom.device.backing = vim.vm.device.VirtualCdrom.IsoBackingInfo()
             cdrom.device.backing.fileName = '['+ datastore + '] ' + iso_path
-
-            cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
-            cdrom.device.connectable.connected = True
-            cdrom.device.connectable.startConnected = True
-            cdrom.device.connectable.allowGuestControl = True
 
             return cdrom
 
         # create cdrom
         else:
-            cdrom = vim.vm.device.VirtualDeviceSpec()
             cdrom.operation = 'add'
-
-            cdrom.device = vim.vm.device.VirtualCdrom()
-            # controllerKey is tied to IDE Controller
-            cdrom.device.controllerKey = 201
 
             cdrom.device.backing = vim.vm.device.VirtualCdrom.\
                 RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
-            cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
-            cdrom.device.connectable.connected = False
-            cdrom.device.connectable.startConnected = False
-            cdrom.device.connectable.allowGuestControl = True
-
             return cdrom
 
-
-    # pylint: disable=too-many-arguments
-    def disk_config(self, container, datastore, size, unit=0,
+    @classmethod
+    def disk_config(cls, container, datastore, size, key, unit=0,
                     mode='persistent', thin=True):
         """
         Method returns configured VirtualDisk object
 
         Args:
+            container (obj): Cluster container object
             datastore (str): Name of datastore for the disk files location.
             size (int):      Integer of disk in kilobytes
+            key  (int):      Integer value of scsi device
             unit (int):      unitNumber of device.
             mode (str):      The disk persistence mode.
-                Valid modes are:
-                    persistent
-                    independent_persistent
-                    independent_nonpersistent
-                    nonpersistent
-		    undoable
-                    append
             thin (bool):     If True, then it enables thin provisioning
 
         Returns:
@@ -334,20 +309,20 @@ class VMConfig(Query):
         disk.device = vim.vm.device.VirtualDisk()
         disk.device.capacityInKB = size
         # controllerKey is tied to SCSI Controller
-        disk.device.controllerKey = self.scsi_key
+        disk.device.controllerKey = key
         disk.device.unitNumber = unit
 
         disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
         disk.device.backing.fileName = '['+datastore+']'
-        disk.device.backing.datastore = self.get_obj(container, datastore)
+        disk.device.backing.datastore = Query.get_obj(container, datastore)
         disk.device.backing.diskMode = mode
         disk.device.backing.thinProvisioned = thin
         disk.device.backing.eagerlyScrub = False
 
         return disk
 
-
-    def nic_config(self, container, network, connected=True,
+    @classmethod
+    def nic_config(cls, container, network, connected=True,
                    start_connected=True, allow_guest_control=True):
         """
         Method returns configured object for network interface.
@@ -376,7 +351,7 @@ class VMConfig(Query):
 
         nic.device.backing = vim.vm.device.VirtualEthernetCard.\
             NetworkBackingInfo()
-        nic.device.backing.network = self.get_obj(container, network)
+        nic.device.backing.network = Query.get_obj(container, network)
         nic.device.backing.deviceName = network
 
         nic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
@@ -386,31 +361,23 @@ class VMConfig(Query):
 
         return nic
 
-
-    def create(self, folder, pool, datastore, *devices, **config):
+    def create(self, folder, datastore, pool, **config):
         """
-        Method creates the VM.
+        gethod creates the VM.
 
         Args:
             folder (obj):    Folder object where the VM will reside
             pool (obj):      ResourcePool object
             datastore (str): Datastore for vmx files
-            config (dict):   A dict containing vim.vm.ConfigSpec attributes and
-                their values, excluding devices.
-            devices (list):  A list of configured devices.  See scsi_config,
-                cdrom_config, and disk_config.
+            config (dict):   A dict containing vim.vm.ConfigSpec attributes
         """
-
-        vmxfile = vim.vm.FileInfo(
-            vmPathName='[' + datastore + ']'
-        )
+        vmxfile = vim.vm.FileInfo(vmPathName='[' + datastore + ']')
 
         config.update({'files' : vmxfile})
-        config.update({'deviceChange' : list(devices)})
 
         task = folder.CreateVM_Task(
-            config=vim.vm.ConfigSpec(**config),
-            pool=pool,
+            # pylint: disable=star-args
+            config=vim.vm.ConfigSpec(**config), pool=pool,
         )
 
         print('Creating VM %s' % config['name'])
