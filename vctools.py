@@ -109,132 +109,166 @@ class VCTools(ArgParser):
             output (str): Absolute path of output yaml file
         """
         # name
-        if 'config' in cfg:
-            if 'name' in cfg['config']:
-                name = cfg['config']['name']
+        if 'vmconfig' in cfg:
+
+            # name
+            if 'name' in cfg['vmconfig']:
+                name = cfg['vmconfig']['name']
             else:
                 name = Prompts.name()
-        else:
-            name = Prompts.name()
-
-        # datacenter
-        if not self.opts.datacenter:
-            datacenter = Prompts.datacenters(self.auth.session)
-            print('\n%s selected.' % (datacenter))
-        else:
-            datacenter = self.opts.datacenter
-
-        # cluster
-        if 'vcenter' in cfg:
-            if 'cluster' in cfg['vcenter']:
-                cluster = cfg['vcenter']['cluster']
-        else:
-            cluster = Prompts.clusters(self.auth.session)
-            print('\n%s selected.' % (cluster))
-
-        # datastore
-        if 'vcenter' in cfg:
-            if 'datastore' in cfg['vcenter']:
-                datastore = cfg['vcenter']['datastore']
-        else:
-            datastore = Prompts.datastores(self.auth.session, cluster)
-            print('\n%s selected.' % (datastore))
-
-        # nics
-        if 'devices' in cfg:
-            if 'nics' in cfg['devices']:
-                nics = cfg['devices']['nics']
+            # cluster
+            if 'cluster' in cfg['vmconfig']:
+                cluster = cfg['vmconfig']['cluster']
+            else:
+                cluster = Prompts.clusters(self.auth.session)
+                print('\n%s selected.' % (cluster))
+            # datastore
+            if 'datastore' in cfg['vmconfig']:
+                datastore = cfg['vmconfig']['datastore']
+            else:
+                datastore = Prompts.datastores(self.auth.session, cluster)
+                print('\n%s selected.' % (datastore))
+            # datacenter
+            if not self.opts.datacenter:
+                datacenter = Prompts.datacenters(self.auth.session)
+                print('\n%s selected.' % (datacenter))
+            else:
+                datacenter = self.opts.datacenter
+            # nics
+            if 'nics' in cfg['vmconfig']:
+                nics = cfg['vmconfig']['nics']
                 print('nics: %s' % (nics))
             else:
                 nics = Prompts.networks(self.auth.session, cluster)
                 print('\n%s selected.' % (','.join(nics)))
+            # folder
+            if 'folder' in cfg['vmconfig']:
+                folder = cfg['vmconfig']['folder']
+            else:
+                folder = Prompts.folders(self.auth.session, datacenter)
+                print('\n%s selected.' % (folder))
         else:
+            name = Prompts.name()
+            cluster = Prompts.clusters(self.auth.session)
+            print('\n%s selected.' % (cluster))
+            datastore = Prompts.datastores(self.auth.session, cluster)
+            print('\n%s selected.' % (datastore))
+            datacenter = Prompts.datacenters(self.auth.session)
+            print('\n%s selected.' % (datacenter))
             nics = Prompts.networks(self.auth.session, cluster)
             print('\n%s selected.' % (','.join(nics)))
-
-        # folder
-        if 'vcenter' in cfg:
-            if 'folder' in cfg['vcenter']:
-                folder = cfg['vcenter']['folder']
-        else:
             folder = Prompts.folders(self.auth.session, datacenter)
             print('\n%s selected.' % (folder))
 
         return (name, cluster, datastore, nics, folder)
 
 
-
     # pylint: disable=too-many-branches,too-many-locals,too-many-statements
-    def create_wrapper(self, *yaml_cfg, **defaults):
+    def create_wrapper(self, *yaml_cfg):
         """
         Wrapper method for creating multiple VMs. If certain information was
         not provided in the yaml config (like a datastore), then the client
         will be prompted to select one inside the cfg_checker method.
 
         Args:
-            prompt   (bool): True will prompt the user to accept the cfg
+            prompt (bool): True will prompt the user to accept the cfg
                 before creating the VM.
             yaml_cfg (file): A yaml file containing the necessary information
                 for creating a new VM.
-            defaults (dict): A dict of default values from ConfigParser dotrc.
         """
 
-        for cfg in yaml_cfg:
-            spec = yaml.load(cfg)
+        spec = {}
 
-            print(defaults)
-            spec.update(defaults)
-            print(spec)
+        # load any configs in dotrc first
+        if self.dotrc:
+            spec.update(self.dotrc)
+
+        print('dotrc: %s' % (spec))
+
+        for cfg in yaml_cfg:
+
+            print('cfg: %s' % (yaml.dump(cfg)))
+
+            # override dotrc values with user supplied cfg
+            for key, values in yaml.load(cfg).iteritems():
+                if key in spec:
+                    spec[key].update(values)
+                else:
+                    spec[key] = {}
+                    spec[key].update(values)
+
+            print('spec_override: %s' % (spec))
+
             # sanitize the config and prompt for more info if necessary
             results = self.cfg_checker(spec)
-            spec['config'].update({'name':results[0]})
-            cluster = results[1]
-            datastore = results[2]
-            nics = results[3]
-            folder = results[4]
 
-            spec['devices'].update({'nics':nics})
+            name = results[0]
+            spec['vmconfig'].update({'name':name})
+            cluster = results[1]
+            spec['vmconfig'].update({'cluster':cluster})
+            datastore = results[2]
+            spec['vmconfig'].update({'datastore':datastore})
+            nics = results[3]
+            spec['vmconfig'].update({'nics':nics})
+            folder = results[4]
+            spec['vmconfig'].update({'folder':folder})
+
 
             cluster_obj = Query.get_obj(self.clusters.view, cluster)
             pool = cluster_obj.resourcePool
-            # convert kilobytes to gigabytes
-            kb_to_gb = 1024*1024
 
+            # list of scsi devices, max is 4.  Layout is a tuple containing the
+            # key and configured device
+            scsis = []
+            # list of cdrom and disk devices
             devices = []
 
-            for scsi, disk in enumerate(spec['devices']['disks']):
+            # add the cdrom device
+            devices.append(self.vmcfg.cdrom_config())
+
+            # configure scsi controller and add disks to them.
+            # to keep things simple, the max disks we allow in this example is
+            # 4 (max scsi).
+            for scsi, disk in enumerate(spec['vmconfig']['disks']):
                 # setup the first four disks on a separate scsi controller
-                devices.append(self.vmcfg.scsi_config(scsi))
+                # disk size is in GB
+                scsis.append(self.vmcfg.scsi_config(scsi))
+                devices.append(scsis[scsi][1])
                 devices.append(
                     self.vmcfg.disk_config(
-                        cluster_obj.datastore, datastore, disk*kb_to_gb,
+                        cluster_obj.datastore, datastore,
+                        int(disk) * (1024*1024), key=scsis[scsi][0], unit=0
                     )
                 )
 
-            for nic in nics:
+            # configure each network and add to devices
+            for nic in spec['vmconfig']['nics']:
                 devices.append(self.vmcfg.nic_config(cluster_obj.network, nic))
 
-            devices.append(self.vmcfg.cdrom_config())
+            spec['vmconfig'].update({'deviceChange':devices})
 
-            print(yaml.dump(spec, default_flow_style=False))
-            answer = raw_input('Do you accept this config? [y|n]:')
-            while True:
-                if answer == 'y':
-                    break
-                if answer == 'n':
-                    print('VM creation canceled by the user.')
-                    sys.exit(1)
+            folder = Query.folders_lookup(
+                self.datacenters.view, self.opts.datacenter, folder
+            )
 
+            # delete items that are no longer needed
+            del spec['vmconfig']['disks']
+            del spec['vmconfig']['nics']
+            del spec['vmconfig']['folder']
+            del spec['vmconfig']['datastore']
+
+            pool = cluster_obj.resourcePool
+
+            print(spec)
             # break for testing
             sys.exit(1)
 
             # pylint: disable=star-args
-            self.vmcfg.create(
-                folder, pool, datastore, *devices, **spec['config']
-            )
+            self.vmcfg.create(folder, datastore, pool, **spec['vmconfig'])
 
             # if mkbootiso is in the spec, then create the iso
             if 'mkbootiso' in spec:
+
                 print('\ncreating boot ISO for %s' % (spec['config']['name']))
                 mkbootiso = spec['mkbootiso']
                 iso_name = spec['config']['name'] + '.iso'
@@ -252,7 +286,7 @@ class VCTools(ArgParser):
                 MkBootISO.createiso(mkbootiso['source'], iso_path, iso_name)
 
             # run additional argparse options if declared in yaml cfg.
-            if 'upload' in spec:
+            if 'upload' in spec['vmconfig']:
                 datastore = self.dotrc['upload']['datastore']
                 dest = self.dotrc['upload']['dest']
                 verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
@@ -277,10 +311,10 @@ class VCTools(ArgParser):
                 self.upload_wrapper(datastore, dest, verify_ssl, iso)
                 print('\n')
 
-            if 'mount' in spec:
+            if 'mount' in spec['vmconfig']:
                 datastore = self.dotrc['mount']['datastore']
                 path = self.dotrc['mount']['path']
-                name = spec['config']['name']
+                name = spec['vmconfig']['name']
 
                 if not path.endswith('.iso'):
                     if path.endswith('/'):
@@ -295,9 +329,9 @@ class VCTools(ArgParser):
                 self.mount_wrapper(datastore, path, name)
                 print('\n')
 
-            if 'power' in spec:
-                state = spec['power']
-                name = spec['name']
+            if 'power' in spec['vmconfig']:
+                state = spec['vmconfig']['power']
+                name = spec['vmconfig']['name']
 
                 self.power_wrapper(state, name)
                 print('\n')
@@ -427,13 +461,12 @@ class VCTools(ArgParser):
             self.create_containers()
 
             if self.opts.cmd == 'create':
-                # add default settings from dotrc file
-                if self.vmconfig:
-                    print('vmconfig: %s' % (self.vmconfig))
-                    self.create_wrapper(*self.opts.config, **self.vmconfig)
-                else:
-                    print('no vmconfig')
+                if self.opts.config:
                     self.create_wrapper(*self.opts.config)
+                else:
+                    # allow for prompts for vm creation if necessary
+                    self.create_wrapper()
+
 
             if self.opts.cmd == 'mount':
                 self.mount_wrapper(
