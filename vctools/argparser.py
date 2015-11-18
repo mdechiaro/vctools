@@ -12,7 +12,6 @@ class ArgParser(object):
         self.__version__ = '0.1.2'
         self.help = None
         self.opts = None
-        self.vmconfig = None
 
         self.parser = argparse.ArgumentParser(
             description='vCenter Tools CLI'
@@ -29,7 +28,7 @@ class ArgParser(object):
         # override options with defaults in dotfiles
         dotrc_name = '~/.vctoolsrc.yaml'
         dotrc_yaml = open(os.path.expanduser(dotrc_name))
-        self.dotrc = yaml.dump(dotrc_yaml)
+        self.dotrc = yaml.load(dotrc_yaml)
 
 
     @staticmethod
@@ -80,7 +79,8 @@ class ArgParser(object):
         )
 
         # ConfigParser overrides
-        general_parser.set_defaults(**self.dotrc['general'])
+        if 'general' in self.dotrc:
+            general_parser.set_defaults(**self.dotrc['general'])
 
         return general_parser
 
@@ -102,7 +102,8 @@ class ArgParser(object):
            '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
-        create_parser.set_defaults(**self.dotrc['create'])
+        if 'create' in self.dotrc:
+            create_parser.set_defaults(**self.dotrc['create'])
 
 
     def mount_parser(self, parent):
@@ -129,7 +130,8 @@ class ArgParser(object):
            '--name', nargs='+', metavar='',
             help='name attribute of Virtual Machine object.'
         )
-        mount_parser.set_defaults(**self.dotrc['mount'])
+        if 'mount' in self.dotrc:
+            mount_parser.set_defaults(**self.dotrc['mount'])
 
 
     def power_parser(self, parent):
@@ -266,7 +268,8 @@ class ArgParser(object):
            '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
-        upload_parser.set_defaults(**self.dotrc['upload'])
+        if 'upload' in self.dotrc:
+            upload_parser.set_defaults(**self.dotrc['upload'])
 
 
     def wizard_parser(self):
@@ -282,10 +285,6 @@ class ArgParser(object):
 
     def setup_args(self):
         """Method loads all the argparse parsers."""
-
-        # default settings for VMs
-        self.vmconfig = {}
-        self.vmconfig = self.dotrc['vmconfig']
 
         general_parser = self.general_parser()
         self.create_parser(general_parser)
