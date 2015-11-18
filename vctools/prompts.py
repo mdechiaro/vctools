@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # vim: expandtab shiftwidth=4 tabstop=4
-"""All prompts must, always and forever, be mad prompts."""
+"""Prompts for User Inputs"""
 from __future__ import print_function
 from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.query import Query
+import os
 import sys
 
 class Prompts(object):
@@ -36,15 +37,10 @@ class Prompts(object):
             selected_networks (list): A list of selected networks
         """
         clusters = Query.create_container(
-            session, session.content.rootFolder,
-            [vim.ComputeResource], True
+            session, session.content.rootFolder, [vim.ComputeResource], True
         )
-        cluster = Query.get_obj(
-            clusters.view, cluster
-        )
-        networks = Query.list_obj_attrs(
-            cluster.network, 'name', view=False
-        )
+        cluster = Query.get_obj(clusters.view, cluster)
+        networks = Query.list_obj_attrs(cluster.network, 'name', view=False)
         networks.sort()
 
         print('\n')
@@ -99,12 +95,9 @@ class Prompts(object):
             datastore (str): Name of selected datastore
         """
         clusters = Query.create_container(
-            session, session.content.rootFolder,
-            [vim.ComputeResource], True
+            session, session.content.rootFolder, [vim.ComputeResource], True
         )
-        datastores = Query.return_datastores(
-            clusters.view, cluster
-        )
+        datastores = Query.return_datastores(clusters.view, cluster)
 
         print('\n')
         if (len(datastores) -1) == 0:
@@ -164,8 +157,6 @@ class Prompts(object):
             datacenters.view, datacenter
         )
         folders.sort()
-        for folder in folders:
-            print(folder)
 
         for num, opt in enumerate(folders, start=1):
             print('%s: %s' % (num, opt))
@@ -252,3 +243,5 @@ class Prompts(object):
                 continue
 
         return selected_cluster
+
+
