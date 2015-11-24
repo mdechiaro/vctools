@@ -171,6 +171,21 @@ class VCTools(ArgParser):
         return output
 
 
+    def dict_merge(self, first, second):
+        """
+        Method will recursively merge two dictionaries
+        """
+        if isinstance(first, dict) and isinstance(second, dict):
+            for key, value in first.iteritems():
+                if isinstance(value, dict):
+                    # get node or create one
+                    node = second.setdefault(key, {})
+                    self.dict_merge(value, node)
+                else:
+                    second[key] = value
+            return second
+
+
     # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     def create_wrapper(self, *yaml_cfg):
         """
