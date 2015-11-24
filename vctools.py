@@ -160,7 +160,15 @@ class VCTools(ArgParser):
             folder = Prompts.folders(self.auth.session, datacenter)
             print('\n%s selected.' % (folder))
 
-        return (name, cluster, datastore, nics, folder)
+        output = {
+            'name': name,
+            'cluster': cluster,
+            'datastore': datastore,
+            'nics': nics,
+            'folder': folder
+        }
+
+        return output
 
 
     # pylint: disable=too-many-branches,too-many-locals,too-many-statements
