@@ -258,7 +258,9 @@ class VMConfig(Query):
         if iso_path and iso_name and datastore and not umount:
             cdrom.operation = 'edit'
 
-            if iso_path.endswith('/'):
+            if iso_path.endswith('.iso'):
+                pass
+            elif iso_path.endswith('/'):
                 iso_path = iso_path + iso_name
             else:
                 iso_path = iso_path + '/' + iso_name
