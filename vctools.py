@@ -11,6 +11,7 @@ from __future__ import print_function
 import os
 import sys
 import yaml
+import copy
 #
 from pyVmomi import vim
 from vctools.argparser import ArgParser
@@ -170,20 +171,22 @@ class VCTools(ArgParser):
 
         return output
 
-
     def dict_merge(self, first, second):
         """
-        Method will recursively merge two dictionaries
+        Method deep merges two dictionaries of unknown value types and
+        depth.
         """
-        if isinstance(first, dict) and isinstance(second, dict):
-            for key, value in first.iteritems():
-                if isinstance(value, dict):
-                    # get node or create one
-                    node = second.setdefault(key, {})
-                    self.dict_merge(value, node)
-                else:
-                    second[key] = value
-            return second
+
+        # deep copy the first to maintain it's structure
+        new = copy.deepcopy(first)
+
+        for key, value in second.iteritems():
+            if key in new and isinstance(new[key], dict):
+                new[key] = self.dict_merge(new[key], value)
+            else:
+                new[key] = copy.deepcopy(value)
+
+        return new
 
 
     # pylint: disable=too-many-branches,too-many-locals,too-many-statements
