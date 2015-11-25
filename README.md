@@ -31,7 +31,7 @@ Quick Install (on Linux Mint 17.2):
 
     sudo apt-get install python-yaml python-pip
     sudo pip install pyVmomi
-    cp .vctoolsrc.yaml ~/
+    cp .vctoolsrc.yaml.example ~/.vctoolsrc.yaml
 
 VM Creation:
 
