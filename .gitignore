@@ -1,5 +1,3 @@
-.*
-!.vctoolsrc.yaml
 *.yaml
 *.pyc
 *.log
