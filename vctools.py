@@ -197,10 +197,9 @@ class VCTools(ArgParser):
         will be prompted to select one inside the cfg_checker method.
 
         Args:
-            prompt (bool): True will prompt the user to accept the cfg
-                before creating the VM.
             yaml_cfg (file): A yaml file containing the necessary information
-                for creating a new VM.
+                for creating a new VM. This file will override the defaults set
+                in the dotrc file.
         """
 
         spec = {}
