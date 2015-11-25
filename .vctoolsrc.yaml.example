@@ -1,0 +1,79 @@
+# vim: tabstop=4 shiftwidth=4 expandtab
+# .vctoolsrc.yaml
+#
+# This purpose of this dotrc file is to force default values for argparse and
+# VM creations. This file is read first by the program, and then its values can
+# overrided by passing a sample.yaml file when creating a VM.
+# Remove any options that you do not wish to set.
+#
+# These sections should match argparse parsers.
+#general:
+  # general options
+  # user: username for logging into vsphere
+  # domain: domain for logging into vsphere
+  # passwd-file: one line file containing your password and is gpg ascii encrypted
+  #user=userid
+  #domain=adlocal
+  #passwd_file=~/Documents/.pass.asc
+create:
+  # datacenter: default datacenter view when accessing vsphere.  
+  datacenter: Linux
+upload:
+  # sub-options for uploading an iso
+  #
+  # dest: destination folder where the iso will reside.
+  # datastore: name of datastore where the iso will reside.
+  # verify-ssl: verify SSL certificate.
+  # datacenter: default datacenter view when accessing vsphere.  
+  datacenter: Linux
+  datastore: ISO_Templates
+  dest: /ISOs/OS/mkbootiso/
+  verify_ssl: False
+mount:
+  # sub-options for mounting an iso
+  #
+  # datastore: Name of datastore where the ISO is located.
+  # path: Path inside datastore where the ISO is located.
+  datastore: ISO_Templates
+  path: /ISOs/OS/mkbootiso/
+mkbootiso:
+  # sub-options for mkbootiso
+  # templates: A pre-defined config for creating OS specific kickstarts
+  #     In the server cfg, match the template using the key "template," and 
+  #     override or add any additional key values.
+  # Example:
+  #     If you wanted to load the rhel7 template on a server, add this code:
+  # mkbootiso:
+  #  template: rhel7
+  #  <add any additional options specific to this server>
+  templates:
+    rhel6:
+      source: '/mnt/isos/rhel6'
+      ks: 'http://ks.domain.com/rhel7-ks.cfg'
+      options:
+        netmask: '255.255.255.0'
+        dns: '4.2.2.2'
+    rhel7:
+      source: '/mnt/isos/rhel7'
+      ks: 'http://ks.domain.com/rhel7-ks.cfg'
+      options:
+        netmask: '255.255.255.0'
+        nameserver: '4.2.2.2'
+        net.ifnames: '0'
+        biosdevname: '0'
+vmconfig:
+  # default config values for VM creations
+  # You can get an idea of what is allowed by looking at the ConfigSpec in VMware's SDK
+  # https://www.vmware.com/support/developer/vc-sdk/visdk25pubs/ReferenceGuide/vim.vm.ConfigSpec.html
+  numCPUs: 1
+  memoryMB: 4096
+  memoryHotAddEnabled: True
+  cpuHotAddEnabled: True
+  disks:
+    - 30
+vctools:
+  # sub-options for vctools
+  # The options below will tell vctools to run extra argparse commands after VM creation
+  upload:
+  mount:
+  power: 'on'
