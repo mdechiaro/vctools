@@ -202,45 +202,21 @@ class VCTools(ArgParser):
                 in the dotrc file.
         """
 
-        spec = {}
-
-        # load any configs in dotrc first
-        if self.dotrc:
-            spec.update(self.dotrc)
-
-        print('dotrc: %s' % (spec))
-
         for cfg in yaml_cfg:
 
-            print('cfg: %s' % (yaml.dump(cfg)))
-
-            # override dotrc values with user supplied cfg
-            for key, values in yaml.load(cfg).iteritems():
-                if key in spec:
-                    spec[key].update(values)
-                else:
-                    spec[key] = {}
-                    spec[key].update(values)
-
-            print('spec_override: %s' % (spec))
-
+            spec = self.dict_merge(self.dotrc, yaml.load(cfg))
             # sanitize the config and prompt for more info if necessary
             results = self.cfg_checker(spec)
 
-            name = results[0]
-            spec['vmconfig'].update({'name':name})
-            cluster = results[1]
-            spec['vmconfig'].update({'cluster':cluster})
-            datastore = results[2]
-            spec['vmconfig'].update({'datastore':datastore})
-            nics = results[3]
-            spec['vmconfig'].update({'nics':nics})
-            folder = results[4]
-            spec['vmconfig'].update({'folder':folder})
+            spec['vmconfig'].update(self.dict_merge(spec['vmconfig'], results))
 
+            server_cfg = copy.deepcopy(spec)
+
+            cluster = spec['vmconfig']['cluster']
+            datastore = spec['vmconfig']['datastore']
+            folder = spec['vmconfig']['folder']
 
             cluster_obj = Query.get_obj(self.clusters.view, cluster)
-            pool = cluster_obj.resourcePool
 
             # list of scsi devices, max is 4.  Layout is a tuple containing the
             # key and configured device
@@ -281,12 +257,9 @@ class VCTools(ArgParser):
             del spec['vmconfig']['nics']
             del spec['vmconfig']['folder']
             del spec['vmconfig']['datastore']
+            del spec['vmconfig']['cluster']
 
             pool = cluster_obj.resourcePool
-
-            print(spec)
-            # break for testing
-            sys.exit(1)
 
             # pylint: disable=star-args
             self.vmcfg.create(folder, datastore, pool, **spec['vmconfig'])
@@ -294,9 +267,18 @@ class VCTools(ArgParser):
             # if mkbootiso is in the spec, then create the iso
             if 'mkbootiso' in spec:
 
-                print('\ncreating boot ISO for %s' % (spec['config']['name']))
+                if 'template' in spec['mkbootiso']:
+                    tmpl = MkBootISO.load_template(
+                        spec['mkbootiso'], spec['mkbootiso']['template']
+                    )
+                    spec['mkbootiso'].update(self.dict_merge(
+                        spec['mkbootiso'], tmpl
+                        )
+                    )
+
+                print('\ncreating boot ISO for %s' % (spec['vmconfig']['name']))
                 mkbootiso = spec['mkbootiso']
-                iso_name = spec['config']['name'] + '.iso'
+                iso_name = spec['vmconfig']['name'] + '.iso'
 
                 # where mkbootiso should write the iso file
                 if 'destination' in spec['mkbootiso']:
@@ -311,7 +293,7 @@ class VCTools(ArgParser):
                 MkBootISO.createiso(mkbootiso['source'], iso_path, iso_name)
 
             # run additional argparse options if declared in yaml cfg.
-            if 'upload' in spec['vmconfig']:
+            if 'upload' in spec['vctools']:
                 datastore = self.dotrc['upload']['datastore']
                 dest = self.dotrc['upload']['dest']
                 verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
@@ -336,7 +318,7 @@ class VCTools(ArgParser):
                 self.upload_wrapper(datastore, dest, verify_ssl, iso)
                 print('\n')
 
-            if 'mount' in spec['vmconfig']:
+            if 'mount' in spec['vctools']:
                 datastore = self.dotrc['mount']['datastore']
                 path = self.dotrc['mount']['path']
                 name = spec['vmconfig']['name']
@@ -354,12 +336,14 @@ class VCTools(ArgParser):
                 self.mount_wrapper(datastore, path, name)
                 print('\n')
 
-            if 'power' in spec['vmconfig']:
-                state = spec['vmconfig']['power']
+            if 'power' in spec['vctools']:
+                state = spec['vctools']['power']
                 name = spec['vmconfig']['name']
 
                 self.power_wrapper(state, name)
                 print('\n')
+
+            return server_cfg
 
 
     def mount_wrapper(self, datastore, path, *names):
@@ -381,7 +365,7 @@ class VCTools(ArgParser):
                 )
             )
             cdrom_cfg = []
-            cdrom_cfg.append(self.vmcfg.cdrom_config(datastore, path))
+            cdrom_cfg.append(self.vmcfg.cdrom_config(datastore, path, name))
 
             config = {'deviceChange' : cdrom_cfg}
             # pylint: disable=star-args
