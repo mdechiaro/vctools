@@ -28,7 +28,7 @@ class MkBootISO(object):
             kernel vmlinuz
             append initrd=initrd.img %s %s
 
-            """ % (ks_url, ' '.join("%s=%s" % (key, val)
+            """ % ('ks=' + ks_url, ' '.join("%s=%s" % (key, val)
                 for (key, val) in kwargs.iteritems())
             )
 
