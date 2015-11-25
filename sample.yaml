@@ -1,21 +1,15 @@
 # vim: shiftwidth=4 tabstop=4 expandtab
 # sample yaml for creating servers
 ---
-vcenter:
+vmconfig:
   cluster: 1234_test_cluster
   folder: 'Linux'
-  # If datastore is not provided then you will be prompted during the
-  # creation process.
-  # datastore: Test_Datastore_01
-config:
   name: hostname
   guestId: rhel6_64Guest
   numCPUs: 1
   memoryMB: 4096
   memoryHotAddEnabled: True
   cpuHotAddEnabled: True
-devices:
-  # Can support up to 4 disks, with each disk on a separate SCSI Controller.
   disks:
     - 30
   nics:
@@ -34,14 +28,3 @@ mkbootiso:
     nameserver: '4.2.2.2'
     net.ifnames: '0'
     biosdevname: '0'
-# This config file allows you to append additional argparse commands to fully
-# automate the build process using one login session.  This is useful if you
-# to run a few steps to create the server and install the OS.
-#
-# Add the necessary commands you wish to run after creating the VM.  Only
-# argparse args are supported. The commands will run using default values from
-# .vctoolsrc.
-upload:
-  iso: /tmp/hostname.iso
-mount:
-power: 'on'
