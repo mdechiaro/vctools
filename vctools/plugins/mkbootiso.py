@@ -53,3 +53,32 @@ class MkBootISO(object):
         ]
 
         subprocess.call(cmd)
+
+    @classmethod
+    def load_template(cls, cfg, template=None):
+        """
+        Returns dict if template is found. Mkbootiso can be configured to use
+        a special "templates" key, for creating specific kickstart parameters
+        across different environments.  This method will return the dict whose
+        parent matches template.
+
+        Example:
+            mkbootiso:
+              templates:
+                rhel7:
+                  source: 'https://ks.hostname.com/rhel7
+                rhel6:
+                  source: 'https://ks.hostname.com/rhel6
+
+        Args:
+            cfgs (dict): Dictionary to load as cfg
+            template (bool): If template is set, it will attempt to match the
+                config labeled as template and load that cfg
+
+        Returns: A dictionary of configured options for creating an ISO
+        """
+
+        if template:
+            if 'templates' in cfg:
+                if template in cfg['templates']:
+                    return cfg['templates'][template]
