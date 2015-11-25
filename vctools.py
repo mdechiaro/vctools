@@ -106,8 +106,6 @@ class VCTools(ArgParser):
 
         Args:
             cfg    (obj): Yaml object
-            write (bool): Boolean writes answers to yaml file.
-            output (str): Absolute path of output yaml file
         """
         # name
         if 'vmconfig' in cfg:
@@ -175,6 +173,14 @@ class VCTools(ArgParser):
         """
         Method deep merges two dictionaries of unknown value types and
         depth.
+
+        Args:
+            first (dict): The first dictionary
+            second (dict): The second dictionary
+
+        Returns:
+            new (dict): A new dictionary that is a merge of the first and
+                second
         """
 
         # deep copy the first to maintain it's structure
@@ -396,7 +402,7 @@ class VCTools(ArgParser):
         Wrapper method for un-mounting isos on multiple VMs.
 
         Args:
-            names (str): a tuple of VM names in vCenter.
+            names (tuple): a tuple of VM names in vCenter.
         """
         for name in names:
             host = self.query.get_obj(
@@ -416,7 +422,7 @@ class VCTools(ArgParser):
         Wrapper method for uploading multiple isos into a datastore.
 
         Args:
-            isos (str): a tuple of isos locally on machine that will be
+            isos (tuple): a tuple of isos locally on machine that will be
                 uploaded.  The path for each iso should be absolute.
         """
         for iso in isos:
