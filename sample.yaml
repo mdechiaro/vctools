@@ -2,14 +2,8 @@
 # sample yaml for creating servers
 ---
 vmconfig:
-  cluster: 1234_test_cluster
-  folder: 'Linux'
   name: hostname
   guestId: rhel6_64Guest
-  numCPUs: 1
-  memoryMB: 4096
-  memoryHotAddEnabled: True
-  cpuHotAddEnabled: True
   disks:
     - 30
   nics:
@@ -17,14 +11,12 @@ vmconfig:
 # mkbootiso plugin
 mkbootiso:
   # An extracted "isolinux" directory path from a vendor ISO
-  source: '/mnt/isos/rhel7/'
-  ks: 'http://ks.hostname.com/rhel7-ks.cfg'
+  # source: '/mnt/isos/rhel7/'
+  # ks: 'http://ks.hostname.com/rhel7-ks.cfg'
+  # template will match a key in templates that contains the kickstart data
+  template: rhel6
   # all valid kickstart options
   options:
     hostname: 'hostname.domain.com'
     ip: '10.1.2.3'
-    netmask: '255.255.255.0'
     gateway: '10.1.2.1'
-    nameserver: '4.2.2.2'
-    net.ifnames: '0'
-    biosdevname: '0'
