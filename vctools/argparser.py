@@ -103,7 +103,7 @@ class ArgParser(object):
             help='vCenter Datacenter. default: %(default)s'
         )
         if 'create' in self.dotrc:
-            create_parser.set_defaults(**self.dotrc['create'])
+            create_parser.set_defaults(**self.dotrc['vmconfig']['datacenter'])
 
 
     def mount_parser(self, parent):
