@@ -15,9 +15,6 @@
   #user=userid
   #domain=adlocal
   #passwd_file=~/Documents/.pass.asc
-create:
-  # datacenter: default datacenter view when accessing vsphere.  
-  datacenter: Linux
 upload:
   # sub-options for uploading an iso
   #
@@ -62,13 +59,16 @@ mkbootiso:
         net.ifnames: '0'
         biosdevname: '0'
 vmconfig:
+  # datacenter: default datacenter view when accessing vsphere.  
+  datacenter: Linux
   # default config values for VM creations
-  # You can get an idea of what is allowed by looking at the ConfigSpec in VMware's SDK
+  # You can get an idea of what is can be set here by looking at the ConfigSpec in VMware's SDK
   # https://www.vmware.com/support/developer/vc-sdk/visdk25pubs/ReferenceGuide/vim.vm.ConfigSpec.html
   numCPUs: 1
   memoryMB: 4096
   memoryHotAddEnabled: True
   cpuHotAddEnabled: True
+  # disks are in GB, max 4
   disks:
     - 30
 vctools:
