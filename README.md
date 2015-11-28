@@ -12,11 +12,6 @@ state of this project is beta, and so far it can do the following:
     datastores, networks, folders.
   - Upload local ISOs to remote datastores
   - Mount and Unmount ISOs
-  - Interactive Wizard (POC)
-
-It also supports a .vctoolsrc file using ConfigParser, which will allow
-you override argparse options with common values for each command, and
-allows for shorter command-line arguments. Put this file in your $HOME.
 
 Dependencies:
   - Python 2.6+
@@ -25,7 +20,6 @@ Dependencies:
   - python-requests
   - python-yaml
   - pyVmomi
-
 
 Quick Install (on Linux Mint 17.2):
 
@@ -46,7 +40,7 @@ upload, mount, and power on the VM after its creation making the process
 completely automated. It can handle multiple configs at once and merge
 them separately with the dotrc for complex configurations.  
 
-A minimal yaml config (you will be prompted for other information):
+An example minimal yaml config (you will be prompted for other information):
 
     ---
     vmconfig:
@@ -101,7 +95,8 @@ A complete, no prompt config looks like this:
 
 Any configs that you wish to be set as defaults should be added to
 .vctoolsrc.yaml, and then can be overridden on a per server basis with
-user supplied configs.
+user supplied configs. In addition, and features that you do not need
+(mkbootiso) should be omitted.
 
 The creation process will output all configurations for the server in
 YaML format for easy rebuilds in the future.  Committing these files to
@@ -148,7 +143,10 @@ Upload ISO to Datastore:
 Contributing:
 
 Pull requests are welcome.  Please follow PEP 8, and pylint is
-recommended for ensuring the code follows those standards.
+recommended for ensuring the code follows those standards. Disabling
+certain pylints is allowed (like star-args), so use your best
+judgment. Please disable using a comment in the vicinity of where the
+error occurs in the file.
 
 Thanks:
 
