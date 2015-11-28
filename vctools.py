@@ -259,11 +259,14 @@ class VCTools(ArgParser):
             )
 
             # delete items that are no longer needed
-            del spec['vmconfig']['disks']
-            del spec['vmconfig']['nics']
-            del spec['vmconfig']['folder']
-            del spec['vmconfig']['datastore']
-            del spec['vmconfig']['cluster']
+
+            # delete keys that vSphere does not understand, so we can pass it a
+            # dictionary to build the VM.
+            # pylint: disable=unused-variable
+            for key, value in spec['vmconfig'].iteritems():
+                if ('disks', 'nics', 'folder', 'datastore', 'datacenter',
+                        'cluster') in key:
+                    del key
 
             pool = cluster_obj.resourcePool
 
