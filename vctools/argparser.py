@@ -9,7 +9,7 @@ import yaml
 class ArgParser(object):
     """Placeholder."""
     def __init__(self):
-        self.__version__ = '0.1.2'
+        self.__version__ = '0.1.3'
         self.help = None
         self.opts = None
 
