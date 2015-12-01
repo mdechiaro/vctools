@@ -262,11 +262,12 @@ class VCTools(ArgParser):
 
             # delete keys that vSphere does not understand, so we can pass it a
             # dictionary to build the VM.
-            # pylint: disable=unused-variable
-            for key, value in spec['vmconfig'].iteritems():
-                if ('disks', 'nics', 'folder', 'datastore', 'datacenter',
-                        'cluster') in key:
-                    del key
+            del spec['vmconfig']['disks']
+            del spec['vmconfig']['nics']
+            del spec['vmconfig']['folder']
+            del spec['vmconfig']['datastore']
+            del spec['vmconfig']['datacenter']
+            del spec['vmconfig']['cluster']
 
             pool = cluster_obj.resourcePool
 
