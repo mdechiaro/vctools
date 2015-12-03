@@ -49,14 +49,15 @@ class VCTools(ArgParser):
         # mount path needs to point to an iso, and it doesn't make sense to add
         # to the dotrc file, so this will append the self.opts.name value to it
         if self.opts.cmd == 'mount':
-            if not self.opts.path.endswith('.iso'):
-                if self.opts.path.endswith('/'):
-                    self.opts.path = self.opts.path + self.opts.name + '.iso'
-                else:
-                    self.opts.path = self.opts.path +'/'+ self.opts.name +'.iso'
-            # path is relative in vsphere, so we strip off the first character.
-            if self.opts.path.startswith('/'):
-                self.opts.path = self.opts.path.lstrip('/')
+            for host in self.opts.name:
+                if not self.opts.path.endswith('.iso'):
+                    if self.opts.path.endswith('/'):
+                        self.opts.path = self.opts.path + host + '.iso'
+                    else:
+                        self.opts.path = self.opts.path +'/'+ host +'.iso'
+                # path is relative in vsphere, so we strip off the first char.
+                if self.opts.path.startswith('/'):
+                    self.opts.path = self.opts.path.lstrip('/')
 
         if self.opts.cmd == 'upload':
             # trailing slash is in upload method, so we strip it out here.
