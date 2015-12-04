@@ -44,6 +44,12 @@ class VMConfig(Query):
                 choices.update({option.key : option.label})
                 print('\t%s: %s' % (option.key, option.label))
 
+            warn = textwrap.dedent("""\
+                Warning: The VM may be in a suspended
+                state until this question is answered.""").strip()
+
+            print(textwrap.fill(warn, width=80))
+
             while True:
                 answer = raw_input('\nPlease select number: ').strip()
 
