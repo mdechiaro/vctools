@@ -52,7 +52,7 @@ An example minimal yaml config (you will be prompted for other information):
       - 50
       nics:
       - vlan_1234_linux_vlan
-      mkbootiso:
+    mkbootiso:
       template: rhel7
       options:
         hostname: 'server.domain.com'
