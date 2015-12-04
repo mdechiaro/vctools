@@ -39,10 +39,19 @@ class VMConfig(Query):
             qid = host.runtime.question.id
             print('\n')
             print('\n'.join(textwrap.wrap(host.runtime.question.text, 80)))
+            choices = {}
             for option in host.runtime.question.choice.choiceInfo:
+                choices.update({option.key : option.label})
                 print('\t%s: %s' % (option.key, option.label))
 
-            answer = raw_input('\nPlease select number: ').strip()
+            while True:
+                answer = raw_input('\nPlease select number: ').strip()
+
+                # check if answer is an appropriate number
+                if int(answer) <= len(choices.keys()) - 1:
+                    break
+                else:
+                    continue
 
             host.AnswerVM(qid, str(answer))
 
