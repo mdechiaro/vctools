@@ -376,7 +376,12 @@ class VCTools(ArgParser):
                 )
             )
             cdrom_cfg = []
-            cdrom_cfg.append(self.vmcfg.cdrom_config(datastore, path, name))
+            key, controller = Query.get_key(host, 'CD/DVD')
+
+            cdrom_cfg.append(self.vmcfg.cdrom_config(
+                datastore, path, name, key, controller
+                )
+            )
 
             config = {'deviceChange' : cdrom_cfg}
             # pylint: disable=star-args
@@ -414,9 +419,12 @@ class VCTools(ArgParser):
                 self.virtual_machines.view, name
             )
 
+            key, controller = Query.get_key(host, 'CD/DVD')
+
             print('Unmounting ISO on %s' % (name))
             cdrom_cfg = []
-            cdrom_cfg.append(self.vmcfg.cdrom_config(umount=True))
+            cdrom_cfg.append(self.vmcfg.cdrom_config(umount=True, key=key,
+                controller=controller))
             config = {'deviceChange' : cdrom_cfg}
             # pylint: disable=star-args
             self.vmcfg.reconfig(host, **config)
