@@ -231,8 +231,8 @@ class VMConfig(Query):
 
 
     @classmethod
-    def cdrom_config(
-            cls, datastore=None, iso_path=None, iso_name=None, umount=False):
+    def cdrom_config(cls, datastore=None, iso_path=None, iso_name=None,
+            umount=False, key=None, controller=None):
         """
         Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
         then it will create the device.  Otherwise, it will attempt to mount
@@ -240,29 +240,43 @@ class VMConfig(Query):
         method to use an iso stored locally.  If umount is True, then the
         method will attempt to umount the iso.
 
+        When editing an existing device, the method will obtain the existing key
+        so it can interact with the device.
+
         Args:
             datastore (str): Name of datastore
             iso_path (str):  Path to ISO
             iso_name (str):  Name of ISO on datastore
             umount (bool):   If True, then method will umount any existing ISO.
                 If False, then method will create or mount the ISO.
+            key (int): The key associated with the Cdrom device
+            controller (int): The controller key associated with Cdrom device
+
         Returns:
             cdrom (obj): A configured object for a CD-Rom device.  this should
                 be appended to ConfigSpec devices attribute.
         """
         cdrom = vim.vm.device.VirtualDeviceSpec()
         cdrom.device = vim.vm.device.VirtualCdrom()
-        cdrom.device.controllerKey = 201
-        cdrom.device.key = 3002
         cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
         cdrom.device.connectable.connected = True
         cdrom.device.connectable.startConnected = True
         cdrom.device.connectable.allowGuestControl = True
 
+        # set default key value if it does not exist
+        if not key:
+            cdrom.device.key = 3002
+        else:
+            cdrom.device.key = key
+
+        if not controller:
+            cdrom.device.controllerKey = 201
+        else:
+            cdrom.device.controllerKey = controller
+
         # umount iso
         if umount:
             cdrom.operation = 'edit'
-
             cdrom.device.backing = vim.vm.device.VirtualCdrom.\
                 RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
@@ -292,12 +306,12 @@ class VMConfig(Query):
         # create cdrom
         else:
             cdrom.operation = 'add'
-
             cdrom.device.backing = vim.vm.device.VirtualCdrom.\
                 RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
             return cdrom
+
 
     @classmethod
     def disk_config(cls, container, datastore, size, key, unit=0,
