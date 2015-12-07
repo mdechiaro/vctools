@@ -494,7 +494,10 @@ class VCTools(ArgParser):
                     cfgs.append(self.create_wrapper(*self.opts.config))
                     for cfg in cfgs:
                         filename = cfg['vmconfig']['name'] + '.yaml'
-                        print(yaml.dump(cfg), file=open(filename, 'w'))
+                        print(
+                            yaml.dump(cfg, default_flow_style=False),
+                            file=open(filename, 'w')
+                        )
                 else:
                     # allow for prompts for vm creation if necessary
                     self.create_wrapper()
