@@ -256,3 +256,35 @@ class Query(object):
                     if virt.name == name:
                         return virt._moId
 
+
+    @classmethod
+    def get_key(cls, obj, query):
+        """
+        Method will attempt to return the key associated with device so it can
+        be used to edit existing devices. It will loop through all possible
+        devices and return the key that matches query with the label attribute.
+
+        Example:
+            To get the key for the cdrom device, assuming obj is a
+            VirtualMachine object
+
+            get_key(virtual_machine, 'CD/DVD')
+
+        Args:
+            obj (obj): VirtualMachine object
+            query (str): A string representation of the object attribute.
+
+        Returns:
+            keys (tuple): A tuple container the key and controllerKey associated
+                with the device
+        """
+
+        if hasattr(obj, 'config'):
+            for item in obj.config.hardware.device:
+                if query in item.deviceInfo.label:
+                    key = item.key
+                    controller_key = item.controllerKey
+
+        return (key, controller_key)
+
+
