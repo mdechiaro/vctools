@@ -379,7 +379,7 @@ class VCTools(ArgParser):
             key, controller = Query.get_key(host, 'CD/DVD')
 
             cdrom_cfg.append(self.vmcfg.cdrom_config(
-                datastore, path, name, key, controller
+                datastore, path, name, key=key, controller=controller
                 )
             )
 
