@@ -303,56 +303,57 @@ class VCTools(ArgParser):
                 )
                 MkBootISO.createiso(mkbootiso['source'], iso_path, iso_name)
 
-            # run additional argparse options if declared in yaml cfg.
-            if 'upload' in spec['vctools']:
-                datastore = self.dotrc['upload']['datastore']
-                dest = self.dotrc['upload']['dest']
-                verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
-
-                # trailing slash is in upload method, so we strip it out here.
-                if dest.endswith('/'):
-                    dest = dest.rstrip('/')
-
-                # path is relative (strip first character)
-                if dest.startswith('/'):
-                    dest = dest.lstrip('/')
-
-                # verify_ssl needs to be a boolean value.
-                if verify_ssl:
+            if 'vctools' in spec:
+                # run additional argparse options if declared in yaml cfg.
+                if 'upload' in spec['vctools']:
+                    datastore = self.dotrc['upload']['datastore']
+                    dest = self.dotrc['upload']['dest']
                     verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
 
-                if iso_path:
-                    iso = iso_path + '/' + iso_name
-                else:
-                    iso = spec['upload']['iso']
+                    # trailing slash is in upload method, so we strip it out
+                    if dest.endswith('/'):
+                        dest = dest.rstrip('/')
 
-                self.upload_wrapper(datastore, dest, verify_ssl, iso)
-                print('\n')
+                    # path is relative (strip first character)
+                    if dest.startswith('/'):
+                        dest = dest.lstrip('/')
 
-            if 'mount' in spec['vctools']:
-                datastore = self.dotrc['mount']['datastore']
-                path = self.dotrc['mount']['path']
-                name = spec['vmconfig']['name']
+                    # verify_ssl needs to be a boolean value.
+                    if verify_ssl:
+                        verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
 
-                if not path.endswith('.iso'):
-                    if path.endswith('/'):
-                        path = path + name + '.iso'
+                    if iso_path:
+                        iso = iso_path + '/' + iso_name
                     else:
-                        path = path +'/'+ name +'.iso'
+                        iso = spec['upload']['iso']
 
-                # path is relative (strip first character)
-                if path.startswith('/'):
-                    path = path.lstrip('/')
+                    self.upload_wrapper(datastore, dest, verify_ssl, iso)
+                    print('\n')
 
-                self.mount_wrapper(datastore, path, name)
-                print('\n')
+                if 'mount' in spec['vctools']:
+                    datastore = self.dotrc['mount']['datastore']
+                    path = self.dotrc['mount']['path']
+                    name = spec['vmconfig']['name']
 
-            if 'power' in spec['vctools']:
-                state = spec['vctools']['power']
-                name = spec['vmconfig']['name']
+                    if not path.endswith('.iso'):
+                        if path.endswith('/'):
+                            path = path + name + '.iso'
+                        else:
+                            path = path +'/'+ name +'.iso'
 
-                self.power_wrapper(state, name)
-                print('\n')
+                    # path is relative (strip first character)
+                    if path.startswith('/'):
+                        path = path.lstrip('/')
+
+                    self.mount_wrapper(datastore, path, name)
+                    print('\n')
+
+                if 'power' in spec['vctools']:
+                    state = spec['vctools']['power']
+                    name = spec['vmconfig']['name']
+
+                    self.power_wrapper(state, name)
+                    print('\n')
 
             return server_cfg
 
