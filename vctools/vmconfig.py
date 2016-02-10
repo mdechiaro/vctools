@@ -311,12 +311,11 @@ class VMConfig(Query):
 
 
     @classmethod
-    def disk_config(cls, container, datastore, size, key, unit=0,
-                    mode='persistent', thin=True):
+    def disk_config(cls, **kwargs):
         """
         Method returns configured VirtualDisk object
 
-        Args:
+        Kwargs:
             container (obj): Cluster container object
             datastore (str): Name of datastore for the disk files location.
             size (int):      Integer of disk in kilobytes
@@ -329,6 +328,13 @@ class VMConfig(Query):
             disk (obj): A configured object for a VMDK Disk.  this should
                 be appended to ConfigSpec devices attribute.
         """
+        container = kwargs.get('container', None)
+        datastore = kwargs.get('datastore', None)
+        size = kwargs.get('size', None)
+        key = kwargs.get('key', None)
+        unit = kwargs.get('unit', 0)
+        mode = kwargs.get('mode', 'persistent')
+        thin = kwargs.get('thin', True)
 
         disk = vim.vm.device.VirtualDeviceSpec()
         disk.operation = 'add'

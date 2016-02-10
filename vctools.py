@@ -242,12 +242,25 @@ class VCTools(ArgParser):
                 # disk size is in GB
                 scsis.append(self.vmcfg.scsi_config(scsi))
                 devices.append(scsis[scsi][1])
-                devices.append(
-                    self.vmcfg.disk_config(
-                        cluster_obj.datastore, datastore,
-                        int(disk) * (1024*1024), key=scsis[scsi][0], unit=0
-                    )
+                disk_cfg_opts = {}
+
+                disk_cfg_opts.update(
+                    {
+                        'container' : cluster_obj.datastore,
+                        'datastore' : datastore,
+                        'size' : int(disk) * (1024*1024),
+                        'key' : scsis[scsi][0],
+                        'unit' : 0,
+                    }
                 )
+                devices.append(self.vmcfg.disk_config(**disk_cfg_opts))
+
+                #devices.append(
+                    #self.vmcfg.disk_config(
+                        #cluster_obj.datastore, datastore,
+                        #int(disk) * (1024*1024), key=scsis[scsi][0], unit=0
+                    #)
+                #)
 
             # configure each network and add to devices
             for nic in spec['vmconfig']['nics']:
