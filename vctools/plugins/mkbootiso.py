@@ -1,7 +1,9 @@
 #!/usr/bin/python
 """Plugin for creating a boot iso on a per server basis."""
+from __future__ import print_function
 import subprocess
 import textwrap
+import sys
 
 class MkBootISO(object):
     """
@@ -12,8 +14,16 @@ class MkBootISO(object):
     def __init__(self):
         pass
 
+    @staticmethod
+    def sanity_ip_checker(**kwargs):
+        """
+        Ensure ip doesn't match a subset of rules
+        """
+        if kwargs['ip'].endswith('.1'):
+            raise ValueError('%s seems to conflict with router devices.' % kwargs['ip'])
+
     @classmethod
-    def updateiso(cls, source, ks_url, **kwargs):
+    def updateiso(cls, source, ks_url, sanity=True, **kwargs):
         """
         Update iso image with host specific parameters.
         All kickstart options will be added from a yaml file.
@@ -28,28 +38,34 @@ class MkBootISO(object):
             kernel vmlinuz
             append initrd=initrd.img %s %s
 
-            """ % ('ks=' + ks_url, ' '.join("%s=%s" % (key, val)
-                for (key, val) in kwargs.iteritems())
-            )
+            """ %'ks=' + ks_url, ' '.join("%s=%s" % (key, val) for (key, val) in kwargs.iteritems())
 
-        with open(source + '/isolinux/isolinux.cfg', 'w') as iso_cfg:
-            iso_cfg.write(textwrap.dedent(label).strip())
+        if sanity:
+            try:
+                MkBootISO.sanity_ip_checker(**kwargs)
+                with open(source + '/isolinux/isolinux.cfg', 'w') as iso_cfg:
+                    iso_cfg.write(textwrap.dedent(label).strip())
+            except ValueError as err:
+                print(err)
+                answer = raw_input('Continue? [y|n]')
+                if 'Y' or 'y' in answer:
+                    pass
+                else:
+                    print('Exiting...')
+                    sys.exit(1)
+        else:
+            with open(source + '/isolinux/isolinux.cfg', 'w') as iso_cfg:
+                iso_cfg.write(textwrap.dedent(label).strip())
 
 
     @classmethod
     def createiso(cls, source, output, filename):
         """create iso image."""
-        cmd = ['/usr/bin/genisoimage',
-               '-J',
-               '-T',
-               '-o', output + '/' + filename,
-               '-b', 'isolinux/isolinux.bin',
-               '-c', 'isolinux/boot.cat',
-               '-no-emul-boot',
-               '-boot-load-size', '4',
-               '-boot-info-table', '-R',
-               '-m', 'TRANS.TBL',
-               '-graft-points', source,
+        cmd = [
+            '/usr/bin/genisoimage', '-J', '-T', '-o', output + '/' + filename,
+            '-b', 'isolinux/isolinux.bin', '-c', 'isolinux/boot.cat', '-no-emul-boot',
+            '-boot-load-size', '4', '-boot-info-table', '-R', '-m', 'TRANS.TBL', '-graft-points',
+            source,
         ]
 
         subprocess.call(cmd)
