@@ -230,8 +230,7 @@ class VMConfig(Query):
 
 
     @classmethod
-    def cdrom_config(cls, datastore=None, iso_path=None, iso_name=None,
-            umount=False, key=None, controller=None):
+    def cdrom_config(cls, **kwargs):
         """
         Method manages a CD-Rom Virtual Device.  If iso_path is not provided,
         then it will create the device.  Otherwise, it will attempt to mount
@@ -255,6 +254,13 @@ class VMConfig(Query):
             cdrom (obj): A configured object for a CD-Rom device.  this should
                 be appended to ConfigSpec devices attribute.
         """
+        datastore = kwargs.get('datastore', None)
+        iso_path = kwargs.get('iso_path', None)
+        iso_name = kwargs.get('iso_name', None)
+        umount = kwargs.get('umount', None)
+        key = kwargs.get('key', None)
+        controller = kwargs.get('controller', None)
+
         cdrom = vim.vm.device.VirtualDeviceSpec()
         cdrom.device = vim.vm.device.VirtualCdrom()
         cdrom.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()

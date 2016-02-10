@@ -385,10 +385,22 @@ class VCTools(ArgParser):
             cdrom_cfg = []
             key, controller = Query.get_key(host, 'CD/DVD')
 
-            cdrom_cfg.append(self.vmcfg.cdrom_config(
-                datastore, path, name, key=key, controller=controller
-                )
+            cdrom_cfg_opts = {}
+            cdrom_cfg_opts.update(
+                {
+                    'datastore' : datastore,
+                    'iso_path' : path,
+                    'iso_name' : name,
+                    'key': key,
+                    'controller' : controller,
+                }
             )
+            cdrom_cfg.append(self.vmcfg.cdrom_config(**cdrom_cfg_opts))
+
+            #cdrom_cfg.append(self.vmcfg.cdrom_config(**cdrom_cfg_opts
+            #    datastore, path, name, key=key, controller=controller
+            #    )
+            #)
 
             config = {'deviceChange' : cdrom_cfg}
             self.vmcfg.reconfig(host, **config)
@@ -426,8 +438,17 @@ class VCTools(ArgParser):
 
             print('Unmounting ISO on %s' % (name))
             cdrom_cfg = []
-            cdrom_cfg.append(self.vmcfg.cdrom_config(umount=True, key=key,
-                controller=controller))
+            cdrom_cfg_opts = {}
+            cdrom_cfg_opts.update(
+                {
+                    'umount' : True,
+                    'key' : key,
+                    'controller' : controller,
+                }
+            )
+            cdrom_cfg.append(self.vmcfg.cdrom_config(**cdrom_cfg_opts))
+            #cdrom_cfg.append(self.vmcfg.cdrom_config(umount=True, key=key,
+            #    controller=controller))
             config = {'deviceChange' : cdrom_cfg}
             self.vmcfg.reconfig(host, **config)
 
