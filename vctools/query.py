@@ -173,7 +173,7 @@ class Query(object):
 
         if header:
             header = [
-            'Datastore', 'Capacity', 'Provisioned', 'Pct', 'Free Space', 'Pct'
+                'Datastore', 'Capacity', 'Provisioned', 'Pct', 'Free Space', 'Pct'
             ]
             datastore_info.append(header)
 
