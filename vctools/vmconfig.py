@@ -62,7 +62,6 @@ class VMConfig(Query):
             host.AnswerVM(qid, str(answer))
 
 
-    # pylint: disable=too-many-arguments
     @classmethod
     def upload_iso(cls, host, cookie, datacenter, dest_folder, datastore,
                    iso, verify=False):
@@ -427,6 +426,7 @@ class VMConfig(Query):
             vim.vm.ConfigSpec(**config),
         )
 
+        # pylint: disable=bad-continuation
         print('Reconfiguring VM %s with %s' % (
             host.name,
             ', '.join("%s=%s" % (key, val) for key, val in config.items())
