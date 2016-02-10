@@ -356,12 +356,11 @@ class VMConfig(Query):
         return disk
 
     @classmethod
-    def nic_config(cls, container, network, connected=True,
-                   start_connected=True, allow_guest_control=True):
+    def nic_config(cls, **kwargs):
         """
         Method returns configured object for network interface.
 
-        Args:
+        kwargs:
             container (obj):  ContainerView object.
             network (str):    Name of network to add to VM.
             connected (bool): Indicates that the device is currently
@@ -377,6 +376,11 @@ class VMConfig(Query):
             nic (obj): A configured object for a Network device.  this should
                 be appended to ConfigSpec devices attribute.
         """
+        container = kwargs.get('container', None)
+        network = kwargs.get('network', None)
+        connected = kwargs.get('connected', True)
+        start_connected = kwargs.get('start_connected', True)
+        allow_guest_control = kwargs.get('allow_get_control', True)
 
         nic = vim.vm.device.VirtualDeviceSpec()
         nic.operation = 'add'

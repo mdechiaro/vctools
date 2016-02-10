@@ -264,7 +264,10 @@ class VCTools(ArgParser):
 
             # configure each network and add to devices
             for nic in spec['vmconfig']['nics']:
-                devices.append(self.vmcfg.nic_config(cluster_obj.network, nic))
+                nic_cfg_opts = {}
+                nic_cfg_opts.update({'container' : cluster_obj.network, 'network' : nic})
+                devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
+                #devices.append(self.vmcfg.nic_config(cluster_obj.network, nic))
 
             spec['vmconfig'].update({'deviceChange':devices})
 
