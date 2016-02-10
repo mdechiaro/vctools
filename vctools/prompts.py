@@ -2,10 +2,9 @@
 # vim: expandtab shiftwidth=4 tabstop=4
 """Prompts for User Inputs"""
 from __future__ import print_function
+import sys
 from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.query import Query
-import os
-import sys
 
 class Prompts(object):
     """
@@ -110,20 +109,9 @@ class Prompts(object):
             # the first item is the header information, so we will
             # not allow it as an option.
             if num == 0:
-                print('\t%s' % (
-                    # pylint: disable=star-args
-                    '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
-                        format(*opt)
-                    )
-                )
+                print('\t%s' % '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt))
             else:
-                print('%s: %s' % (
-                    num,
-                    # pylint: disable=star-args
-                    '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
-                        format(*opt)
-                    )
-                )
+                print('%s: %s' % num, '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt))
 
         while True:
             val = int(raw_input('\nPlease select number: ').strip())
