@@ -10,8 +10,8 @@ https://github.com/mdechiaro/vctools/
 from __future__ import print_function
 import os
 import sys
-import yaml
 import copy
+import yaml
 #
 from pyVmomi import vim
 from vctools.argparser import ArgParser
@@ -272,20 +272,14 @@ class VCTools(ArgParser):
 
             pool = cluster_obj.resourcePool
 
-            # pylint: disable=star-args
             self.vmcfg.create(folder, datastore, pool, **spec['vmconfig'])
 
             # if mkbootiso is in the spec, then create the iso
             if 'mkbootiso' in spec:
 
                 if 'template' in spec['mkbootiso']:
-                    tmpl = MkBootISO.load_template(
-                        spec['mkbootiso'], spec['mkbootiso']['template']
-                    )
-                    spec['mkbootiso'].update(self.dict_merge(
-                        spec['mkbootiso'], tmpl
-                        )
-                    )
+                    tmpl = MkBootISO.load_template(spec['mkbootiso'], spec['mkbootiso']['template'])
+                    spec['mkbootiso'].update(self.dict_merge(spec['mkbootiso'], tmpl))
 
                 print('\ncreating boot ISO for %s' % (spec['vmconfig']['name']))
                 mkbootiso = spec['mkbootiso']
@@ -297,7 +291,6 @@ class VCTools(ArgParser):
                 else:
                     iso_path = '/tmp'
 
-                # pylint: disable=star-args
                 MkBootISO.updateiso(
                     mkbootiso['source'], mkbootiso['ks'], **mkbootiso['options']
                 )
@@ -372,10 +365,7 @@ class VCTools(ArgParser):
                 self.virtual_machines.view, name
             )
 
-            print('Mounting [%s] %s on %s' % (
-                datastore, path, name
-                )
-            )
+            print('Mounting [%s] %s on %s' % (datastore, path, name))
             cdrom_cfg = []
             key, controller = Query.get_key(host, 'CD/DVD')
 
@@ -385,7 +375,6 @@ class VCTools(ArgParser):
             )
 
             config = {'deviceChange' : cdrom_cfg}
-            # pylint: disable=star-args
             self.vmcfg.reconfig(host, **config)
 
 
@@ -401,10 +390,7 @@ class VCTools(ArgParser):
             host = self.query.get_obj(
                 self.virtual_machines.view, name
             )
-            print('%s changing power state to %s' % (
-                name, state
-                )
-            )
+            print('%s changing power state to %s' % (name, state))
             self.vmcfg.power(host, state)
 
 
@@ -427,7 +413,6 @@ class VCTools(ArgParser):
             cdrom_cfg.append(self.vmcfg.cdrom_config(umount=True, key=key,
                 controller=controller))
             config = {'deviceChange' : cdrom_cfg}
-            # pylint: disable=star-args
             self.vmcfg.reconfig(host, **config)
 
 
@@ -441,12 +426,7 @@ class VCTools(ArgParser):
         """
         for iso in isos:
             print('uploading ISO: %s' % (iso))
-            print('file size: %s' % (
-                self.query.disk_size_format(
-                    os.path.getsize(iso)
-                    )
-                )
-            )
+            print('file size: %s' % (self.query.disk_size_format(os.path.getsize(iso))))
             print('remote location: [%s] %s' % (datastore, dest))
 
             print('This may take some time.')
@@ -534,11 +514,7 @@ class VCTools(ArgParser):
                     )
 
                     for row in datastores:
-                        # pylint: disable=star-args
-                        print(
-                            '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.\
-                            format(*row)
-                        )
+                        print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
 
                 if self.opts.folders:
                     folders = self.query.list_vm_folders(
@@ -566,9 +542,7 @@ class VCTools(ArgParser):
                         print(net)
 
                 if self.opts.vms:
-                    vms = self.query.list_vm_info(
-                            self.datacenters.view, self.opts.datacenter
-                    )
+                    vms = self.query.list_vm_info(self.datacenters.view, self.opts.datacenter)
                     for key, value in vms.iteritems():
                         print(key, value)
 
