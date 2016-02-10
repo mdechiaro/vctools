@@ -2,14 +2,14 @@
 # vim: tabstop=4 shiftwidth=4 expandtab
 """Various config options for Virtual Machines."""
 from __future__ import print_function
+import textwrap
+import sys
 from random import uniform
+import requests
 from pyVmomi import vim # pylint: disable=E0611
 #
 from vctools.query import Query
 #
-import requests
-import textwrap
-import sys
 
 # pylint: disable=too-many-public-methods
 class VMConfig(Query):
