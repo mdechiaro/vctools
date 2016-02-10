@@ -277,8 +277,7 @@ class VMConfig(Query):
         # umount iso
         if umount:
             cdrom.operation = 'edit'
-            cdrom.device.backing = vim.vm.device.VirtualCdrom.\
-                RemotePassthroughBackingInfo()
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
             return cdrom
@@ -306,8 +305,7 @@ class VMConfig(Query):
         # create cdrom
         else:
             cdrom.operation = 'add'
-            cdrom.device.backing = vim.vm.device.VirtualCdrom.\
-                RemotePassthroughBackingInfo()
+            cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
             cdrom.device.backing.exclusive = False
 
             return cdrom
@@ -407,7 +405,6 @@ class VMConfig(Query):
         config.update({'files' : vmxfile})
 
         task = folder.CreateVM_Task(
-            # pylint: disable=star-args
             config=vim.vm.ConfigSpec(**config), pool=pool,
         )
 
