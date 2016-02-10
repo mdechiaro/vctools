@@ -467,13 +467,28 @@ class VCTools(ArgParser):
             print('remote location: [%s] %s' % (datastore, dest))
 
             print('This may take some time.')
+            upload_args = {}
 
             # pylint: disable=protected-access
-            result = self.vmcfg.upload_iso(
-                self.opts.vc, self.auth.session._stub.cookie,
-                self.opts.datacenter, dest, datastore,
-                iso, verify_ssl
+            upload_args.update(
+                {
+                    'host': self.opts.vc,
+                    'cookie' : self.auth.session._stub.cookie,
+                    'datacenter' : self.opts.datacenter,
+                    'dest_folder' : dest,
+                    'datastore' : datastore,
+                    'iso' : iso,
+                    'verify' : verify_ssl,
+                }
             )
+
+            #result = self.vmcfg.upload_iso(
+                #self.opts.vc, self.auth.session._stub.cookie,
+                #self.opts.datacenter, dest, datastore,
+                #iso, verify_ssl
+            #)
+
+            result = self.vmcfg.upload_iso(**upload_args)
 
             print('result: %s' % (result))
 

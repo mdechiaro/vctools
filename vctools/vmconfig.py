@@ -63,12 +63,11 @@ class VMConfig(Query):
 
 
     @classmethod
-    def upload_iso(cls, host, cookie, datacenter, dest_folder, datastore,
-                   iso, verify=False):
+    def upload_iso(cls, **kwargs):
         """
         Method uploads iso to dest_folder.
 
-        Args:
+        Kwargs:
             host (str):        vCenter host
             cookie (attr):     Session Class Cookie (auth.session._stub.cookie)
             datacenter (str):  Name of Datacenter that has access to datastore.
@@ -77,6 +76,13 @@ class VMConfig(Query):
             iso (str):         Absolute path of ISO file
             verify (bool):     Enable or disable SSL certificate validation.
         """
+        host = kwargs.get('host', None)
+        cookie = kwargs.get('cookie', None)
+        datacenter = kwargs.get('datacenter', None)
+        dest_folder = kwargs.get('dest_folder', None)
+        datastore = kwargs.get('datastore', None)
+        iso = kwargs.get('iso', None)
+        verify = kwargs.get('verify', False)
 
         # we need the absolute path to open the binary locally, but only the
         # filename for uploading to the datastore.
