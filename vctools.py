@@ -255,13 +255,6 @@ class VCTools(ArgParser):
                 )
                 devices.append(self.vmcfg.disk_config(**disk_cfg_opts))
 
-                #devices.append(
-                    #self.vmcfg.disk_config(
-                        #cluster_obj.datastore, datastore,
-                        #int(disk) * (1024*1024), key=scsis[scsi][0], unit=0
-                    #)
-                #)
-
             # configure each network and add to devices
             for nic in spec['vmconfig']['nics']:
                 nic_cfg_opts = {}
@@ -397,11 +390,6 @@ class VCTools(ArgParser):
             )
             cdrom_cfg.append(self.vmcfg.cdrom_config(**cdrom_cfg_opts))
 
-            #cdrom_cfg.append(self.vmcfg.cdrom_config(**cdrom_cfg_opts
-            #    datastore, path, name, key=key, controller=controller
-            #    )
-            #)
-
             config = {'deviceChange' : cdrom_cfg}
             self.vmcfg.reconfig(host, **config)
 
@@ -481,12 +469,6 @@ class VCTools(ArgParser):
                     'verify' : verify_ssl,
                 }
             )
-
-            #result = self.vmcfg.upload_iso(
-                #self.opts.vc, self.auth.session._stub.cookie,
-                #self.opts.datacenter, dest, datastore,
-                #iso, verify_ssl
-            #)
 
             result = self.vmcfg.upload_iso(**upload_args)
 
