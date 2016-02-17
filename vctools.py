@@ -295,7 +295,7 @@ class VCTools(ArgParser):
 
                 if 'template' in spec['mkbootiso']:
                     tmpl = MkBootISO.load_template(spec['mkbootiso'], spec['mkbootiso']['template'])
-                    spec['mkbootiso'].update(self.dict_merge(spec['mkbootiso'], tmpl))
+                    spec['mkbootiso'].update(self.dict_merge(tmpl, spec['mkbootiso']))
 
                 print('\ncreating boot ISO for %s' % (spec['vmconfig']['name']))
                 mkbootiso = spec['mkbootiso']
