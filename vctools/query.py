@@ -153,7 +153,6 @@ class Query(object):
                 print(key)
 
 
-    # pylint: disable=too-many-locals
     @classmethod
     def return_datastores(cls, container, cluster, header=True):
         """
