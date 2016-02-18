@@ -94,12 +94,12 @@ class ArgParser(object):
         create_parser.set_defaults(cmd='create')
 
         create_parser.add_argument(
-           'config', nargs='+', type=file,
+            'config', nargs='+', type=file,
             help='YaML config for creating new Virtual Machines.'
         )
 
         create_parser.add_argument(
-           '--datacenter', metavar='', default='Linux',
+            '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
         if 'create' in self.dotrc:
@@ -117,17 +117,17 @@ class ArgParser(object):
         mount_parser.set_defaults(cmd='mount')
 
         mount_parser.add_argument(
-           '--datastore', metavar='',
+            '--datastore', metavar='',
             help='Name of datastore where the ISO is located.'
         )
 
         mount_parser.add_argument(
-           '--path', metavar='',
+            '--path', metavar='',
             help='Path inside datastore where the ISO is located.'
         )
 
         mount_parser.add_argument(
-           '--name', nargs='+', metavar='',
+            '--name', nargs='+', metavar='',
             help='name attribute of Virtual Machine object.'
         )
         if 'mount' in self.dotrc:
@@ -149,7 +149,7 @@ class ArgParser(object):
 
         )
         power_parser.add_argument(
-           '--name', nargs='+', metavar='',
+            '--name', nargs='+', metavar='',
             help='name attribute of Virtual Machine object.'
         )
 
@@ -164,37 +164,37 @@ class ArgParser(object):
         query_parser.set_defaults(cmd='query')
 
         query_parser.add_argument(
-           '--datastores', action='store_true',
+            '--datastores', action='store_true',
             help='Returns information about Datastores.'
         )
 
         query_parser.add_argument(
-           '--vms', action='store_true',
+            '--vms', action='store_true',
             help='Returns information about Virtual Machines.'
         )
 
         query_parser.add_argument(
-           '--folders', action='store_true',
+            '--folders', action='store_true',
             help='Returns information about Folders.'
         )
 
         query_parser.add_argument(
-           '--networks', action='store_true',
+            '--networks', action='store_true',
             help='Returns information about Networks.'
         )
 
         query_parser.add_argument(
-           '--clusters', action='store_true',
+            '--clusters', action='store_true',
             help='Returns information about ComputeResources.'
         )
 
         query_parser.add_argument(
-           '--cluster', metavar='',
+            '--cluster', metavar='',
             help='vCenter ComputeResource.'
         )
 
         query_parser.add_argument(
-           '--datacenter', metavar='', default='Linux',
+            '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
 
@@ -209,12 +209,12 @@ class ArgParser(object):
         reconfig_parser.set_defaults(cmd='reconfig')
 
         reconfig_parser.add_argument(
-           '--params', metavar='', type=self._mkdict,
+            '--params', metavar='', type=self._mkdict,
             help='format: key1=val1,key2=val2,key3=val3'
         )
 
         reconfig_parser.add_argument(
-           '--name', metavar='',
+            '--name', metavar='',
             help='name attribute of Virtual Machine object.'
         )
 
@@ -230,7 +230,7 @@ class ArgParser(object):
         umount_parser.set_defaults(cmd='umount')
 
         umount_parser.add_argument(
-           '--name', nargs='+',
+            '--name', nargs='+',
             help='name attribute of Virtual Machine object.'
         )
 
@@ -245,27 +245,27 @@ class ArgParser(object):
         upload_parser.set_defaults(cmd='upload')
 
         upload_parser.add_argument(
-           '--iso', nargs='+', metavar='',
+            '--iso', nargs='+', metavar='',
             help='iso file that needs to be uploaded to vCenter.'
         )
 
         upload_parser.add_argument(
-           '--dest', metavar='',
+            '--dest', metavar='',
             help='destination folder where the iso will reside.'
         )
 
         upload_parser.add_argument(
-           '--datastore', metavar='', default='ISO_Templates',
+            '--datastore', metavar='', default='ISO_Templates',
             help='datastore where the iso will reside.  default: %(default)s'
         )
 
         upload_parser.add_argument(
-           '--verify-ssl', metavar='', default=False,
+            '--verify-ssl', metavar='', default=False,
             help='verify SSL certificate. default: %(default)s'
         )
 
         upload_parser.add_argument(
-           '--datacenter', metavar='', default='Linux',
+            '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
         if 'upload' in self.dotrc:
