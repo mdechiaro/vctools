@@ -1,5 +1,7 @@
 # vim: ts=2 sw=2 et
 # sample yaml for creating servers
+# if required keys and their values are omitted then the program will prompt 
+# you for them.
 ---
 vmconfig:
   name: hostname
