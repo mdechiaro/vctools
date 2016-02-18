@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# vim: expandtab shiftwidth=4 tabstop=4
+# vim: ts=4 sw=4 et
 """Prompts for User Inputs"""
 from __future__ import print_function
 import sys

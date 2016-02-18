@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# vim: tabstop=4 shiftwidth=4 expandtab
+# vim: ts=4 sw=4 et
 """
 vctools is a Python module using pyVmomi which aims to simplify command-line
 operations inside VMWare vCenter.

@@ -1,4 +1,4 @@
-# vim: shiftwidth=4 tabstop=4 expandtab
+# vim: ts=2 sw=2 et
 # sample yaml for creating servers
 ---
 vmconfig:

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# vim: tabstop=4 shiftwidth=4 expandtab
+# vim: ts=4 sw=4 et
 # pylint: disable=no-name-in-module,no-self-use,too-many-public-methods,unused-argument
 """Interactive module for vctools."""
 from __future__ import print_function
