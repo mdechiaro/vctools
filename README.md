@@ -78,28 +78,29 @@ A complete, no prompt config looks like this:
       - 50
       nics:
       - vlan_1234_linux_vlan
-      mkbootiso:
-        source: '/mnt/isos/rhel7'
-        ks: 'http://ks.domain.com/rhel7-ks.cfg'
-        options:
-          hostname: 'server.domain.com'
-          ip: '10.1.1.10'
-          netmask: '255.255.255.0'
-          gateway: '10.1.1.1'
-          nameserver: '4.2.2.2'
-          net.ifnames: '0'
-          biosdevname: '0'
+    mkbootiso:
+      source: '/mnt/isos/rhel7'
+      ks: 'http://ks.domain.com/rhel7-ks.cfg'
+      options:
+        hostname: 'server.domain.com'
+        ip: '10.1.1.10'
+        netmask: '255.255.255.0'
+        gateway: '10.1.1.1'
+        nameserver: '4.2.2.2'
+        net.ifnames: '0'
+        biosdevname: '0'
+    vctools:
       upload:
       mount:
       power: 'on'
 
 Any configs that you wish to be set as defaults should be added to
 .vctoolsrc.yaml, and then can be overridden on a per server basis with
-user supplied configs. In addition, and features that you do not need
+user supplied configs. In addition, any features that you do not need
 (mkbootiso) should be omitted.
 
 The creation process will output all configurations for the server in
-YaML format for easy rebuilds in the future.  Committing these files to
+YaML format for easy rebuilds in the future. Committing these files to
 your favorite version control system is recommended.
 
 Command Line (Argparse) Usage:
@@ -142,11 +143,11 @@ Upload ISO to Datastore:
 
 Contributing:
 
-Pull requests are welcome.  Please follow PEP 8, and pylint is
+Pull requests are welcome. Please follow PEP 8, and pylint is
 recommended for ensuring the code follows those standards. Disabling
 certain pylints is allowed (like star-args), so use your best
 judgment. Please disable using a comment in the vicinity of where the
-error occurs in the file.
+error occurs in the file. Keep maximum characters to 100 per line.
 
 Thanks:
 
