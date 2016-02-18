@@ -11,7 +11,6 @@ from pyVmomi import vim # pylint: disable=E0611
 from vctools.query import Query
 #
 
-# pylint: disable=too-many-public-methods
 class VMConfig(Query):
     """
     Class simplifies VM builds outside of using the client or Web App.
