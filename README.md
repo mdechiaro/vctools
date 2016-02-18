@@ -1,7 +1,7 @@
 vctools
 ======
 
-version: 0.1.3
+version: 0.1.4
 
 This is a Python module using pyVmomi which aims to simplify
 command-line operations inside vCenter for Linux sysadmins. The current
