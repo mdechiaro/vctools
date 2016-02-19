@@ -116,6 +116,12 @@ class VCTools(ArgParser):
                 name = cfg['vmconfig']['name']
             else:
                 name = Prompts.name()
+            # guestid
+            if 'guestId' in cfg['vmconfig']:
+                guestid = cfg['vmconfig']['guestId']
+            else:
+                guestid = Prompts.guestids()
+                print('\n%s selected.' % (guestid))
             # cluster
             if 'cluster' in cfg['vmconfig']:
                 cluster = cfg['vmconfig']['cluster']
@@ -162,6 +168,7 @@ class VCTools(ArgParser):
 
         output = {
             'name': name,
+            'guestId': guestid,
             'cluster': cluster,
             'datastore': datastore,
             'nics': nics,

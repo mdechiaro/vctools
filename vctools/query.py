@@ -3,6 +3,7 @@
 """Query class for vctools.  All methods that obtain info should go here."""
 from __future__ import division
 from __future__ import print_function
+from pyVmomi import vim # pylint: disable=no-name-in-module
 
 class Query(object):
     """
@@ -286,4 +287,19 @@ class Query(object):
 
         return (key, controller_key)
 
+
+    @classmethod
+    def list_guestids(cls):
+        """
+        Method will return an array of all supported guestids
+        Returns:
+            guestids (list): An ordered list of supported guestids
+        """
+        guestids = []
+        for key in vim.vm.GuestOsDescriptor.GuestOsIdentifier.__dict__:
+            guestids.append(key)
+
+        guestids.sort()
+
+        return guestids
 

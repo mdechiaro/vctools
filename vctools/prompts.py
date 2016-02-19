@@ -233,3 +233,25 @@ class Prompts(object):
         return selected_cluster
 
 
+    @classmethod
+    def guestids(cls):
+        """
+        Method will prompt user to select a guest ID (supported OS).
+        """
+        guestids = Query.list_guestids()
+        for num, guestid in enumerate(guestids):
+            print('%s:%s' % (num, guestid))
+
+        while True:
+            val = int(raw_input('\nPlease select number: ').strip())
+            if int(val) <= len(guestids):
+                # need to substract 1 since we start enumeration at 1.
+                val = int(val) - 1
+                selected_guestid = guestids[val]
+                break
+            else:
+                print('Invalid number.')
+                continue
+
+        return selected_guestid
+
