@@ -2,13 +2,11 @@
 """Authentication Class for vctools."""
 # vim: ts=4 sw=4 et
 from __future__ import print_function
-#
+import os
+import subprocess
 from getpass import getpass, getuser
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim # pylint: disable=E0611
-#
-import os
-import subprocess
 
 # disable SSL warnings
 import requests
@@ -25,7 +23,6 @@ class Auth(object):
 
         self.host = host
         self.port = port
-        #
         self.session = None
         self.ticket = None
 
@@ -85,9 +82,7 @@ class Auth(object):
 
             session_mgr = self.session.content.sessionManager
 
-            print ('Successfully logged into %s:%s' % (
-                self.host, self.port)
-            )
+            print ('Successfully logged into %s:%s' % (self.host, self.port))
             print()
             self.ticket = session_mgr.AcquireCloneTicket()
 
