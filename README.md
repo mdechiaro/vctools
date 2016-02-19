@@ -29,9 +29,9 @@ Quick Install (on Linux Mint 17.2):
 
 VM Creation:
 
-This program will merge a dotrc config (.vctoolsrc.yaml) and a user
-supplied VM build config (sample.yaml) into a VM creation config. It
-will prompt the user for any necessary missing info, and then automate
+This program will merge a default config (.vctoolsrc.yaml) and a server
+config (sample.yaml) into a VM creation config. It will prompt the user
+for any missing info that is required to create a VM, and then automate
 the build process from start to finish.  
 
 It is capable of creating a boot ISO per server (mkbootiso) for
