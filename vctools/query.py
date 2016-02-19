@@ -42,9 +42,9 @@ class Query(object):
             if hasattr(s_instance.content, 'viewManager'):
                 return s_instance.content.viewManager.CreateContainerView(*args)
             else:
-                raise Exception
+                raise ValueError
         else:
-            raise Exception
+            raise ValueError
 
 
     @classmethod
