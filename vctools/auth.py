@@ -79,7 +79,6 @@ class Auth(object):
             self.session = SmartConnect(
                 host=self.host, user=user, pwd=passwd, port=self.port
             )
-
             session_mgr = self.session.content.sessionManager
 
             print ('Successfully logged into %s:%s' % (self.host, self.port))
@@ -91,7 +90,7 @@ class Auth(object):
         except vim.fault.InvalidLogin as loginerr:
             user = None
             passwd = None
-            print ('error: %s' % (loginerr))
+            raise
 
 
     def logout(self):

@@ -590,6 +590,10 @@ class VCTools(ArgParser):
 
             self.auth.logout()
 
+        except vim.fault.InvalidLogin as loginerr:
+            print(loginerr.msg)
+            sys.exit(2)
+
         except KeyboardInterrupt:
             print('Interrupt caught, logging out and exiting.')
             self.auth.logout()
