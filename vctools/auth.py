@@ -68,7 +68,6 @@ class Auth(object):
             else:
                 user = getuser()
 
-        print ('Logging in as %s' % user)
 
         if passwd_file:
             passwd = self.decrypt_gpg_file(passwd_file)
