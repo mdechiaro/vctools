@@ -80,8 +80,6 @@ class Auth(object):
             )
             session_mgr = self.session.content.sessionManager
 
-            print ('Successfully logged into %s:%s' % (self.host, self.port))
-            print()
             self.ticket = session_mgr.AcquireCloneTicket()
 
             passwd = None
@@ -95,5 +93,4 @@ class Auth(object):
     def logout(self):
         """Logout of vSphere."""
         Disconnect(self.session)
-        print ('\nlog out successful')
 
