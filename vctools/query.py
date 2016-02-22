@@ -61,6 +61,9 @@ class Query(object):
             if obj.name == name:
                 return obj
 
+        raise ValueError(
+            '%s not found. valid: %s' % (name, ' '.join(item.name for item in container))
+        )
 
     @classmethod
     def list_obj_attrs(cls, container, attr, view=True):
@@ -141,17 +144,19 @@ class Query(object):
         """
         obj = Query.get_obj(container, cluster)
         datastores = {}
-        for datastore in obj.datastore:
-            # if datastore is a VMware File System
-            if datastore.summary.type == 'VMFS':
-                free = int(datastore.summary.freeSpace)
-                datastores.update({datastore.name:free})
+
+        if hasattr(obj, 'datastore'):
+            for datastore in obj.datastore:
+                # if datastore is a VMware File System
+                if datastore.summary.type == 'VMFS':
+                    free = int(datastore.summary.freeSpace)
+                    datastores.update({datastore.name:free})
 
 
-        most = max(datastores.itervalues())
-        for key, value in datastores.iteritems():
-            if value == most:
-                print(key)
+            most = max(datastores.itervalues())
+            for key, value in datastores.iteritems():
+                if value == most:
+                    print(key)
 
 
     @classmethod
@@ -168,7 +173,6 @@ class Query(object):
         """
 
         obj = Query.get_obj(container, cluster)
-
         datastore_info = []
 
         if header:
@@ -177,37 +181,37 @@ class Query(object):
             ]
             datastore_info.append(header)
 
-        for datastore in obj.datastore:
-            info = []
-            # type is long(bytes)
-            free = int(datastore.summary.freeSpace)
-            capacity = int(datastore.summary.capacity)
+        if hasattr(obj, 'datastore'):
+            for datastore in obj.datastore:
+                info = []
+                # type is long(bytes)
+                free = int(datastore.summary.freeSpace)
+                capacity = int(datastore.summary.capacity)
 
-            # uncommitted is sometimes None, so we'll convert that to 0.
-            if not datastore.summary.uncommitted:
-                uncommitted = int(0)
-            else:
-                uncommitted = int(datastore.summary.uncommitted)
+                # uncommitted is sometimes None, so we'll convert that to 0.
+                if not datastore.summary.uncommitted:
+                    uncommitted = int(0)
+                else:
+                    uncommitted = int(datastore.summary.uncommitted)
 
-            provisioned = int((capacity - free) + uncommitted)
+                provisioned = int((capacity - free) + uncommitted)
 
-            provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
-            free_pct = '{0:.2%}'.format((free / capacity))
+                provisioned_pct = '{0:.2%}'.format((provisioned / capacity))
+                free_pct = '{0:.2%}'.format((free / capacity))
 
-            info.append(datastore.name)
-            info.append(Query.disk_size_format(capacity))
-            info.append(Query.disk_size_format(provisioned))
-            info.append(provisioned_pct)
-            info.append(Query.disk_size_format(free))
-            info.append(free_pct)
+                info.append(datastore.name)
+                info.append(Query.disk_size_format(capacity))
+                info.append(Query.disk_size_format(provisioned))
+                info.append(provisioned_pct)
+                info.append(Query.disk_size_format(free))
+                info.append(free_pct)
 
-            datastore_info.append(info)
+                datastore_info.append(info)
 
+            # sort by datastore name
+            datastore_info.sort(key=lambda x: x[0])
 
-        # sort by datastore name
-        datastore_info.sort(key=lambda x: x[0])
-
-        return datastore_info
+            return datastore_info
 
 
     @classmethod

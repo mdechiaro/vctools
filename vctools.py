@@ -549,21 +549,28 @@ class VCTools(ArgParser):
                 self.vmcfg.reconfig(host, **self.opts.params)
 
             if self.opts.cmd == 'query':
-                if self.opts.datastores:
-                    datastores = self.query.return_datastores(
-                        self.clusters.view, self.opts.cluster
-                    )
 
-                    for row in datastores:
-                        print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
+                if self.opts.datastores:
+                    if self.opts.cluster:
+                        datastores = self.query.return_datastores(
+                            self.clusters.view, self.opts.cluster
+                        )
+
+                        for row in datastores:
+                            print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
+                    else:
+                        print('--cluster <name> required with --datastores command')
 
                 if self.opts.folders:
-                    folders = self.query.list_vm_folders(
-                        self.datacenters.view, self.opts.datacenter
-                    )
-                    folders.sort()
-                    for folder in folders:
-                        print(folder)
+                    if self.opts.cluster:
+                        folders = self.query.list_vm_folders(
+                            self.datacenters.view, self.opts.datacenter
+                        )
+                        folders.sort()
+                        for folder in folders:
+                            print(folder)
+                    else:
+                        print('--datacenter <name> required with --folders command')
 
                 if self.opts.clusters:
                     clusters = self.query.list_obj_attrs(self.clusters, 'name')
@@ -572,23 +579,29 @@ class VCTools(ArgParser):
                         print(cluster)
 
                 if self.opts.networks:
-                    cluster = self.query.get_obj(
-                        self.clusters.view, self.opts.cluster
-                    )
-                    networks = self.query.list_obj_attrs(
-                        cluster.network, 'name', view=False
-                    )
-                    networks.sort()
-                    for net in networks:
-                        print(net)
+                    if self.opts.cluster:
+                        cluster = self.query.get_obj(
+                            self.clusters.view, self.opts.cluster
+                        )
+                        networks = self.query.list_obj_attrs(
+                            cluster.network, 'name', view=False
+                        )
+                        networks.sort()
+                        for net in networks:
+                            print(net)
+                    else:
+                        print('--cluster <name> required with --networks command')
+
 
                 if self.opts.vms:
                     vms = self.query.list_vm_info(self.datacenters.view, self.opts.datacenter)
                     for key, value in vms.iteritems():
                         print(key, value)
 
-
             self.auth.logout()
+
+        except ValueError as err:
+            print(err)
 
         except vim.fault.InvalidLogin as loginerr:
             print(loginerr.msg)
