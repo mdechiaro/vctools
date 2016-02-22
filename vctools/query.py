@@ -156,7 +156,7 @@ class Query(object):
             most = max(datastores.itervalues())
             for key, value in datastores.iteritems():
                 if value == most:
-                    print(key)
+                    return key
 
 
     @classmethod
