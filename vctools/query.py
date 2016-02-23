@@ -303,7 +303,7 @@ class Query(object):
         for key in vim.vm.GuestOsDescriptor.GuestOsIdentifier.__dict__:
             # valid keys contain 'Guest' in name
             if 'Guest' in key:
-                guestids.append(key)
+                guestids.append(str(key))
 
         guestids.sort()
 
