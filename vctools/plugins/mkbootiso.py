@@ -63,7 +63,7 @@ class MkBootISO(object):
     def createiso(cls, source, output, filename):
         """create iso image."""
         cmd = [
-            '/usr/bin/genisoimage', '-J', '-T', '-o', output + '/' + filename,
+            '/usr/bin/genisoimage', '-quiet', '-J', '-T', '-o', output + '/' + filename,
             '-b', 'isolinux/isolinux.bin', '-c', 'isolinux/boot.cat', '-no-emul-boot',
             '-boot-load-size', '4', '-boot-info-table', '-R', '-m', 'TRANS.TBL', '-graft-points',
             source,

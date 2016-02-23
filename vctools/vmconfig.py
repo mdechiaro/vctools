@@ -445,13 +445,6 @@ class VMConfig(Query):
             vim.vm.ConfigSpec(**config),
         )
 
-        # pylint: disable=bad-continuation
-        print('Reconfiguring VM %s with %s' % (
-            host.name,
-            ', '.join("%s=%s" % (key, val) for key, val in config.items())
-            )
-        )
-
         self.task_monitor(task, True, host)
 
 
