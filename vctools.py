@@ -99,7 +99,7 @@ class VCTools(ArgParser):
             [vim.VirtualMachine], True
         )
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches, too-many-statements
     def cfg_checker(self, cfg):
         """
         Checks config for a valid configuration, and prompts user if
@@ -155,6 +155,8 @@ class VCTools(ArgParser):
                 print('\n%s selected.' % (folder))
         else:
             name = Prompts.name()
+            guestid = Prompts.guestids()
+            print('\n%s selected.' % (guestid))
             cluster = Prompts.clusters(self.auth.session)
             print('\n%s selected.' % (cluster))
             datastore = Prompts.datastores(self.auth.session, cluster)
@@ -229,6 +231,7 @@ class VCTools(ArgParser):
             cluster = spec['vmconfig']['cluster']
             datastore = spec['vmconfig']['datastore']
             folder = spec['vmconfig']['folder']
+
 
             cluster_obj = Query.get_obj(self.clusters.view, cluster)
 
@@ -559,7 +562,7 @@ class VCTools(ArgParser):
                         for row in datastores:
                             print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
                     else:
-                        print('--cluster <name> required with --datastores command')
+                        print('--cluster <name> required with --datastores flag')
 
                 if self.opts.folders:
                     if self.opts.cluster:
@@ -570,7 +573,7 @@ class VCTools(ArgParser):
                         for folder in folders:
                             print(folder)
                     else:
-                        print('--datacenter <name> required with --folders command')
+                        print('--datacenter <name> required with --folders flag')
 
                 if self.opts.clusters:
                     clusters = self.query.list_obj_attrs(self.clusters, 'name')
@@ -590,7 +593,7 @@ class VCTools(ArgParser):
                         for net in networks:
                             print(net)
                     else:
-                        print('--cluster <name> required with --networks command')
+                        print('--cluster <name> required with --networks flag')
 
 
                 if self.opts.vms:
