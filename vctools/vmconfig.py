@@ -428,8 +428,6 @@ class VMConfig(Query):
             config=vim.vm.ConfigSpec(**config), pool=pool,
         )
 
-        print('Creating VM %s' % config['name'])
-
         self.task_monitor(task, False)
 
 

@@ -291,6 +291,7 @@ class VCTools(ArgParser):
 
             pool = cluster_obj.resourcePool
 
+            print('Creating VM %s' % spec['vmconfig']['name'])
             self.vmcfg.create(folder, datastore, pool, **spec['vmconfig'])
 
             # if mkbootiso is in the spec, then create the iso
