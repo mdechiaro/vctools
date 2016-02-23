@@ -239,7 +239,7 @@ class Prompts(object):
         Method will prompt user to select a guest ID (supported OS).
         """
         guestids = Query.list_guestids()
-        for num, guestid in enumerate(guestids):
+        for num, guestid in enumerate(guestids, start=1):
             print('%s:%s' % (num, guestid))
 
         while True:
