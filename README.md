@@ -24,7 +24,7 @@ Dependencies:
 Quick Install (on Linux Mint 17.2):
 
     sudo apt-get install python-yaml python-pip
-    sudo pip install pyVmomi
+    sudo pip install pyVmomi==5.5.0-2014.1.1
     cp .vctoolsrc.yaml.example ~/.vctoolsrc.yaml
 
 VM Creation:
