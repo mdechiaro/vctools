@@ -1,4 +1,4 @@
-# vim: tabstop=4 shiftwidth=4 expandtab
+# vim: ts=2 sw=2 et
 # .vctoolsrc.yaml
 #
 # This purpose of this dotrc file is to force default values for argparse and
