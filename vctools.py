@@ -344,7 +344,7 @@ class VCTools(ArgParser):
                         iso = spec['upload']['iso']
 
                     self.upload_wrapper(datastore, dest, verify_ssl, iso)
-                    print('\n')
+                    print()
 
                 if 'mount' in spec['vctools']:
                     datastore = self.dotrc['mount']['datastore']
@@ -362,14 +362,14 @@ class VCTools(ArgParser):
                         path = path.lstrip('/')
 
                     self.mount_wrapper(datastore, path, name)
-                    print('\n')
+                    print()
 
                 if 'power' in spec['vctools']:
                     state = spec['vctools']['power']
                     name = spec['vmconfig']['name']
 
                     self.power_wrapper(state, name)
-                    print('\n')
+                    print()
 
             return server_cfg
 
@@ -463,7 +463,6 @@ class VCTools(ArgParser):
             print('uploading ISO: %s' % (iso))
             print('file size: %s' % (self.query.disk_size_format(os.path.getsize(iso))))
             print('remote location: [%s] %s' % (datastore, dest))
-
             print('This may take some time.')
             upload_args = {}
 
@@ -482,12 +481,10 @@ class VCTools(ArgParser):
 
             result = self.vmcfg.upload_iso(**upload_args)
 
-            print('result: %s' % (result))
-
             if result == 200 or 201:
-                print('%s uploaded successfully' % (iso))
+                print('result: %s %s uploaded successfully' % (result, iso))
             else:
-                print('%s uploaded failed' % (iso))
+                print('result: %s %s upload failed' % (result, iso))
 
 
     def main(self):
