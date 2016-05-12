@@ -281,17 +281,6 @@ class ArgParser(object):
             upload_parser.set_defaults(**self.dotrc['upload'])
 
 
-    def wizard_parser(self):
-        """ Wizard Parser """
-
-        wizard_parser = self.subparsers.add_parser(
-            'wizard',
-            help='interactive wizard'
-        )
-
-        wizard_parser.set_defaults(cmd='wizard')
-
-
     def setup_args(self):
         """Method loads all the argparse parsers."""
 
@@ -303,4 +292,3 @@ class ArgParser(object):
         self.reconfig_parser(general_parser)
         self.umount_parser(general_parser)
         self.upload_parser(general_parser)
-        self.wizard_parser()

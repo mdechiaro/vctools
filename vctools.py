@@ -19,7 +19,6 @@ from vctools.auth import Auth
 from vctools.vmconfig import VMConfig
 from vctools.query import Query
 from vctools.prompts import Prompts
-from vctools.wwwyzzerdd import Wwwyzzerdd
 from vctools.plugins.mkbootiso import MkBootISO
 
 # pylint: disable=too-many-instance-attributes
@@ -499,11 +498,6 @@ class VCTools(ArgParser):
 
         try:
             self.options()
-
-            if self.opts.cmd == 'wizard':
-                wizard = Wwwyzzerdd()
-                wizard.cmdloop()
-                sys.exit(0)
 
             self.auth = Auth(self.opts.vc)
             self.auth.login(self.opts.user, self.opts.domain, self.opts.passwd_file)
