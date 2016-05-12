@@ -29,7 +29,11 @@ class VCTools(ArgParser):
     """
 
     def __init__(self):
-        ArgParser.__init__(self)
+        try:
+            ArgParser.__init__(self)
+        except ValueError as err:
+            print(err)
+            sys.exit(3)
         self.auth = None
         self.clusters = None
         self.datacenters = None

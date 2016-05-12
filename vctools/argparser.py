@@ -12,6 +12,7 @@ class ArgParser(object):
         self.__version__ = '0.1.4'
         self.help = None
         self.opts = None
+        self.dotrc = None
 
         self.parser = argparse.ArgumentParser(
             description='vCenter Tools CLI'
@@ -26,10 +27,17 @@ class ArgParser(object):
         # subparser
         self.subparsers = self.parser.add_subparsers(metavar='')
         # override options with defaults in dotfiles
-        dotrc_name = '~/.vctoolsrc.yaml'
-        dotrc_yaml = open(os.path.expanduser(dotrc_name))
-        self.dotrc = yaml.load(dotrc_yaml)
+        rootdir = os.path.dirname(os.path.abspath(__file__ + '/../'))
+        rc_files = [rootdir + '/vctoolsrc.yaml', '~/.vctoolsrc.yaml']
+        for rc_file in rc_files:
+            try:
+                dotrc_yaml = open(os.path.expanduser(rc_file))
+                self.dotrc = yaml.load(dotrc_yaml)
+            except IOError:
+                pass
 
+        if not self.dotrc:
+            raise ValueError('Cannot load dotrc file.')
 
     @staticmethod
     def _mkdict(args):
