@@ -418,9 +418,7 @@ class VCTools(ArgParser):
             names (str): a tuple of VM names in vCenter.
         """
         for name in names:
-            host = self.query.get_obj(
-                self.virtual_machines.view, name
-            )
+            host = self.query.get_obj(self.virtual_machines.view, name)
             print('%s changing power state to %s' % (name, state))
             self.vmcfg.power(host, state)
 
@@ -433,9 +431,7 @@ class VCTools(ArgParser):
             names (tuple): a tuple of VM names in vCenter.
         """
         for name in names:
-            host = self.query.get_obj(
-                self.virtual_machines.view, name
-            )
+            host = self.query.get_obj(self.virtual_machines.view, name)
 
             key, controller = Query.get_key(host, 'CD/DVD')
 
@@ -510,9 +506,7 @@ class VCTools(ArgParser):
                 sys.exit(0)
 
             self.auth = Auth(self.opts.vc)
-            self.auth.login(
-                self.opts.user, self.opts.domain, self.opts.passwd_file
-            )
+            self.auth.login(self.opts.user, self.opts.domain, self.opts.passwd_file)
 
             self.query = Query()
             self.vmcfg = VMConfig()
@@ -534,9 +528,7 @@ class VCTools(ArgParser):
 
 
             if self.opts.cmd == 'mount':
-                self.mount_wrapper(
-                    self.opts.datastore, self.opts.path, *self.opts.name
-                )
+                self.mount_wrapper(self.opts.datastore, self.opts.path, *self.opts.name)
 
             if self.opts.cmd == 'power':
                 self.power_wrapper(self.opts.power, *self.opts.name)
@@ -551,9 +543,7 @@ class VCTools(ArgParser):
                 )
 
             if self.opts.cmd == 'reconfig':
-                host = self.query.get_obj(
-                    self.virtual_machines.view, self.opts.name
-                )
+                host = self.query.get_obj(self.virtual_machines.view, self.opts.name)
                 self.vmcfg.reconfig(host, **self.opts.params)
 
             if self.opts.cmd == 'query':
@@ -588,12 +578,8 @@ class VCTools(ArgParser):
 
                 if self.opts.networks:
                     if self.opts.cluster:
-                        cluster = self.query.get_obj(
-                            self.clusters.view, self.opts.cluster
-                        )
-                        networks = self.query.list_obj_attrs(
-                            cluster.network, 'name', view=False
-                        )
+                        cluster = self.query.get_obj(self.clusters.view, self.opts.cluster)
+                        networks = self.query.list_obj_attrs(cluster.network, 'name', view=False)
                         networks.sort()
                         for net in networks:
                             print(net)
