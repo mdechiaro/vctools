@@ -97,6 +97,7 @@ class ArgParser(object):
         # create
         create_parser = self.subparsers.add_parser(
             'create', parents=[parent],
+            description='Example: vctools create <vc> <config> <configN>',
             help='Create Virtual Machines'
         )
         create_parser.set_defaults(cmd='create')
