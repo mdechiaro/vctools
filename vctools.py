@@ -30,9 +30,8 @@ class VCTools(ArgParser):
     def __init__(self):
         try:
             ArgParser.__init__(self)
-        except ValueError as err:
-            print(err)
-            sys.exit(3)
+        except ValueError:
+            raise
         self.auth = None
         self.clusters = None
         self.datacenters = None
@@ -587,6 +586,8 @@ class VCTools(ArgParser):
 
         except ValueError as err:
             print(err)
+            self.auth.logout()
+            sys.exit(3)
 
         except vim.fault.InvalidLogin as loginerr:
             print(loginerr.msg)
