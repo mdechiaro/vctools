@@ -492,6 +492,7 @@ class VCTools(ArgParser):
         the necessary code blocks if True.
         """
 
+        # pylint: disable=too-many-nested-blocks
         try:
             self.options()
 
