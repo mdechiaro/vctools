@@ -322,7 +322,7 @@ class VMConfig(Query):
 
 
     @classmethod
-    def disk_config(cls, **kwargs):
+    def disk_config(cls, edit=False, **kwargs):
         """
         Method returns configured VirtualDisk object
 
@@ -346,23 +346,40 @@ class VMConfig(Query):
         unit = kwargs.get('unit', 0)
         mode = kwargs.get('mode', 'persistent')
         thin = kwargs.get('thin', True)
+        controller = kwargs.get('controller', None)
+        filename = kwargs.get('filename', None)
 
         disk = vim.vm.device.VirtualDeviceSpec()
-        disk.operation = 'add'
-        disk.fileOperation = 'create'
 
-        disk.device = vim.vm.device.VirtualDisk()
-        disk.device.capacityInKB = size
-        # controllerKey is tied to SCSI Controller
-        disk.device.controllerKey = key
-        disk.device.unitNumber = unit
+        if edit:
+            disk.operation = 'edit'
+            disk.device = vim.vm.device.VirtualDisk()
+            disk.device.capacityInKB = size
+            # controllerKey is tied to SCSI Controller
+            disk.device.key = key
+            disk.device.controllerKey = controller
+            disk.device.unitNumber = unit
 
-        disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
-        disk.device.backing.fileName = '['+datastore+']'
-        disk.device.backing.datastore = Query.get_obj(container, datastore)
-        disk.device.backing.diskMode = mode
-        disk.device.backing.thinProvisioned = thin
-        disk.device.backing.eagerlyScrub = False
+            disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+            disk.device.backing.fileName = filename
+            disk.device.backing.diskMode = mode
+
+        else:
+            disk.operation = 'add'
+            disk.fileOperation = 'create'
+
+            disk.device = vim.vm.device.VirtualDisk()
+            disk.device.capacityInKB = size
+            # controllerKey is tied to SCSI Controller
+            disk.device.controllerKey = controller
+            disk.device.unitNumber = unit
+
+            disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
+            disk.device.backing.fileName = '['+datastore+']'
+            disk.device.backing.datastore = Query.get_obj(container, datastore)
+            disk.device.backing.diskMode = mode
+            disk.device.backing.thinProvisioned = thin
+            disk.device.backing.eagerlyScrub = False
 
         return disk
 

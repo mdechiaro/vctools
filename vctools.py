@@ -261,7 +261,7 @@ class VCTools(ArgParser):
                         'container' : cluster_obj.datastore,
                         'datastore' : datastore,
                         'size' : int(disk) * (1024*1024),
-                        'key' : scsis[scsi][0],
+                        'controller' : scsis[scsi][0],
                         'unit' : 0,
                     }
                 )
