@@ -439,14 +439,10 @@ class VMConfig(Query):
             datastore (str): Datastore for vmx files
             config (dict):   A dict containing vim.vm.ConfigSpec attributes
         """
+
         vmxfile = vim.vm.FileInfo(vmPathName='[' + datastore + ']')
-
         config.update({'files' : vmxfile})
-
-        task = folder.CreateVM_Task(
-            config=vim.vm.ConfigSpec(**config), pool=pool,
-        )
-
+        task = folder.CreateVM_Task(config=vim.vm.ConfigSpec(**config), pool=pool)
         self.task_monitor(task, False)
 
 
@@ -460,10 +456,7 @@ class VMConfig(Query):
                 their values.
         """
 
-        task = host.ReconfigVM_Task(
-            vim.vm.ConfigSpec(**config),
-        )
-
+        task = host.ReconfigVM_Task(vim.vm.ConfigSpec(**config))
         self.task_monitor(task, True, host)
 
 
