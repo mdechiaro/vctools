@@ -534,8 +534,56 @@ class VCTools(ArgParser):
                 )
 
             if self.opts.cmd == 'reconfig':
+                devices = []
                 host = self.query.get_obj(self.virtual_machines.view, self.opts.name)
-                self.vmcfg.reconfig(host, **self.opts.params)
+
+                # disks
+                if self.opts.device == 'disk' and self.opts.disk_id and self.opts.sizeGB:
+                    label = self.opts.disk_prefix + ' ' + str(self.opts.disk_id)
+                    key, controller = self.query.get_key(host, label)
+                    for item in host.config.hardware.device:
+                        if label == item.deviceInfo.label:
+                            if self.opts.sizeGB * (1024*1024) > item.capacityInKB:
+                                filename = item.backing.fileName
+                                disk_cfg_opts = {}
+                                disk_cfg_opts.update(
+                                    {
+                                        'size' : int(self.opts.sizeGB) * (1024*1024),
+                                        'key' : key,
+                                        'controller' : controller,
+                                        'unit' : 0,
+                                        'filename' : filename,
+                                    }
+                                )
+                                devices.append(self.vmcfg.disk_config(edit=True, **disk_cfg_opts))
+                                print(disk_cfg_opts)
+                                print(devices)
+                                self.vmcfg.reconfig(host, **{'deviceChange':devices})
+                            elif self.opts.sizeGB == item.capacityInKB:
+                                raise ValueError('New size and existing size match'.format())
+                            else:
+                                raise ValueError(
+                                    'Size {0} does not exceed {1}'.format(
+                                        self.opts.sizeGB * (1024*1024), item.capacityInKB
+                                        )
+                                )
+                if self.opts.device == 'nic' and self.opts.nic_id and self.opts.network:
+                    label = self.opts.disk_prefix + ' ' + str(self.opts.nic_id)
+                    key, controller = self.query.get_key(host, label)
+                    for item in host.config.hardware.device:
+                        if label == item.deviceInfo.label:
+                            nic_cfg_opts = {}
+                            nic_cfg_opts.update(
+                                {'container' : host.network[0], 'network' : self.opts.network}
+                            )
+                            devices.append(self.vmcfg.nic_config(edit=True, **nic_cfg_opts))
+                            print(nic_cfg_opts)
+                            print(devices)
+                            #self.vmcfg.reconfig(host, **{'deviceChange':devices})
+
+                # everything else
+                else:
+                    self.vmcfg.reconfig(host, **self.opts.cfgs)
 
             if self.opts.cmd == 'query':
 

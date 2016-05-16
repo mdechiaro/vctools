@@ -209,24 +209,87 @@ class ArgParser(object):
 
 
     def reconfig_parser(self, parent):
-        """ Reconfig Parser """
+        """
+        Reconfig VM Attributes and Hardware
+
+        Config Cheatsheet:
+          CPU: numCPUs=<num>
+          Memory: memoryMB=<num> GB = 1024*num
+          HotAdd Memory: memoryHotAddEnabled=<True|False>
+          HotAdd CPU:  cpuHotAddEnabled=<True|False>
+        """
         # reconfig
+        usage = """
+
+        help: vctools reconfig -h
+
+        vctools reconfig <vc> <name> [--cfgs|--device] <options>
+
+        # reconfigure config settings
+        vctools reconfig <vc> <name> --cfgs key=val,keyN=valN
+
+        # reconfigure a disk
+        vctools reconfig <vc> <name> --device disk --id <id> --sizeGB <sizeGB>
+
+        # reconfigure a network card
+        vctools reconfig <vc> <name> --device nic --id <id> --network <network>
+        """
         reconfig_parser = self.subparsers.add_parser(
-            'reconfig', parents=[parent],
+            'reconfig',
+            parents=[parent],
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            usage=textwrap.dedent(usage),
+            description=textwrap.dedent(self.reconfig_parser.__doc__),
             help='Reconfigure Attributes for Virtual Machines.'
         )
         reconfig_parser.set_defaults(cmd='reconfig')
 
-        reconfig_parser.add_argument(
-            '--params', metavar='', type=self._mkdict,
-            help='format: key1=val1,key2=val2,key3=val3'
+        reconfig_type_opts = reconfig_parser.add_argument_group('type options')
+        reconfig_type_opts.add_argument(
+            '--device', choices=['disk', 'nic'],
+            help='Reconfigure hardware devices on Virtual Machines.',
+        )
+
+        reconfig_type_opts.add_argument(
+            '--cfgs', metavar='', type=self._mkdict,
+            help='A comma separated list of key values that represent config '
+                 'settings such as memory or cpu. format: key=val,keyN=valN',
         )
 
         reconfig_parser.add_argument(
-            '--name', metavar='',
-            help='name attribute of Virtual Machine object.'
+            'name',
+            help='Name attribute of Virtual Machine object, i.e. hostname'
         )
 
+        reconfig_disk_opts = reconfig_parser.add_argument_group('disk options')
+
+        reconfig_disk_opts.add_argument(
+            '--disk-id', metavar='', type=int,
+            help='The number that represent the disk, usually 1,2,3, or 4'
+        )
+
+        reconfig_disk_opts.add_argument(
+            '--disk-prefix', metavar='', default='Hard disk',
+            help='The prefix of the disk label: default: %(default)s '
+        )
+        reconfig_disk_opts.add_argument(
+            '--sizeGB', type=int, metavar='',
+            help='New size hard disk in GB'
+        )
+
+        reconfig_nic_opts = reconfig_parser.add_argument_group('nic options')
+        reconfig_nic_opts.add_argument(
+            '--nic-id', metavar='', type=int,
+            help='The number that represent the disk, usually 1,2,3, or 4'
+        )
+        reconfig_nic_opts.add_argument(
+            '--nic-prefix', metavar='', default='Network adapter',
+            help='The prefix of the network label: default: %(default)s '
+        )
+        reconfig_nic_opts.add_argument(
+            '--network', metavar='',
+            help='The network of the interface, i.e. vlan_1234_network'
+        )
 
     def umount_parser(self, parent):
         """ Umount Parser """

@@ -384,7 +384,7 @@ class VMConfig(Query):
         return disk
 
     @classmethod
-    def nic_config(cls, **kwargs):
+    def nic_config(cls, edit=False, **kwargs):
         """
         Method returns configured object for network interface.
 
@@ -411,12 +411,14 @@ class VMConfig(Query):
         allow_guest_control = kwargs.get('allow_get_control', True)
 
         nic = vim.vm.device.VirtualDeviceSpec()
-        nic.operation = 'add'
+        if edit:
+            nic.operation = 'edit'
+        else:
+            nic.operation = 'add'
 
         nic.device = vim.vm.device.VirtualVmxnet3()
 
-        nic.device.backing = vim.vm.device.VirtualEthernetCard.\
-            NetworkBackingInfo()
+        nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
         nic.device.backing.network = Query.get_obj(container, network)
         nic.device.backing.deviceName = network
 
