@@ -309,3 +309,43 @@ class Query(object):
 
         return guestids
 
+
+    @classmethod
+    def vm_config(cls, container, name):
+        """
+        Method will output the config for a Virtual Machine object.
+
+        Args:
+            name (str): The name of the VM.
+
+        Returns:
+            cfg (dict): The configs for the selected VM.
+        """
+        virtmachine = Query.get_obj(container, name)
+        cfg = {}
+        def vm_deep_query(data):
+            """ deep query vmconfig """
+            for key, val in data.config.__dict__.iteritems():
+                if isinstance(val, dict):
+                    vm_deep_query(val)
+                else:
+                    if key in (
+                            'memoryMB', 'numCPU', 'guestId', 'name', 'annotation',
+                            'cpuHotAddEnabled', 'memoryHotAddEnabled'
+                    ):
+                        cfg.update({key : val})
+
+        vm_deep_query(virtmachine)
+
+        cfg['nics'] = {}
+        cfg['disks'] = {}
+        for item in virtmachine.config.hardware.device:
+            if 'Hard disk' in item.deviceInfo.label:
+                print(item.capacityInBytes)
+                capacity = item.capacityInBytes / 1024 / 1024 / 1024
+                cfg['disks'].update({item.deviceInfo.label : int(capacity)})
+            elif 'Network adapter' in item.deviceInfo.label:
+                cfg['nics'].update({item.deviceInfo.label : item.deviceInfo.summary})
+
+        return cfg
+

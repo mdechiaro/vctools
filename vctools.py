@@ -652,11 +652,19 @@ class VCTools(ArgParser):
                     else:
                         print('--cluster <name> required with --networks flag')
 
-
                 if self.opts.vms:
                     vms = self.query.list_vm_info(self.datacenters.view, self.opts.datacenter)
                     for key, value in vms.iteritems():
                         print(key, value)
+
+                if self.opts.vmconfig:
+                    for name in self.opts.vmconfig:
+                        print(
+                            yaml.dump(
+                                self.query.vm_config(self.virtual_machines.view, name),
+                                default_flow_style=False
+                            )
+                        )
 
             self.auth.logout()
 

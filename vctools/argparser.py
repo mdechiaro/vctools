@@ -207,7 +207,10 @@ class ArgParser(object):
             '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
-
+        query_parser.add_argument(
+            '--vmconfig', nargs='+', metavar='',
+            help='Virtual machine config'
+        )
 
     def reconfig_parser(self, parent):
         """ Reconfig VM Attributes and Hardware """
