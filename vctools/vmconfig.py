@@ -339,6 +339,8 @@ class VMConfig(Query):
             disk (obj): A configured object for a VMDK Disk.  this should
                 be appended to ConfigSpec devices attribute.
         """
+        # capacityInKB is deprecated but also a required field. See pyVmomi bug #218
+
         container = kwargs.get('container', None)
         datastore = kwargs.get('datastore', None)
         size = kwargs.get('size', None)
