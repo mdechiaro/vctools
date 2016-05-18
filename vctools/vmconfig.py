@@ -355,13 +355,13 @@ class VMConfig(Query):
 
         if edit:
             disk.operation = 'edit'
+
             disk.device = vim.vm.device.VirtualDisk()
             disk.device.capacityInKB = size
-            # controllerKey is tied to SCSI Controller
             disk.device.key = key
+            # controllerKey is tied to SCSI Controller
             disk.device.controllerKey = controller
             disk.device.unitNumber = unit
-
             disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
             disk.device.backing.fileName = filename
             disk.device.backing.diskMode = mode
@@ -375,7 +375,6 @@ class VMConfig(Query):
             # controllerKey is tied to SCSI Controller
             disk.device.controllerKey = controller
             disk.device.unitNumber = unit
-
             disk.device.backing = vim.vm.device.VirtualDisk.FlatVer2BackingInfo()
             disk.device.backing.fileName = '['+datastore+']'
             disk.device.backing.datastore = Query.get_obj(container, datastore)
