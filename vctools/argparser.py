@@ -210,15 +210,7 @@ class ArgParser(object):
 
 
     def reconfig_parser(self, parent):
-        """
-        Reconfig VM Attributes and Hardware
-
-        Config Cheatsheet:
-          CPU: numCPUs=<num>
-          Memory: memoryMB=<num> GB = 1024*num
-          HotAdd Memory: memoryHotAddEnabled=<True|False>
-          HotAdd CPU:  cpuHotAddEnabled=<True|False>
-        """
+        """ Reconfig VM Attributes and Hardware """
         # reconfig
         usage = """
 
@@ -227,13 +219,14 @@ class ArgParser(object):
         vctools reconfig <vc> <name> [--cfgs|--device] <options>
 
         # reconfigure config settings
-        vctools reconfig <vc> <name> --cfgs key=val,keyN=valN
+        # lookup vmware sdk configspec for all options
+        vctools reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
 
         # reconfigure a disk
-        vctools reconfig <vc> <name> --device disk --id <id> --sizeGB <sizeGB>
+        vctools reconfig <vc> <name> --device disk --disk-id <int> --sizeGB <int>
 
         # reconfigure a network card
-        vctools reconfig <vc> <name> --device nic --id <id> --network <network>
+        vctools reconfig <vc> <name> --device nic --nic-id <int> --network <network>
         """
         reconfig_parser = self.subparsers.add_parser(
             'reconfig',
@@ -247,8 +240,8 @@ class ArgParser(object):
 
         reconfig_type_opts = reconfig_parser.add_argument_group('type options')
         reconfig_type_opts.add_argument(
-            '--device', choices=['disk', 'nic'],
-            help='Reconfigure hardware devices on Virtual Machines.',
+            '--device', metavar='', choices=['disk', 'nic'],
+            help='Reconfigure hardware devices on Virtual Machines. choices=[%(choices)s]',
         )
 
         reconfig_type_opts.add_argument(
@@ -266,12 +259,12 @@ class ArgParser(object):
 
         reconfig_disk_opts.add_argument(
             '--disk-id', metavar='', type=int,
-            help='The number that represent the disk, usually 1,2,3, or 4'
+            help='The number that represents the disk'
         )
 
         reconfig_disk_opts.add_argument(
             '--disk-prefix', metavar='', default='Hard disk',
-            help='The prefix of the disk label: default: %(default)s '
+            help='The disk label prefix: default: \"%(default)s\"'
         )
         reconfig_disk_opts.add_argument(
             '--sizeGB', type=int, metavar='',
@@ -281,11 +274,11 @@ class ArgParser(object):
         reconfig_nic_opts = reconfig_parser.add_argument_group('nic options')
         reconfig_nic_opts.add_argument(
             '--nic-id', metavar='', type=int,
-            help='The number that represent the disk, usually 1,2,3, or 4'
+            help='The number that represents the network card.'
         )
         reconfig_nic_opts.add_argument(
             '--nic-prefix', metavar='', default='Network adapter',
-            help='The prefix of the network label: default: %(default)s '
+            help='The network label prefix: default: \"%(default)s\"'
         )
         reconfig_nic_opts.add_argument(
             '--network', metavar='',

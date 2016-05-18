@@ -404,6 +404,8 @@ class VMConfig(Query):
             nic (obj): A configured object for a Network device.  this should
                 be appended to ConfigSpec devices attribute.
         """
+        key = kwargs.get('key', None)
+        controller = kwargs.get('controller', None)
         container = kwargs.get('container', None)
         network = kwargs.get('network', None)
         connected = kwargs.get('connected', True)
@@ -411,12 +413,14 @@ class VMConfig(Query):
         allow_guest_control = kwargs.get('allow_get_control', True)
 
         nic = vim.vm.device.VirtualDeviceSpec()
+        nic.device = vim.vm.device.VirtualVmxnet3()
         if edit:
             nic.operation = 'edit'
+            nic.device.key = key
+            nic.device.controllerKey = controller
         else:
             nic.operation = 'add'
 
-        nic.device = vim.vm.device.VirtualVmxnet3()
 
         nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
         nic.device.backing.network = Query.get_obj(container, network)

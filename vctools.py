@@ -537,53 +537,80 @@ class VCTools(ArgParser):
                 devices = []
                 host = self.query.get_obj(self.virtual_machines.view, self.opts.name)
 
-                # disks
-                if self.opts.device == 'disk' and self.opts.disk_id and self.opts.sizeGB:
-                    label = self.opts.disk_prefix + ' ' + str(self.opts.disk_id)
-                    key, controller = self.query.get_key(host, label)
-                    for item in host.config.hardware.device:
-                        if label == item.deviceInfo.label:
-                            if self.opts.sizeGB * (1024*1024) > item.capacityInKB:
-                                filename = item.backing.fileName
-                                disk_cfg_opts = {}
-                                disk_cfg_opts.update(
-                                    {
-                                        'size' : int(self.opts.sizeGB) * (1024*1024),
-                                        'key' : key,
-                                        'controller' : controller,
-                                        'unit' : 0,
-                                        'filename' : filename,
-                                    }
-                                )
-                                devices.append(self.vmcfg.disk_config(edit=True, **disk_cfg_opts))
-                                print(disk_cfg_opts)
-                                print(devices)
-                                self.vmcfg.reconfig(host, **{'deviceChange':devices})
-                            elif self.opts.sizeGB == item.capacityInKB:
-                                raise ValueError('New size and existing size match'.format())
-                            else:
-                                raise ValueError(
-                                    'Size {0} does not exceed {1}'.format(
-                                        self.opts.sizeGB * (1024*1024), item.capacityInKB
-                                        )
-                                )
-                if self.opts.device == 'nic' and self.opts.nic_id and self.opts.network:
-                    label = self.opts.disk_prefix + ' ' + str(self.opts.nic_id)
-                    key, controller = self.query.get_key(host, label)
-                    for item in host.config.hardware.device:
-                        if label == item.deviceInfo.label:
-                            nic_cfg_opts = {}
-                            nic_cfg_opts.update(
-                                {'container' : host.network[0], 'network' : self.opts.network}
-                            )
-                            devices.append(self.vmcfg.nic_config(edit=True, **nic_cfg_opts))
-                            print(nic_cfg_opts)
-                            print(devices)
-                            #self.vmcfg.reconfig(host, **{'deviceChange':devices})
+                edit = True
 
-                # everything else
-                else:
+                if self.opts.device == 'cfgs':
                     self.vmcfg.reconfig(host, **self.opts.cfgs)
+
+                # disks
+                if self.opts.device == 'disk':
+                    disk_cfg_opts = {}
+                    # KB
+                    tobytes = 1024*1024
+                    label = self.opts.disk_prefix + ' ' + str(self.opts.disk_id)
+                    try:
+                        key, controller = self.query.get_key(host, label)
+                    except IOError:
+                        pass
+                    if self.opts.disk_id:
+                        for item in host.config.hardware.device:
+                            if label == item.deviceInfo.label:
+                                if self.opts.sizeGB:
+                                    if self.opts.sizeGB * tobytes > item.capacityInKB:
+                                        filename = item.backing.fileName
+                                        disk_cfg_opts.update(
+                                            {
+                                                'size' : self.opts.sizeGB * tobytes,
+                                                'key' : key,
+                                                'controller' : controller,
+                                                'unit' : 0,
+                                                'filename' : filename,
+                                            }
+                                        )
+                                    elif self.opts.sizeGB == item.capacityInKB:
+                                        raise ValueError(
+                                            'New size and existing size are equal'.format()
+                                        )
+                                    else:
+                                        raise ValueError(
+                                            'Size {0} does not exceed {1}'.format(
+                                                self.opts.sizeGB * tobytes, item.capacityInKB
+                                                )
+                                        )
+
+                        if disk_cfg_opts:
+                            print(disk_cfg_opts)
+                            devices.append(self.vmcfg.disk_config(edit=edit, **disk_cfg_opts))
+                            self.vmcfg.reconfig(host, **{'deviceChange': devices})
+
+                # nics
+                if self.opts.device == 'nic':
+                    nic_cfg_opts = {}
+                    label = self.opts.nic_prefix + ' ' + str(self.opts.nic_id)
+                    try:
+                        key, controller = self.query.get_key(host, label)
+                    except IOError:
+                        pass
+                    if self.opts.nic_id:
+                        for item in host.config.hardware.device:
+                            if label == item.deviceInfo.label:
+                                if self.opts.network:
+                                    nic_cfg_opts.update(
+                                        {
+                                            'key' : key,
+                                            'controller' : controller,
+                                            'container' : host.runtime.host.network,
+                                            'network' : self.opts.network
+                                        }
+                                    )
+                                    devices.append(
+                                        self.vmcfg.nic_config(edit=edit, **nic_cfg_opts)
+                                    )
+                                    if devices:
+                                        print(devices)
+                                        self.vmcfg.reconfig(host, **{'deviceChange': devices})
+
+
 
             if self.opts.cmd == 'query':
 
