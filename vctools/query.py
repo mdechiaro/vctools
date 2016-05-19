@@ -341,9 +341,13 @@ class Query(object):
         cfg['disks'] = {}
         for item in virtmachine.config.hardware.device:
             if 'Hard disk' in item.deviceInfo.label:
-                print(item.capacityInBytes)
-                capacity = item.capacityInBytes / 1024 / 1024 / 1024
-                cfg['disks'].update({item.deviceInfo.label : int(capacity)})
+                if not item.capacityInBytes:
+                    # try using the KiloBytes parameter if Bytes is None
+                    capacity = item.capacityInKB / 1024 / 1024
+                    cfg['disks'].update({item.deviceInfo.label : int(capacity)})
+                else:
+                    capacity = item.capacityInBytes / 1024 / 1024 / 1024
+                    cfg['disks'].update({item.deviceInfo.label : int(capacity)})
             elif 'Network adapter' in item.deviceInfo.label:
                 cfg['nics'].update({item.deviceInfo.label : item.deviceInfo.summary})
 
