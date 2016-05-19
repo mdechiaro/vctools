@@ -30,13 +30,13 @@ VM Creation:
 This program will merge a default config (.vctoolsrc.yaml) and a server
 config (sample.yaml) into a VM creation config. It will prompt the user
 for any missing info that is required to create a VM, and then automate
-the build process from start to finish.  
+the build process from start to finish.
 
 It is capable of creating a boot ISO per server (mkbootiso) for
 situations when DHCP or PXE booting is not an option. It can also
 upload, mount, and power on the VM after its creation making the process
 completely automated. It can handle multiple configs at once and merge
-them separately with the dotrc for complex configurations.  
+them separately with the dotrc for complex configurations.
 
 An example minimal yaml config (you will be prompted for other information):
 
@@ -118,7 +118,7 @@ Query Datastore Info:
 Reconfig Parameters
 
     help: vctools reconfig [-h|--help]
-    
+
     # reconfigure config settings
     # lookup vmware sdk configspec for all options
     vctools.py reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
@@ -138,6 +138,35 @@ Upload ISO to Datastore:
     vctools.py upload vcenter --iso /local/path/to/file.iso \
       --dest /remote/path/to/iso/folder --datastore datastore \
       --datacenter datacenter
+
+Hacking:
+
+Here's a quick way to set it up in the Python intepreter and then you
+can move freely around the interface. The commands dir() and getattr()
+are very helpful.
+
+from pyVmomi import vim
+from vctools.auth import Auth
+from vctools.query import Query
+auth = Auth(<vcenter_host>)
+auth.login()
+Password:
+query = Query()
+
+You can create numerous containers like so:
+
+virtual_machines = query.create_container(
+    auth.session, auth.session.content.rootFolder, [vim.VirtualMachine], True
+)
+
+clusters = self.query.create_container(
+    auth.session, auth.session.content.rootFolder, [vim.ComputeResource], True
+)
+
+vm_name = query.get_obj(virtual_machines, 'vm_name')
+
+dir(vm_name)
+
 
 Contributing:
 
