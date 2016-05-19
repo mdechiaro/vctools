@@ -61,9 +61,7 @@ class Query(object):
             if obj.name == name:
                 return obj
 
-        raise ValueError(
-            '%s not found. valid: %s' % (name, ' '.join(item.name for item in container))
-        )
+        raise ValueError('%s not found.' % (name))
 
     @classmethod
     def list_obj_attrs(cls, container, attr, view=True):
