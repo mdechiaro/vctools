@@ -1,3 +1,4 @@
+# vim: et ts=4 sw=4
 vctools
 ======
 
@@ -145,27 +146,27 @@ Here's a quick way to set it up in the Python intepreter and then you
 can move freely around the interface. The commands dir() and getattr()
 are very helpful.
 
-from pyVmomi import vim
-from vctools.auth import Auth
-from vctools.query import Query
-auth = Auth(<vcenter_host>)
-auth.login()
-Password:
-query = Query()
+    from pyVmomi import vim
+    from vctools.auth import Auth
+    from vctools.query import Query
+    auth = Auth(<vcenter_host>)
+    auth.login()
+    Password:
+    query = Query()
 
-You can create numerous containers like so:
+    You can create numerous containers like so:
 
-virtual_machines = query.create_container(
-    auth.session, auth.session.content.rootFolder, [vim.VirtualMachine], True
-)
+    virtual_machines = query.create_container(
+        auth.session, auth.session.content.rootFolder, [vim.VirtualMachine], True
+    )
 
-clusters = self.query.create_container(
-    auth.session, auth.session.content.rootFolder, [vim.ComputeResource], True
-)
+    clusters = self.query.create_container(
+        auth.session, auth.session.content.rootFolder, [vim.ComputeResource], True
+    )
 
-vm_name = query.get_obj(virtual_machines, 'vm_name')
+    vm_name = query.get_obj(virtual_machines, 'vm_name')
 
-dir(vm_name)
+    dir(vm_name)
 
 
 Contributing:
