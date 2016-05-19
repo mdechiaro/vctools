@@ -1,17 +1,15 @@
 vctools
 ======
 
-version: 0.1.4
-
 This is a Python module using pyVmomi which aims to simplify
 command-line operations inside vCenter for Linux sysadmins. The current
 state of this project is beta, and so far it can do the following:
 
-  - Build a new VM using a yaml config
-  - Query various information useful for building new VMs, such as
-    datastores, networks, folders.
-  - Upload local ISOs to remote datastores
-  - Mount and Unmount ISOs
+  - Completely automate a new VM creation from start to finish. This
+    includes a boot ISO if your environment is not DHCP.
+  - Reconfigure hardware like networks, disks, CPU, and memory
+  - Query various information on VMs
+  - Upload ISOs to remote datastores, and mount and unmount them on VMs.
 
 Dependencies:
   - Python 2.6+
@@ -107,37 +105,37 @@ Command Line (Argparse) Usage:
 
 Create a New VM:
 
-    ./vctools.py create vcenter sample.yaml sample2.yaml sampleN.yaml
+    vctools.py create vcenter sample.yaml sample2.yaml sampleN.yaml
 
 Mount an ISO:
 
-    ./vctools.py mount vcenter --name server --path /path/to/file.iso \
-      --datastore datastore
-
+    vctools.py mount vcenter --name server --path /path/to/file.iso --datastore datastore
 
 Query Datastore Info:
 
-    ./vctools.py query vcenter --cluster cluster --datastores
+    vctools.py query vcenter --cluster cluster --datastores
 
 Reconfig Parameters
 
-    ./vctools.py reconfig vcenter --params key1=value1,key2=value2 \
-      --name hostname
+    help: vctools reconfig [-h|--help]
+    
+    # reconfigure config settings
+    # lookup vmware sdk configspec for all options
+    vctools.py reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
 
-    Parameters can be mostly any key value option listed under the
-    ConfigSpec class inside the VMWare SDK.
+    # reconfigure a disk
+    vctools.py reconfig <vc> <name> --device disk --disk-id <int> --sizeGB <int>
 
-    The format is key=value, and multiple options can be set by
-    separating with a comma. For example, use "numCPUs=2,memoryMB=8192"
-    to change the memory and CPU allocation on a VM.
+    # reconfigure a network card
+    vctools.py reconfig <vc> <name> --device nic --nic-id <int> --network <network>
 
 Unmount an ISO:
 
-    ./vctools.py umount vcenter --name server
+    vctools.py umount vcenter --name server
 
 Upload ISO to Datastore:
 
-    ./vctools.py upload vcenter --iso /local/path/to/file.iso \
+    vctools.py upload vcenter --iso /local/path/to/file.iso \
       --dest /remote/path/to/iso/folder --datastore datastore \
       --datacenter datacenter
 
