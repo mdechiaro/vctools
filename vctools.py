@@ -563,7 +563,7 @@ class VCTools(ArgParser):
                                                 'size' : self.opts.sizeGB * tobytes,
                                                 'key' : key,
                                                 'controller' : controller,
-                                                'unit' : 0,
+                                                'unit' : item.unitNumber,
                                                 'filename' : filename,
                                             }
                                         )
