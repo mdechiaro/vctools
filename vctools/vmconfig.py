@@ -408,10 +408,12 @@ class VMConfig(Query):
         key = kwargs.get('key', None)
         controller = kwargs.get('controller', None)
         container = kwargs.get('container', None)
+        mac_address = kwargs.get('mac_address', None)
         network = kwargs.get('network', None)
         connected = kwargs.get('connected', True)
         start_connected = kwargs.get('start_connected', True)
         allow_guest_control = kwargs.get('allow_get_control', True)
+        address_type = kwargs.get('address_type', 'assigned')
 
         nic = vim.vm.device.VirtualDeviceSpec()
         nic.device = vim.vm.device.VirtualVmxnet3()
@@ -419,6 +421,8 @@ class VMConfig(Query):
             nic.operation = 'edit'
             nic.device.key = key
             nic.device.controllerKey = controller
+            nic.device.macAddress = mac_address
+            nic.device.addressType = address_type
         else:
             nic.operation = 'add'
 

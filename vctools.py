@@ -600,7 +600,9 @@ class VCTools(ArgParser):
                                             'key' : key,
                                             'controller' : controller,
                                             'container' : host.runtime.host.network,
-                                            'network' : self.opts.network
+                                            'network' : self.opts.network,
+                                            'mac_address': item.macAddress,
+                                            'address_type' : 'general',
                                         }
                                     )
                                     devices.append(
