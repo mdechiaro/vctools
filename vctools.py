@@ -628,7 +628,7 @@ class VCTools(ArgParser):
                         print('--cluster <name> required with --datastores flag')
 
                 if self.opts.folders:
-                    if self.opts.cluster:
+                    if self.opts.datacenter:
                         folders = self.query.list_vm_folders(
                             self.datacenters.view, self.opts.datacenter
                         )
