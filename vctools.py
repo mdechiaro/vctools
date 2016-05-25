@@ -602,7 +602,7 @@ class VCTools(ArgParser):
                                             'container' : host.runtime.host.network,
                                             'network' : self.opts.network,
                                             'mac_address': item.macAddress,
-                                            'address_type' : 'general',
+                                            'unit' : item.unitNumber,
                                         }
                                     )
                                     devices.append(

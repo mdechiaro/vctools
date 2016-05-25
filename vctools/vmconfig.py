@@ -413,6 +413,7 @@ class VMConfig(Query):
         connected = kwargs.get('connected', True)
         start_connected = kwargs.get('start_connected', True)
         allow_guest_control = kwargs.get('allow_get_control', True)
+        unit = kwargs.get('unit', None)
         address_type = kwargs.get('address_type', 'assigned')
 
         nic = vim.vm.device.VirtualDeviceSpec()
@@ -422,6 +423,7 @@ class VMConfig(Query):
             nic.device.key = key
             nic.device.controllerKey = controller
             nic.device.macAddress = mac_address
+            nic.device.unitNumber = unit
             nic.device.addressType = address_type
         else:
             nic.operation = 'add'
