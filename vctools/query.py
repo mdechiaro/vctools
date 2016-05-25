@@ -347,7 +347,11 @@ class Query(object):
                     capacity = item.capacityInBytes / 1024 / 1024 / 1024
                     cfg['disks'].update({item.deviceInfo.label : int(capacity)})
             elif 'Network adapter' in item.deviceInfo.label:
-                cfg['nics'].update({item.deviceInfo.label : item.deviceInfo.summary})
+                cfg['nics'].update({
+                    item.deviceInfo.label : [
+                        item.macAddress, item.deviceInfo.summary
+                        ]
+                    })
 
         return cfg
 
