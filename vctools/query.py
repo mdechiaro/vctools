@@ -323,8 +323,8 @@ class Query(object):
         cfg = {}
         def vm_deep_query(data):
             """ deep query vmconfig """
-            for key, val in data.config.__dict__.iteritems():
-                if isinstance(val, dict):
+            for key, val in data.__dict__.iteritems():
+                if hasattr(val, '__dict__'):
                     vm_deep_query(val)
                 else:
                     if key in (
@@ -333,7 +333,7 @@ class Query(object):
                     ):
                         cfg.update({key : val})
 
-        vm_deep_query(virtmachine)
+        vm_deep_query(virtmachine.config)
 
         cfg['nics'] = {}
         cfg['disks'] = {}
