@@ -51,8 +51,7 @@ class ArgParser(object):
             key1=val1,key2=val2,key3=val3
         """
 
-        args = args.replace(',', ' ').replace('=', ' ').split()
-        params = dict(zip(args[0::2], args[1::2]))
+        params = dict(x.split('=') for x in args.split(','))
 
         for key, value in params.iteritems():
             if params[key].isdigit():
