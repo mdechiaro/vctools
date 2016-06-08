@@ -335,6 +335,8 @@ class Query(object):
 
         vm_deep_query(virtmachine.config)
 
+        # overriding key since numCPUs is how the value is assigned
+        cfg['numCPUs'] = cfg.pop('numCPU')
         cfg['nics'] = {}
         cfg['disks'] = {}
         for item in virtmachine.config.hardware.device:
