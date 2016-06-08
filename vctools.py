@@ -539,7 +539,7 @@ class VCTools(ArgParser):
 
                 edit = True
 
-                if self.opts.device == 'cfgs':
+                if self.opts.cfgs:
                     self.vmcfg.reconfig(host, **self.opts.cfgs)
 
                 # disks
