@@ -494,3 +494,15 @@ class VMConfig(Query):
         if state == 'shutdown':
             self.task_monitor(host.ShutdownGuest(), True, host)
 
+
+    def mvfolder(self, host, folder):
+        """
+        Method relocate a VM to another folder.
+
+        Args:
+            host (list):   List of VirtualMachine objects
+            folder (obj):  Folder object
+        """
+
+        task = folder.MoveIntoFolder_Task([host])
+        self.task_monitor(task, True, host)

@@ -542,6 +542,13 @@ class VCTools(ArgParser):
                 if self.opts.cfgs:
                     self.vmcfg.reconfig(host, **self.opts.cfgs)
 
+                if self.opts.folder:
+                    folder = Query.folders_lookup(
+                        self.datacenters.view, self.opts.datacenter, self.opts.folder
+                    )
+
+                    self.vmcfg.mvfolder(host, folder)
+
                 # disks
                 if self.opts.device == 'disk':
                     disk_cfg_opts = {}

@@ -224,6 +224,9 @@ class ArgParser(object):
         # lookup vmware sdk configspec for all options
         vctools reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
 
+        # move vm to another folder
+        vctools reconfig <vc> <name> --folder <str>
+
         # reconfigure a disk
         vctools reconfig <vc> <name> --device disk --disk-id <int> --sizeGB <int>
 
@@ -239,8 +242,18 @@ class ArgParser(object):
             help='Reconfigure Attributes for Virtual Machines.'
         )
         reconfig_parser.set_defaults(cmd='reconfig')
+        reconfig_parser.add_argument(
+            '--datacenter', metavar='', default='Linux',
+            help='vCenter Datacenter. default: %(default)s'
+        )
 
         reconfig_type_opts = reconfig_parser.add_argument_group('type options')
+
+        reconfig_parser.add_argument(
+            'name',
+            help='Name attribute of Virtual Machine object, i.e. hostname'
+        )
+
         reconfig_type_opts.add_argument(
             '--device', metavar='', choices=['disk', 'nic'],
             help='Reconfigure hardware devices on Virtual Machines. choices=[%(choices)s]',
@@ -252,9 +265,9 @@ class ArgParser(object):
                  'settings such as memory or cpu. format: key=val,keyN=valN',
         )
 
-        reconfig_parser.add_argument(
-            'name',
-            help='Name attribute of Virtual Machine object, i.e. hostname'
+        reconfig_type_opts.add_argument(
+            '--folder', metavar='', type=str,
+            help='Move the VM to another folder. It must exist. '
         )
 
         reconfig_disk_opts = reconfig_parser.add_argument_group('disk options')
@@ -274,6 +287,7 @@ class ArgParser(object):
         )
 
         reconfig_nic_opts = reconfig_parser.add_argument_group('nic options')
+
         reconfig_nic_opts.add_argument(
             '--nic-id', metavar='', type=int,
             help='The number that represents the network card.'
