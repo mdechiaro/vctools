@@ -3,6 +3,8 @@
 """ Class for handling argparse parsers. """
 import argparse
 import os
+import subprocess
+import sys
 import textwrap
 import yaml
 #
@@ -10,7 +12,13 @@ import yaml
 class ArgParser(object):
     """Placeholder."""
     def __init__(self):
-        self.__version__ = '0.1.4'
+        self.syspath = sys.path[0]
+        self.gitrev = subprocess.check_output(
+            [
+                'git', '--git-dir', self.syspath + '/.git', 'rev-parse', '--short', 'HEAD'
+            ]
+        )
+        self.__version__ = self.gitrev
         self.help = None
         self.opts = None
         self.dotrc = None
