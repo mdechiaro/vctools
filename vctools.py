@@ -8,6 +8,8 @@ https://github.com/mdechiaro/vctools/
 """
 # pylint: disable=no-name-in-module
 from __future__ import print_function
+import logging
+from getpass import getuser
 import os
 import sys
 import copy
@@ -28,6 +30,7 @@ class VCTools(ArgParser):
     """
 
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
         try:
             ArgParser.__init__(self)
         except ValueError:
@@ -695,4 +698,23 @@ class VCTools(ArgParser):
 if __name__ == '__main__':
     # pylint: disable=invalid-name
     vc = VCTools()
+
+    # setup logging
+    # pylint: disable=too-few-public-methods
+    class AddFilter(logging.Filter):
+        """ Add filter class for adding attributes to logs """
+        def filter(self, record):
+            # force username to root logger
+            record.username = getuser()
+            return True
+
+    log_format = '%(asctime)s %(username)s %(levelname)s %(module)s %(funcName)s %(message)s'
+    logging.basicConfig(filename='/var/log/vctools.log', level=logging.INFO, format=log_format)
+    logging.getLogger().addFilter(AddFilter())
+
+    # set up logging to console for error messages
+    console = logging.StreamHandler()
+    console.setLevel(logging.ERROR)
+    logging.getLogger().addHandler(console)
+
     sys.exit(vc.main())

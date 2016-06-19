@@ -2,6 +2,7 @@
 # vim: ts=4 sw=4 et
 """Prompts for User Inputs"""
 from __future__ import print_function
+import logging
 import sys
 from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.query import Query
@@ -12,7 +13,8 @@ class Prompts(object):
     methods are configured as class methods
     """
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
+
 
     @classmethod
     def name(cls):

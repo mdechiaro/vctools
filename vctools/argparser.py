@@ -2,16 +2,18 @@
 # vim: ts=4 sw=4 et
 """ Class for handling argparse parsers. """
 import argparse
+import logging
 import os
 import subprocess
 import sys
 import textwrap
 import yaml
-#
+
 
 class ArgParser(object):
     """Placeholder."""
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
         self.syspath = sys.path[0]
         self.gitrev = subprocess.check_output(
             [

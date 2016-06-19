@@ -2,6 +2,7 @@
 # vim: ts=4 sw=4 et
 """Various config options for Virtual Machines."""
 from __future__ import print_function
+import logging
 import textwrap
 import sys
 from random import uniform
@@ -21,6 +22,7 @@ class VMConfig(Query):
 
     def __init__(self):
         """ Define our class attributes here. """
+        self.logger = logging.getLogger(__name__)
         Query.__init__(self)
         self.scsi_key = None
 

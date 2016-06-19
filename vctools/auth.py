@@ -2,6 +2,7 @@
 """Authentication Class for vctools."""
 # vim: ts=4 sw=4 et
 from __future__ import print_function
+import logging
 import os
 import subprocess
 from getpass import getpass, getuser
@@ -20,6 +21,7 @@ class Auth(object):
             host (str): This string is the vSphere host host.
             port (int): Port to connect to host.
         """
+        self.logger = logging.getLogger(__name__)
 
         self.host = host
         self.port = port

@@ -3,6 +3,7 @@
 """Query class for vctools.  All methods that obtain info should go here."""
 from __future__ import division
 from __future__ import print_function
+import logging
 from pyVmomi import vim # pylint: disable=no-name-in-module
 
 class Query(object):
@@ -11,7 +12,7 @@ class Query(object):
     and networks.
     """
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
 
 
     @classmethod

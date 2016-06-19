@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """Plugin for creating a boot iso on a per server basis."""
 from __future__ import print_function
+import logging
 import subprocess
 import textwrap
 import sys
