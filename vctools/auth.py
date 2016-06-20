@@ -83,10 +83,11 @@ class Auth(object):
             session_mgr = self.session.content.sessionManager
 
             self.ticket = session_mgr.AcquireCloneTicket()
+            self.logger.info('%s %s success', user, self.host)
 
             passwd = None
 
-        except vim.fault.InvalidLogin as loginerr:
+        except vim.fault.InvalidLogin:
             user = None
             passwd = None
             raise
@@ -94,5 +95,5 @@ class Auth(object):
 
     def logout(self):
         """Logout of vSphere."""
+        self.logger.info('successful')
         Disconnect(self.session)
-

@@ -12,9 +12,12 @@ class Prompts(object):
     User prompts for selection configuration values.  It's best if these
     methods are configured as class methods
     """
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
 
+    logger = logging.getLogger(__name__)
+
+
+    def __init__(self):
+        pass
 
     @classmethod
     def name(cls):
@@ -80,6 +83,7 @@ class Prompts(object):
                     print('Invalid option.')
                     continue
 
+        cls.logger.info(selected_networks)
         return selected_networks
 
 
@@ -125,6 +129,7 @@ class Prompts(object):
 
         datastore = datastores[val][0]
 
+        cls.logger.info(datastore)
         return datastore
 
 
@@ -162,6 +167,7 @@ class Prompts(object):
                 print('Invalid number.')
                 continue
 
+        cls.logger.info(selected_folder)
         return selected_folder
 
 
@@ -197,6 +203,8 @@ class Prompts(object):
                 print('Invalid number.')
                 continue
 
+
+        cls.logger.info(selected_datacenter)
         return selected_datacenter
 
 
@@ -232,6 +240,7 @@ class Prompts(object):
                 print('Invalid number.')
                 continue
 
+        cls.logger.info(selected_cluster)
         return selected_cluster
 
 
@@ -255,5 +264,7 @@ class Prompts(object):
                 print('Invalid number.')
                 continue
 
+
+        cls.logger.info(selected_guestid)
         return selected_guestid
 

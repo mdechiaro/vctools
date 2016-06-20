@@ -238,6 +238,7 @@ class VCTools(ArgParser):
             folder = spec['vmconfig']['folder']
 
 
+            self.logger.info('vmconfig %s', spec['vmconfig'])
             cluster_obj = Query.get_obj(self.clusters.view, cluster)
 
             # list of scsi devices, max is 4.  Layout is a tuple containing the
@@ -296,17 +297,18 @@ class VCTools(ArgParser):
 
             pool = cluster_obj.resourcePool
 
-            print('Creating VM %s' % spec['vmconfig']['name'])
             self.vmcfg.create(folder, datastore, pool, **spec['vmconfig'])
 
             # if mkbootiso is in the spec, then create the iso
             if 'mkbootiso' in spec:
 
                 if 'template' in spec['mkbootiso']:
-                    tmpl = MkBootISO.load_template(spec['mkbootiso'], spec['mkbootiso']['template'])
+                    tmpl = MkBootISO.load_template(
+                        spec['mkbootiso'], spec['mkbootiso']['template']
+                    )
                     spec['mkbootiso'].update(self.dict_merge(tmpl, spec['mkbootiso']))
 
-                print('\ncreating boot ISO for %s' % (spec['vmconfig']['name']))
+
                 mkbootiso = spec['mkbootiso']
                 iso_name = spec['vmconfig']['name'] + '.iso'
 
@@ -316,6 +318,11 @@ class VCTools(ArgParser):
                 else:
                     iso_path = '/tmp'
 
+                self.logger.info(
+                    'creating boot ISO for %s config: %s',
+                    spec['vmconfig']['name'], spec['mkbootiso'],
+                )
+                print('\ncreating boot ISO for %s' % (spec['vmconfig']['name']))
                 MkBootISO.updateiso(
                     mkbootiso['source'], mkbootiso['ks'], **mkbootiso['options']
                 )
@@ -462,10 +469,9 @@ class VCTools(ArgParser):
                 uploaded.  The path for each iso should be absolute.
         """
         for iso in isos:
-            print('uploading ISO: %s' % (iso))
-            print('file size: %s' % (self.query.disk_size_format(os.path.getsize(iso))))
-            print('remote location: [%s] %s' % (datastore, dest))
-            print('This may take some time.')
+            self.logger.info('uploading ISO: %s', iso)
+            self.logger.info('file size: %s', self.query.disk_size_format(os.path.getsize(iso)))
+            self.logger.info('remote location: [%s] %s', datastore, dest)
             upload_args = {}
 
             # pylint: disable=protected-access
@@ -484,9 +490,9 @@ class VCTools(ArgParser):
             result = self.vmcfg.upload_iso(**upload_args)
 
             if result == 200 or 201:
-                print('result: %s %s uploaded successfully' % (result, iso))
+                self.logger.info('result: %s %s uploaded successfully', result, iso)
             else:
-                print('result: %s %s upload failed' % (result, iso))
+                self.logger.info('result: %s %s upload failed', result, iso)
 
 
     def main(self):
@@ -498,6 +504,7 @@ class VCTools(ArgParser):
         # pylint: disable=too-many-nested-blocks
         try:
             self.options()
+            self.logger.debug(self.opts)
 
             self.auth = Auth(self.opts.vc)
             self.auth.login(self.opts.user, self.opts.domain, self.opts.passwd_file)
@@ -589,7 +596,6 @@ class VCTools(ArgParser):
                                         )
 
                         if disk_cfg_opts:
-                            print(disk_cfg_opts)
                             devices.append(self.vmcfg.disk_config(edit=edit, **disk_cfg_opts))
                             self.vmcfg.reconfig(host, **{'deviceChange': devices})
 
@@ -619,7 +625,6 @@ class VCTools(ArgParser):
                                         self.vmcfg.nic_config(edit=edit, **nic_cfg_opts)
                                     )
                                     if devices:
-                                        print(devices)
                                         self.vmcfg.reconfig(host, **{'deviceChange': devices})
 
 
@@ -681,16 +686,16 @@ class VCTools(ArgParser):
             self.auth.logout()
 
         except ValueError as err:
-            print(err)
+            self.logger.error(err, exc_info=False)
             self.auth.logout()
             sys.exit(3)
 
         except vim.fault.InvalidLogin as loginerr:
-            print(loginerr.msg)
+            self.logger.error(loginerr.msg, exc_info=False)
             sys.exit(2)
 
-        except KeyboardInterrupt:
-            print('Interrupt caught, logging out and exiting.')
+        except KeyboardInterrupt as err:
+            self.logger.error(err, exc_info=False)
             self.auth.logout()
             sys.exit(1)
 
@@ -700,21 +705,23 @@ if __name__ == '__main__':
     vc = VCTools()
 
     # setup logging
-    # pylint: disable=too-few-public-methods
-    class AddFilter(logging.Filter):
-        """ Add filter class for adding attributes to logs """
-        def filter(self, record):
-            # force username to root logger
-            record.username = getuser()
-            return True
-
     log_format = '%(asctime)s %(username)s %(levelname)s %(module)s %(funcName)s %(message)s'
     logging.basicConfig(filename='/var/log/vctools.log', level=logging.INFO, format=log_format)
-    logging.getLogger().addFilter(AddFilter())
 
     # set up logging to console for error messages
     console = logging.StreamHandler()
     console.setLevel(logging.ERROR)
     logging.getLogger().addHandler(console)
+
+    # force username on logs and apply to all handlers
+    # pylint: disable=too-few-public-methods
+    class AddFilter(logging.Filter):
+        """ Add filter class for adding attributes to logs """
+        def filter(self, record):
+            record.username = getuser()
+            return True
+
+    for handler in logging.root.handlers:
+        handler.addFilter(AddFilter())
 
     sys.exit(vc.main())

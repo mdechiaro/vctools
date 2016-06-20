@@ -63,8 +63,7 @@ class VMConfig(Query):
             host.AnswerVM(qid, str(answer))
 
 
-    @classmethod
-    def upload_iso(cls, **kwargs):
+    def upload_iso(self, **kwargs):
         """
         Method uploads iso to dest_folder.
 
@@ -109,6 +108,8 @@ class VMConfig(Query):
                 url, params=params, cookies=cookie, data=data, verify=verify
             )
 
+        self.logger.info('status: %s', response.status_code)
+        self.logger.debug(response.status_code, kwargs)
         return response.status_code
 
 
@@ -155,6 +156,7 @@ class VMConfig(Query):
             sys.stdout.write(
                 '\r[' + task.info.state + '] | ' + task.info.error.msg
             )
+            self.logger.info('\r[' + task.info.state + '] | ' + task.info.error.msg)
             sys.stdout.flush()
 
         if task.info.state == 'success':
@@ -162,6 +164,7 @@ class VMConfig(Query):
                 '\r[' + task.info.state + '] | ' +
                 'task successfully completed.'
             )
+            self.logger.info('task successfully completed')
             sys.stdout.flush()
 
         print()
@@ -444,7 +447,7 @@ class VMConfig(Query):
 
     def create(self, folder, datastore, pool, **config):
         """
-        gethod creates the VM.
+        Method creates the VM.
 
         Args:
             folder (obj):    Folder object where the VM will reside
@@ -456,6 +459,10 @@ class VMConfig(Query):
         vmxfile = vim.vm.FileInfo(vmPathName='[' + datastore + ']')
         config.update({'files' : vmxfile})
         task = folder.CreateVM_Task(config=vim.vm.ConfigSpec(**config), pool=pool)
+
+        self.logger.info('%s', config['name'])
+        self.logger.debug('%s %s %s %s', folder, datastore, pool, config)
+
         self.task_monitor(task, False)
 
 
@@ -469,6 +476,8 @@ class VMConfig(Query):
                 their values.
         """
 
+        self.logger.info('%s', host.name)
+        self.logger.debug('%s %s', host.name, config)
         task = host.ReconfigVM_Task(vim.vm.ConfigSpec(**config))
         self.task_monitor(task, True, host)
 
@@ -481,6 +490,7 @@ class VMConfig(Query):
             host (obj):  VirtualMachine object
             state (str): options are: on,off,reset,rebootshutdown
         """
+        self.logger.info('%s %s', host.name, state)
         if state == 'off':
             self.task_monitor(host.PowerOff(), True, host)
 
@@ -506,5 +516,6 @@ class VMConfig(Query):
             folder (obj):  Folder object
         """
 
+        self.logger.info('Move VM %s to %s folder', host.name, folder.name)
         task = folder.MoveIntoFolder_Task([host])
         self.task_monitor(task, True, host)

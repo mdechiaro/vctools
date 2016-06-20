@@ -12,8 +12,7 @@ class MkBootISO(object):
     PXE booting or DHCP networks are not an option.
     """
 
-    def __init__(self):
-        pass
+    logger = logging.getLogger(__name__)
 
     @staticmethod
     def sanity_ip_checker(**kwargs):
@@ -58,6 +57,7 @@ class MkBootISO(object):
         else:
             with open(source + '/isolinux/isolinux.cfg', 'w') as iso_cfg:
                 iso_cfg.write(textwrap.dedent(label).strip())
+
 
 
     @classmethod
