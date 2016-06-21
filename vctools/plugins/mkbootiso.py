@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# vim: ts=4 sw=4 et
 """Plugin for creating a boot iso on a per server basis."""
 from __future__ import print_function
 import logging
@@ -23,23 +24,34 @@ class MkBootISO(object):
             raise ValueError('%s seems to conflict with router devices.' % kwargs['ip'])
 
     @classmethod
-    def updateiso(cls, source, ks_url, sanity=True, **kwargs):
+    def updateiso(cls, source, ks_url, sanity=True, raw=None, **kwargs):
         """
         Update iso image with host specific parameters.
         All kickstart options will be added from a yaml file.
         """
 
-        label = """
-            default vesamenu.c32
-            display boot.msg
-            timeout 5
-            label iso created by mkbootiso
-            menu default
-            kernel vmlinuz
-            append initrd=initrd.img %s %s
+        if not raw:
+            label = """
+                default vesamenu.c32
+                display boot.msg
+                timeout 5
+                label iso created by mkbootiso
+                menu default
+                kernel vmlinuz
+                append initrd=initrd.img %s %s
 
-            """ % ('ks=' + ks_url,
-                   ' '.join("%s=%s" % (key, val) for (key, val) in kwargs.iteritems()))
+                """ % ('ks=' + ks_url,
+                       ' '.join("%s=%s" % (key, val) for (key, val) in kwargs.iteritems()))
+        else:
+            label = """
+                default vesamenu.c32
+                display boot.msg
+                timeout 5
+                label iso created by mkbootiso
+                menu default
+                kernel vmlinuz
+                append initrd=initrd.img %s %s
+                """ % (ks_url, raw)
 
         if sanity:
             try:

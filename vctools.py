@@ -318,14 +318,22 @@ class VCTools(ArgParser):
                 else:
                     iso_path = '/tmp'
 
-                self.logger.info(
-                    'creating boot ISO for %s config: %s',
-                    spec['vmconfig']['name'], spec['mkbootiso'],
-                )
-                print('\ncreating boot ISO for %s' % (spec['vmconfig']['name']))
-                MkBootISO.updateiso(
-                    mkbootiso['source'], mkbootiso['ks'], **mkbootiso['options']
-                )
+                if mkbootiso['raw']:
+                    MkBootISO.updateiso(
+                        mkbootiso['source'], mkbootiso['ks'], sanity=False, raw=mkbootiso['raw']
+                    )
+                    self.logger.info(
+                        'creating boot ISO for %s raw: %s',
+                        spec['vmconfig']['name'], mkbootiso['raw'],
+                    )
+                else:
+                    MkBootISO.updateiso(
+                        mkbootiso['source'], mkbootiso['ks'], **mkbootiso['options']
+                    )
+                    self.logger.info(
+                        'creating boot ISO for %s config: %s',
+                        spec['vmconfig']['name'], spec['mkbootiso'],
+                    )
                 MkBootISO.createiso(mkbootiso['source'], iso_path, iso_name)
 
             if 'vctools' in spec:
