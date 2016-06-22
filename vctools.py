@@ -318,7 +318,7 @@ class VCTools(ArgParser):
                 else:
                     iso_path = '/tmp'
 
-                if mkbootiso['raw']:
+                if 'raw' in mkbootiso:
                     MkBootISO.updateiso(
                         mkbootiso['source'], mkbootiso['ks'], sanity=False, raw=mkbootiso['raw']
                     )
