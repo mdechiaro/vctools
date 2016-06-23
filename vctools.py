@@ -308,8 +308,13 @@ class VCTools(ArgParser):
                     tmpl = MkBootISO.load_template(
                         spec['mkbootiso'], spec['mkbootiso']['template']
                     )
-                    spec['mkbootiso'].update(self.dict_merge(tmpl, spec['mkbootiso']))
-
+                    spec['mkbootiso'].update(self.dict_merge(spec['mkbootiso'], tmpl))
+                    # strip out templates for cleanliness
+                    spec['mkbootiso'] = {
+                        k:v for k, v in spec['mkbootiso'].iteritems() if not 'template' in k
+                    }
+                    server_cfg['mkbootiso'] = {}
+                    server_cfg['mkbootiso'].update(spec['mkbootiso'])
 
                 mkbootiso = spec['mkbootiso']
                 iso_name = spec['vmconfig']['name'] + '.iso'
