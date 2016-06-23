@@ -231,7 +231,9 @@ class VCTools(ArgParser):
 
             spec['vmconfig'].update(self.dict_merge(spec['vmconfig'], results))
 
-            server_cfg = copy.deepcopy(spec)
+            server_cfg = {}
+            server_cfg['vmconfig'] = {}
+            server_cfg['vmconfig'].update(spec['vmconfig'])
 
             cluster = spec['vmconfig']['cluster']
             datastore = spec['vmconfig']['datastore']
