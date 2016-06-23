@@ -9,7 +9,7 @@ import sys
 import textwrap
 import yaml
 
-
+# pylint: disable=too-many-instance-attributes
 class ArgParser(object):
     """Placeholder."""
     def __init__(self):
