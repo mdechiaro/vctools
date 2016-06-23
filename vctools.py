@@ -240,7 +240,7 @@ class VCTools(ArgParser):
             folder = spec['vmconfig']['folder']
 
 
-            self.logger.info('vmconfig %s', spec['vmconfig'])
+            self.logger.info('vmconfig %s', server_cfg)
             cluster_obj = Query.get_obj(self.clusters.view, cluster)
 
             # list of scsi devices, max is 4.  Layout is a tuple containing the
@@ -719,9 +719,14 @@ if __name__ == '__main__':
     # pylint: disable=invalid-name
     vc = VCTools()
 
+    log_level = 'INFO'
+    log_file = '/var/log/vctools.log'
+
     # setup logging
     log_format = '%(asctime)s %(username)s %(levelname)s %(module)s %(funcName)s %(message)s'
-    logging.basicConfig(filename='/var/log/vctools.log', level=logging.INFO, format=log_format)
+    logging.basicConfig(
+        filename=log_file, level=getattr(logging, log_level), format=log_format
+    )
 
     # set up logging to console for error messages
     console = logging.StreamHandler()
