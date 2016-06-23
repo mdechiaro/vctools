@@ -139,7 +139,13 @@ Upload ISO to Datastore:
       --dest /remote/path/to/iso/folder --datastore datastore \
       --datacenter datacenter
 
-Hacking:
+Contributing:
+
+Pull requests are welcome. Please follow PEP 8, and pylint is
+recommended for ensuring the code follows those standards. Disabling
+certain pylints is allowed (like star-args), so use your best
+judgment. Please disable using a comment in the vicinity of where the
+error occurs in the file. Keep maximum characters to 100 per line.
 
 Here's a quick way to set it up in the Python intepreter and then you
 can move freely around the interface. The commands dir() and getattr()
@@ -163,18 +169,9 @@ are very helpful.
         auth.session, auth.session.content.rootFolder, [vim.ComputeResource], True
     )
 
-    vm_name = query.get_obj(virtual_machines, 'vm_name')
+    vm_name = query.get_obj(virtual_machines.view, 'vm_name')
 
     dir(vm_name)
-
-
-Contributing:
-
-Pull requests are welcome. Please follow PEP 8, and pylint is
-recommended for ensuring the code follows those standards. Disabling
-certain pylints is allowed (like star-args), so use your best
-judgment. Please disable using a comment in the vicinity of where the
-error occurs in the file. Keep maximum characters to 100 per line.
 
 Thanks:
 
