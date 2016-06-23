@@ -111,4 +111,5 @@ class MkBootISO(object):
         if template:
             if 'templates' in cfg:
                 if template in cfg['templates']:
+                    cls.logger.debug(cfg['templates'][template])
                     return cfg['templates'][template]
