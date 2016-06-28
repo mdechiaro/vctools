@@ -6,13 +6,13 @@ command-line operations inside vCenter for Linux sysadmins. The current
 state of this project is beta, and so far it can do the following:
 
   - Completely automate a new VM creation from start to finish. This
-    includes a boot ISO if your environment is not DHCP.
-  - Reconfigure hardware like networks, disks, CPU, and memory
+    includes creating a boot ISO if your environment does not support DHCP.
+  - Reconfigure VM hardware like networks, disks, CPU, and memory
   - Query various information on VMs
   - Upload ISOs to remote datastores, and mount and unmount them on VMs.
 
 Dependencies:
-  - Python 2.6+
+  - Python 2.7+
   - python-argparse
   - python-pip
   - python-requests
@@ -38,59 +38,37 @@ upload, mount, and power on the VM after its creation making the process
 completely automated. It can handle multiple configs at once and merge
 them separately with the dotrc for complex configurations.
 
-An example minimal yaml config (you will be prompted for other information):
+An example yaml config:
 
-    ---
-    vmconfig:
-      name: server
-      guestId: rhel7_64Guest
-      annotation: 'This will show up under Notes'
-      disks:
-      - 30
-      - 50
-      nics:
-      - vlan_1234_linux_vlan
     mkbootiso:
-      template: rhel7
+      ks: http://host.domain.com/ks.cfg
       options:
-        hostname: 'server.domain.com'
-        ip: '10.1.1.10'
-        gateway: '10.1.1.1'
-
-A complete, no prompt config looks like this:
-
-    ---
-    vmconfig:
-      cluster: 1234_lin_tst_01
-      folder: 'Linux Team'
-      datastore: T2_1234_Test_Datastore
-      name: server
-      guestId: rhel7_64Guest
-      numCPUs: 1
-      memoryMB: 4096
-      memoryHotAddEnabled: True
-      cpuHotAddEnabled: True
-      annotation: 'This will show up under Notes'
-      disks:
-      - 30
-      - 50
-      nics:
-      - vlan_1234_linux_vlan
-    mkbootiso:
-      source: '/mnt/isos/rhel7'
-      ks: 'http://ks.domain.com/rhel7-ks.cfg'
-      options:
-        hostname: 'server.domain.com'
-        ip: '10.1.1.10'
-        netmask: '255.255.255.0'
-        gateway: '10.1.1.1'
-        nameserver: '4.2.2.2'
-        net.ifnames: '0'
         biosdevname: '0'
-    vctools:
-      upload:
-      mount:
-      power: 'on'
+        gateway: 10.1.1.1
+        hostname: hostname.domain.com
+        ip: 10.1.1.10
+        nameserver: 4.2.2.2
+        net.ifnames: '0'
+        netmask: 255.255.255.0
+      source: /opt/isos/rhel7
+    vmconfig:
+      cluster: 1234_cluster_01
+      cpuHotAddEnabled: true
+      datacenter: Linux
+      datastore: 1234_datastore_01
+      disks:
+      - 50
+      - 1500
+      folder: Linux Team
+      guestId: rhel7_64Guest
+      memoryHotAddEnabled: true
+      memoryMB: 4096
+      name: hostname
+      nics:
+      - 1000_foo_network
+      - 1001_bar_network
+      numCPUs: 1
+
 
 Any configs that you wish to be set as defaults should be added to
 .vctoolsrc.yaml, and then can be overridden on a per server basis with
