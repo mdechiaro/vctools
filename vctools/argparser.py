@@ -102,6 +102,36 @@ class ArgParser(object):
 
         return general_parser
 
+    def add_parser(self, parent):
+        """ Reconfig VM Attributes and Hardware """
+        # add
+        usage = """
+
+        help: vctools add -h
+
+        vctools add <vc> <name> --device <options>
+        """
+        add_parser = self.subparsers.add_parser(
+            'add',
+            parents=[parent],
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            usage=textwrap.dedent(usage),
+            description=textwrap.dedent(self.add_parser.__doc__),
+            help='Reconfigure Attributes for Virtual Machines.'
+        )
+        add_parser.set_defaults(cmd='add')
+        add_parser.add_argument(
+            '--datacenter', metavar='', default='Linux',
+            help='vCenter Datacenter. default: %(default)s'
+        )
+
+        add_type_opts = add_parser.add_argument_group('type options')
+
+        add_parser.add_argument(
+            'name',
+            help='Name attribute of Virtual Machine object, i.e. hostname'
+        )
+
     def create_parser(self, parent):
         """Create Parser."""
         # create
@@ -368,6 +398,7 @@ class ArgParser(object):
         """Method loads all the argparse parsers."""
 
         general_parser = self.general_parser()
+        self.add_parser(general_parser)
         self.create_parser(general_parser)
         self.mount_parser(general_parser)
         self.power_parser(general_parser)
