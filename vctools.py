@@ -130,8 +130,10 @@ class VCTools(ArgParser):
             # cluster
             if 'cluster' in cfg['vmconfig']:
                 cluster = cfg['vmconfig']['cluster']
+                cluster_obj = Query.get_obj(self.clusters.view, cluster)
             else:
                 cluster = Prompts.clusters(self.auth.session)
+                cluster_obj = Query.get_obj(self.clusters.view, cluster)
                 print('\n%s selected.' % (cluster))
             # datastore
             if 'datastore' in cfg['vmconfig']:
@@ -150,7 +152,7 @@ class VCTools(ArgParser):
                 nics = cfg['vmconfig']['nics']
                 print('nics: %s' % (nics))
             else:
-                nics = Prompts.networks(self.auth.session, cluster)
+                nics = Prompts.networks(cluster_obj)
                 print('\n%s selected.' % (','.join(nics)))
             # folder
             if 'folder' in cfg['vmconfig']:
@@ -168,7 +170,7 @@ class VCTools(ArgParser):
             print('\n%s selected.' % (datastore))
             datacenter = Prompts.datacenters(self.auth.session)
             print('\n%s selected.' % (datacenter))
-            nics = Prompts.networks(self.auth.session, cluster)
+            nics = Prompts.networks(cluster_obj)
             print('\n%s selected.' % (','.join(nics)))
             folder = Prompts.folders(self.auth.session, datacenter)
             print('\n%s selected.' % (folder))
@@ -566,9 +568,15 @@ class VCTools(ArgParser):
 
                 # nics
                 if self.opts.device == 'nic':
+                    # Prompt if network is not declared
+                    if not self.opts.network:
+                        # only first selection allowed for now
+                        network = Prompts.networks(hostname.summary.runtime.host)[0]
+                    else:
+                        network = self.opts.network
                     nic_cfg_opts = {}
                     esx_host_net = hostname.summary.runtime.host.network
-                    nic_cfg_opts.update({'container' : esx_host_net, 'network' : self.opts.network})
+                    nic_cfg_opts.update({'container' : esx_host_net, 'network' : network})
                     devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
                     if devices:
                         self.vmcfg.reconfig(hostname, **{'deviceChange': devices})
