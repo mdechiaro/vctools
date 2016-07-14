@@ -560,6 +560,20 @@ class VCTools(ArgParser):
                     self.opts.verify_ssl, *self.opts.iso
                 )
 
+            if self.opts.cmd == 'add':
+                devices = []
+                hostname = self.query.get_obj(self.virtual_machines.view, self.opts.name)
+
+                # nics
+                if self.opts.device == 'nic':
+                    nic_cfg_opts = {}
+                    esx_host_net = hostname.summary.runtime.host.network
+                    nic_cfg_opts.update({'container' : esx_host_net, 'network' : self.opts.network})
+                    devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
+                    if devices:
+                        self.vmcfg.reconfig(hostname, **{'deviceChange': devices})
+
+
             if self.opts.cmd == 'reconfig':
                 devices = []
                 host = self.query.get_obj(self.virtual_machines.view, self.opts.name)

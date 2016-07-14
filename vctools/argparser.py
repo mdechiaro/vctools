@@ -110,6 +110,9 @@ class ArgParser(object):
         help: vctools add -h
 
         vctools add <vc> <name> --device <options>
+        
+        # add a network card
+        vctools add <vc> <name> --device nic  --network <network>
         """
         add_parser = self.subparsers.add_parser(
             'add',
@@ -130,6 +133,18 @@ class ArgParser(object):
         add_parser.add_argument(
             'name',
             help='Name attribute of Virtual Machine object, i.e. hostname'
+        )
+
+        add_type_opts.add_argument(
+            '--device', metavar='', choices=['nic'],
+            help='Add hardware devices on Virtual Machines. choices=[%(choices)s]',
+        )
+
+        add_nic_opts = add_parser.add_argument_group('nic options')
+
+        add_nic_opts.add_argument(
+            '--network', metavar='',
+            help='The network of the interface, i.e. vlan_1234_network'
         )
 
     def create_parser(self, parent):
