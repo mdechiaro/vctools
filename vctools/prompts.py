@@ -25,7 +25,7 @@ class Prompts(object):
         return raw_input('Name: ')
 
     @classmethod
-    def networks(cls, session, cluster):
+    def networks(cls, net_obj):
         """
         Method will prompt user to select a networks. Since multiple networks
         can be added to a VM, it will prompt the user to exit or add more.
@@ -35,17 +35,19 @@ class Prompts(object):
 
         Args:
             session (obj): Auth session object
-            cluster (str): Name of cluster
+            net_obj (cls): class has network managed object attribute
+            multiple (bool): Allow for method to accept multiple inputs,
+                otherwise it will return the first selection
 
         Returns:
             selected_networks (list): A list of selected networks
         """
-        clusters = Query.create_container(
-            session, session.content.rootFolder, [vim.ComputeResource], True
-        )
-        cluster = Query.get_obj(clusters.view, cluster)
-        networks = Query.list_obj_attrs(cluster.network, 'name', view=False)
-        networks.sort()
+        if getattr(net_obj, 'network'):
+            networks = Query.list_obj_attrs(net_obj.network, 'name', view=False)
+            networks.sort()
+        else:
+            raise ValueError('network managed object not found in %s' % (type(net_obj)))
+
 
         print('\n')
         print('%s Networks Found.\n' % (len(networks)))
