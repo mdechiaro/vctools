@@ -103,7 +103,7 @@ class ArgParser(object):
         return general_parser
 
     def add_parser(self, parent):
-        """ Reconfig VM Attributes and Hardware """
+        """ Add Hardware to Virtual Machines """
         # add
         usage = """
 
@@ -120,7 +120,7 @@ class ArgParser(object):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             usage=textwrap.dedent(usage),
             description=textwrap.dedent(self.add_parser.__doc__),
-            help='Reconfigure Attributes for Virtual Machines.'
+            help='Add Hardware to Virtual Machines.'
         )
         add_parser.set_defaults(cmd='add')
         add_parser.add_argument(
