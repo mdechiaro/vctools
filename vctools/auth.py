@@ -21,8 +21,6 @@ class Auth(object):
             host (str): This string is the vSphere host host.
             port (int): Port to connect to host.
         """
-        self.logger = logging.getLogger(__name__)
-
         self.host = host
         self.port = port
         self.session = None

@@ -2,19 +2,16 @@
 # vim: ts=4 sw=4 et
 """Prompts for User Inputs"""
 from __future__ import print_function
-import logging
 import sys
 from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.query import Query
+from vctools import Logger
 
-class Prompts(object):
+class Prompts(Logger):
     """
     User prompts for selection configuration values.  It's best if these
     methods are configured as class methods
     """
-
-    logger = logging.getLogger(__name__)
-
 
     def __init__(self):
         pass
@@ -269,4 +266,3 @@ class Prompts(object):
 
         cls.logger.info(selected_guestid)
         return selected_guestid
-

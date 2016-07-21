@@ -22,15 +22,15 @@ from vctools.vmconfig import VMConfig
 from vctools.query import Query
 from vctools.prompts import Prompts
 from vctools.plugins.mkbootiso import MkBootISO
+from vctools import Logger
 
 # pylint: disable=too-many-instance-attributes
-class VCTools(ArgParser):
+class VCTools(ArgParser, Logger):
     """
     Main VCTools class.
     """
 
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
         try:
             ArgParser.__init__(self)
         except ValueError:

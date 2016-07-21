@@ -22,7 +22,6 @@ class VMConfig(Query):
 
     def __init__(self):
         """ Define our class attributes here. """
-        self.logger = logging.getLogger(__name__)
         Query.__init__(self)
         self.scsi_key = None
 
@@ -476,7 +475,6 @@ class VMConfig(Query):
                 their values.
         """
 
-        self.logger.info('%s', host.name)
         self.logger.debug('%s %s', host.name, config)
         task = host.ReconfigVM_Task(vim.vm.ConfigSpec(**config))
         self.task_monitor(task, True, host)

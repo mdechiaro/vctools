@@ -3,17 +3,16 @@
 """Query class for vctools.  All methods that obtain info should go here."""
 from __future__ import division
 from __future__ import print_function
-import logging
 from pyVmomi import vim # pylint: disable=no-name-in-module
+from vctools import Logger
 
-class Query(object):
+class Query(Logger):
     """
     Class handles queries for information regarding for vms, datastores
     and networks.
     """
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
-
+        pass
 
     @classmethod
     def disk_size_format(cls, num):
@@ -357,4 +356,3 @@ class Query(object):
                     })
 
         return cfg
-
