@@ -2,18 +2,19 @@
 """Authentication Class for vctools."""
 # vim: ts=4 sw=4 et
 from __future__ import print_function
-import logging
 import os
 import subprocess
 from getpass import getpass, getuser
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim # pylint: disable=E0611
+from vctools import Logger
 
 # disable SSL warnings
 import requests
 requests.packages.urllib3.disable_warnings()
 
-class Auth(object):
+
+class Auth(Logger):
     """Authentication Class."""
     def __init__(self, host=None, port=443):
         """

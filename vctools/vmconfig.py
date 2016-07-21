@@ -2,17 +2,15 @@
 # vim: ts=4 sw=4 et
 """Various config options for Virtual Machines."""
 from __future__ import print_function
-import logging
 import textwrap
 import sys
 from random import uniform
 import requests
 from pyVmomi import vim # pylint: disable=E0611
-#
 from vctools.query import Query
-#
+from vctools import Logger
 
-class VMConfig(Query):
+class VMConfig(Query, Logger):
     """
     Class simplifies VM builds outside of using the client or Web App.
     Class can handle setting up a complete VM with multiple devices attached.

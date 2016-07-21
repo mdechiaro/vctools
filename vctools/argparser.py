@@ -7,9 +7,10 @@ import subprocess
 import sys
 import textwrap
 import yaml
+from vctools import Logger
 
 # pylint: disable=too-many-instance-attributes
-class ArgParser(object):
+class ArgParser(Logger):
     """Placeholder."""
     def __init__(self):
         self.syspath = sys.path[0]
