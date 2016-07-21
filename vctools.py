@@ -579,6 +579,9 @@ class VCTools(ArgParser, Logger):
                     nic_cfg_opts.update({'container' : esx_host_net, 'network' : network})
                     devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
                     if devices:
+                        self.logger.info(
+                            'add hardware %s network: %s', hostname.name, network
+                        )
                         self.vmcfg.reconfig(hostname, **{'deviceChange': devices})
 
 
@@ -589,13 +592,17 @@ class VCTools(ArgParser, Logger):
                 edit = True
 
                 if self.opts.cfgs:
+                    self.logger.info(
+                        'reconfig: %s cfgs: %s', host.name,
+                        ' '.join('%s=%s' % (k, v) for k, v in self.opts.cfgs.iteritems())
+                    )
                     self.vmcfg.reconfig(host, **self.opts.cfgs)
 
                 if self.opts.folder:
                     folder = Query.folders_lookup(
                         self.datacenters.view, self.opts.datacenter, self.opts.folder
                     )
-
+                    self.logger.info('%s folder: %s', host.name, self.opts.folder)
                     self.vmcfg.mvfolder(host, folder)
 
                 # disks
@@ -636,6 +643,10 @@ class VCTools(ArgParser, Logger):
 
                         if disk_cfg_opts:
                             devices.append(self.vmcfg.disk_config(edit=edit, **disk_cfg_opts))
+                            self.logger.info(
+                                '%s label: %s %s size: %s', host.name,
+                                self.opts.disk_prefix, self.opts.disk_id, self.opts.sizeGB
+                            )
                             self.vmcfg.reconfig(host, **{'deviceChange': devices})
 
                 # nics
@@ -664,6 +675,11 @@ class VCTools(ArgParser, Logger):
                                         self.vmcfg.nic_config(edit=edit, **nic_cfg_opts)
                                     )
                                     if devices:
+                                        self.logger.info(
+                                            '%s label: %s %s network: %s', host.name,
+                                            self.opts.nic_prefix, self.opts.nic_id,
+                                            self.opts.network
+                                        )
                                         self.vmcfg.reconfig(host, **{'deviceChange': devices})
 
 
