@@ -145,6 +145,10 @@ class ArgParser(Logger):
             '--network', metavar='',
             help='The network of the interface, i.e. vlan_1234_network'
         )
+        add_nic_opts.add_argument(
+            '--driver', metavar='', choices=['vmxnet3', 'e1000'],
+            help='The network driver, default: vmxnet3'
+        )
 
     def create_parser(self, parent):
         """Create Parser."""
@@ -353,6 +357,10 @@ class ArgParser(Logger):
         reconfig_nic_opts.add_argument(
             '--network', metavar='',
             help='The network of the interface, i.e. vlan_1234_network'
+        )
+        reconfig_nic_opts.add_argument(
+            '--driver', metavar='', choices=['vmxnet3', 'e1000'],
+            help='The network driver, default: vmxnet3'
         )
 
     def umount_parser(self, parent):

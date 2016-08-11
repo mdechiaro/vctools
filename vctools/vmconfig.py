@@ -402,7 +402,7 @@ class VMConfig(Query, Logger):
             allow_guest_control (bool):
                 Allows the guest to control whether the connectable device
                 is connected.
-
+            driver (str): A str that represents a network adapter driver
         Returns:
             nic (obj): A configured object for a Network device.  this should
                 be appended to ConfigSpec devices attribute.
@@ -417,9 +417,11 @@ class VMConfig(Query, Logger):
         allow_guest_control = kwargs.get('allow_get_control', True)
         unit = kwargs.get('unit', None)
         address_type = kwargs.get('address_type', 'assigned')
+        driver = kwargs.get('driver', 'VirtualVmxnet3')
 
         nic = vim.vm.device.VirtualDeviceSpec()
-        nic.device = vim.vm.device.VirtualVmxnet3()
+        nic.device = getattr(vim.vm.device, driver)()
+
         if edit:
             nic.operation = 'edit'
             nic.device.key = key
@@ -429,7 +431,6 @@ class VMConfig(Query, Logger):
             nic.device.addressType = address_type
         else:
             nic.operation = 'add'
-
 
         nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
         nic.device.backing.network = Query.get_obj(container, network)

@@ -22,6 +22,7 @@ from vctools.vmconfig import VMConfig
 from vctools.query import Query
 from vctools.prompts import Prompts
 from vctools.plugins.mkbootiso import MkBootISO
+# pylint: disable=import-self
 from vctools import Logger
 
 # pylint: disable=too-many-instance-attributes
@@ -577,6 +578,8 @@ class VCTools(ArgParser, Logger):
                     nic_cfg_opts = {}
                     esx_host_net = hostname.summary.runtime.host.network
                     nic_cfg_opts.update({'container' : esx_host_net, 'network' : network})
+                    if self.opts.driver == 'e1000':
+                        nic_cfg_opts.update({'driver': 'VirtualE1000'})
                     devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
                     if devices:
                         self.logger.info(
@@ -671,6 +674,8 @@ class VCTools(ArgParser, Logger):
                                             'unit' : item.unitNumber,
                                         }
                                     )
+                                    if self.opts.driver == 'e1000':
+                                        nic_cfg_opts.update({'driver': 'VirtualE1000'})
                                     devices.append(
                                         self.vmcfg.nic_config(edit=edit, **nic_cfg_opts)
                                     )
