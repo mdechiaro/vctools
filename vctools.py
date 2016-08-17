@@ -527,8 +527,9 @@ class VCTools(ArgParser, Logger):
             self.logger.debug(self.opts)
 
             self.auth = Auth(self.opts.vc)
-            self.auth.login(self.opts.user, self.opts.domain, self.opts.passwd_file)
-
+            self.auth.login(
+                self.opts.user, self.opts.passwd, self.opts.domain, self.opts.passwd_file
+            )
             self.query = Query()
             self.vmcfg = VMConfig()
             self.create_containers()

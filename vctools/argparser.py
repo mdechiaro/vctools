@@ -94,6 +94,10 @@ class ArgParser(Logger):
             '--domain', metavar='',
             help='domain'
         )
+        general_parser.add_argument(
+            '--passwd', metavar='',
+            help='password'
+        )
 
         # ConfigParser overrides
         if 'general' in self.dotrc:

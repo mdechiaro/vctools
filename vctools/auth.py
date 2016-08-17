@@ -47,12 +47,13 @@ class Auth(Logger):
         return output
 
 
-    def login(self, user=None, domain=None, passwd_file=None):
+    def login(self, user=None, passwd=None, domain=None, passwd_file=None):
         """
         Login to vSphere host
 
         Args:
             user (str):        Username
+            passwd (str):      Password
             domain (str):      Domain name
             passwd_file (str): Name of file that contains an encrypted passwd.
                 Path should be included if file resides outside of module.
@@ -70,10 +71,11 @@ class Auth(Logger):
                 user = getuser()
 
 
-        if passwd_file:
-            passwd = self.decrypt_gpg_file(passwd_file)
-        else:
-            passwd = getpass()
+        if not passwd:
+            if passwd_file:
+                passwd = self.decrypt_gpg_file(passwd_file)
+            else:
+                passwd = getpass()
 
         try:
             self.session = SmartConnect(
