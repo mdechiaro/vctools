@@ -501,7 +501,7 @@ class VMConfig(Query, Logger):
             self.task_monitor(host.RebootGuest(), True, host)
 
         if state == 'shutdown':
-            self.task_monitor(host.ShutdownGuest(), True, host)
+            host.ShutdownGuest()
 
 
     def mvfolder(self, host, folder):
