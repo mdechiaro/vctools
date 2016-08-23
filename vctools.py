@@ -463,7 +463,7 @@ class VCTools(ArgParser, Logger):
 
             key, controller = Query.get_key(host, 'CD/DVD')
 
-            print('Unmounting ISO on %s' % (name))
+            self.logger.info('ISO on %s', name)
             cdrom_cfg = []
             cdrom_cfg_opts = {}
             cdrom_cfg_opts.update(
