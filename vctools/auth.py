@@ -5,14 +5,14 @@ from __future__ import print_function
 import os
 import subprocess
 from getpass import getpass, getuser
+import ssl
+import requests
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim # pylint: disable=E0611
 from vctools import Logger
 
 # disable SSL warnings
-import requests
 requests.packages.urllib3.disable_warnings()
-
 
 class Auth(Logger):
     """Authentication Class."""
@@ -46,8 +46,7 @@ class Auth(Logger):
 
         return output
 
-
-    def login(self, user=None, passwd=None, domain=None, passwd_file=None):
+    def login(self, user=None, passwd=None, domain=None, passwd_file=None, sslcontext=None):
         """
         Login to vSphere host
 
@@ -57,7 +56,9 @@ class Auth(Logger):
             domain (str):      Domain name
             passwd_file (str): Name of file that contains an encrypted passwd.
                 Path should be included if file resides outside of module.
+            sslcontext (obj):  Can disable SSL verification for Python 2.7.9+
         """
+
 
         if user:
             if domain:
@@ -70,7 +71,6 @@ class Auth(Logger):
             else:
                 user = getuser()
 
-
         if not passwd:
             if passwd_file:
                 passwd = self.decrypt_gpg_file(passwd_file)
@@ -81,6 +81,7 @@ class Auth(Logger):
             self.session = SmartConnect(
                 host=self.host, user=user, pwd=passwd, port=self.port
             )
+
             session_mgr = self.session.content.sessionManager
 
             self.ticket = session_mgr.AcquireCloneTicket()
@@ -88,11 +89,23 @@ class Auth(Logger):
 
             passwd = None
 
+        # https://www.python.org/dev/peps/pep-0476/
+        except ssl.SSLError:
+            if sslcontext:
+                context = sslcontext
+            # disable ssl verification
+            elif hasattr(ssl, '_create_unverified_context'):
+                context = ssl._create_unverified_context()
+                self.session = SmartConnect(
+                    host=self.host, user=user, pwd=passwd, port=self.port, sslContext=context
+                )
+            else:
+                raise
+
         except vim.fault.InvalidLogin:
             user = None
             passwd = None
             raise
-
 
     def logout(self):
         """Logout of vSphere."""
