@@ -173,11 +173,6 @@ class Query(Logger):
         obj = Query.get_obj(container, cluster)
         datastore_info = []
 
-        if header:
-            header = [
-                'Datastore', 'Capacity', 'Provisioned', 'Pct', 'Free Space', 'Pct'
-            ]
-            datastore_info.append(header)
 
         if hasattr(obj, 'datastore'):
             for datastore in obj.datastore:
@@ -208,6 +203,13 @@ class Query(Logger):
 
             # sort by datastore name
             datastore_info.sort(key=lambda x: x[0])
+
+            if header:
+                header = [
+                    'Datastore', 'Capacity', 'Provisioned', 'Pct', 'Free Space', 'Pct'
+                ]
+
+                datastore_info.insert(0, header)
 
             return datastore_info
 
