@@ -79,7 +79,7 @@ class ArgParser(Logger):
         # general (parent)
         general_parser = argparse.ArgumentParser(add_help=False)
         general_parser.add_argument(
-            'vc',
+            'host',
             help='vCenter host'
         )
         general_parser.add_argument(

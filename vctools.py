@@ -497,7 +497,7 @@ class VCTools(ArgParser, Logger):
             # pylint: disable=protected-access
             upload_args.update(
                 {
-                    'host': self.opts.vc,
+                    'host': self.opts.host,
                     'cookie' : self.auth.session._stub.cookie,
                     'datacenter' : self.opts.datacenter,
                     'dest_folder' : dest,
@@ -526,7 +526,7 @@ class VCTools(ArgParser, Logger):
             self.options()
             self.logger.debug(self.opts)
 
-            self.auth = Auth(self.opts.vc)
+            self.auth = Auth(self.opts.host)
             self.auth.login(
                 self.opts.user, self.opts.passwd, self.opts.domain, self.opts.passwd_file
             )
