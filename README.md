@@ -1,8 +1,8 @@
 vctools
 ======
 
-This is a Python module using pyVmomi which aims to simplify
-command-line operations inside vCenter for Linux sysadmins. The current
+This is a Python module using pyvmomi which aims to simplify
+command-line operations inside vCenter for linux sysadmins. The current
 state of this project is beta, and so far it can do the following:
 
   - Completely automate a new VM creation from start to finish. This
@@ -17,11 +17,10 @@ Dependencies:
   - python-pip
   - python-requests
   - python-yaml
-  - pyVmomi
+  - pyvmomi
 
 Quick Install (on Linux Mint 17.2):
 
-    sudo apt-get install python-yaml python-pip
     sudo pip install pyvmomi
     cp .vctoolsrc.yaml.example ~/.vctoolsrc.yaml
 
@@ -129,7 +128,7 @@ Here's a quick way to set it up in the Python intepreter and then you
 can move freely around the interface. The commands dir() and getattr()
 are very helpful.
 
-    from pyVmomi import vim
+    from pyvmomi import vim
     from vctools.auth import Auth
     from vctools.query import Query
     auth = Auth(<vcenter_host>)
