@@ -26,16 +26,13 @@ from vctools.plugins.mkbootiso import MkBootISO
 from vctools import Logger
 
 # pylint: disable=too-many-instance-attributes
-class VCTools(ArgParser, Logger):
+class VCTools(Logger):
     """
     Main VCTools class.
     """
 
-    def __init__(self):
-        try:
-            ArgParser.__init__(self)
-        except ValueError:
-            raise
+    def __init__(self, opts):
+        self.opts = opts
         self.auth = None
         self.clusters = None
         self.datacenters = None
@@ -43,39 +40,6 @@ class VCTools(ArgParser, Logger):
         self.query = None
         self.virtual_machines = None
         self.vmcfg = None
-
-
-    def options(self):
-        """Argparse command line options."""
-
-        self.setup_args()
-        self.opts = self.parser.parse_args()
-        self.help = self.parser.print_help
-
-        # mount path needs to point to an iso, and it doesn't make sense to add
-        # to the dotrc file, so this will append the self.opts.name value to it
-        if self.opts.cmd == 'mount':
-            for host in self.opts.name:
-                if not self.opts.path.endswith('.iso'):
-                    if self.opts.path.endswith('/'):
-                        self.opts.path = self.opts.path + host + '.iso'
-                    else:
-                        self.opts.path = self.opts.path +'/'+ host +'.iso'
-                # path is relative in vsphere, so we strip off the first char.
-                if self.opts.path.startswith('/'):
-                    self.opts.path = self.opts.path.lstrip('/')
-
-        if self.opts.cmd == 'upload':
-            # trailing slash is in upload method, so we strip it out here.
-            if self.opts.dest.endswith('/'):
-                self.opts.dest = self.opts.dest.rstrip('/')
-            # path is relative in vsphere, so we strip off the first character.
-            if self.opts.dest.startswith('/'):
-                self.opts.dest = self.opts.dest.lstrip('/')
-            # verify_ssl needs to be a boolean value.
-            if self.opts.verify_ssl:
-                self.opts.verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
-
 
     def create_containers(self):
         """
@@ -523,7 +487,6 @@ class VCTools(ArgParser, Logger):
 
         # pylint: disable=too-many-nested-blocks
         try:
-            self.options()
             self.logger.debug(self.opts)
 
             self.auth = Auth(self.opts.host)
@@ -763,12 +726,15 @@ class VCTools(ArgParser, Logger):
 
 if __name__ == '__main__':
     # pylint: disable=invalid-name
-    vc = VCTools()
 
-    log_level = 'INFO'
-    log_file = '/var/log/vctools.log'
+    # setup argument parsing
+    argparser = ArgParser()
+    argparser.setup_args()
+    options = argparser.sanitize(argparser.parser.parse_args())
 
     # setup logging
+    log_level = options.verbosity.upper()
+    log_file = options.logfile
     log_format = '%(asctime)s %(username)s %(levelname)s %(module)s %(funcName)s %(message)s'
     logging.basicConfig(
         filename=log_file, level=getattr(logging, log_level), format=log_format
@@ -790,4 +756,5 @@ if __name__ == '__main__':
     for handler in logging.root.handlers:
         handler.addFilter(AddFilter())
 
+    vc = VCTools(options)
     sys.exit(vc.main())
