@@ -316,7 +316,7 @@ class VCTools(ArgParser, Logger):
 
                 # strip out templates for cleanliness
                 spec['mkbootiso'] = {
-                    k:v for k, v in spec['mkbootiso'].iteritems() if not 'template' in k
+                    k:v for k, v in spec['mkbootiso'].iteritems() if 'template' not in k
                 }
                 server_cfg['mkbootiso'] = {}
                 server_cfg['mkbootiso'].update(spec['mkbootiso'])
