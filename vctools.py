@@ -729,7 +729,7 @@ if __name__ == '__main__':
 
     # setup argument parsing
     argparser = ArgParser()
-    argparser.setup_args()
+    argparser.setup_args(**argparser.dotrc)
     options = argparser.sanitize(argparser.parser.parse_args())
 
     # setup logging
