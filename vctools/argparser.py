@@ -519,7 +519,7 @@ class ArgParser(Logger):
         parent_parsers = ['general', 'logging']
         parents = []
 
-        subparsers = ['add', 'create', 'query', 'mount', 'power', 'reconfig', 'umount', 'upload']
+        subparsers = ['add', 'create', 'mount', 'power', 'query', 'reconfig', 'umount', 'upload']
 
         try:
             # load parsers using defaults
