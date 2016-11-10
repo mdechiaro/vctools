@@ -470,6 +470,44 @@ class ArgParser(Logger):
         if defaults:
             upload_parser.set_defaults(**defaults)
 
+    def sanitize(self, opts):
+        """
+        Sanitize arguments. This will override the user / config input to a supported state.
+
+        Examples:
+            - rename files
+            - force booleans
+            - absolute path checks
+
+        Args:
+           opts (obj): argparse namespace parsed args
+        """
+        # mount path needs to point to an iso, and it doesn't make sense to add
+        # to the dotrc file, so this will append the self.opts.name value to it
+        if opts.cmd == 'mount':
+            for host in opts.name:
+                if not opts.path.endswith('.iso'):
+                    if opts.path.endswith('/'):
+                        opts.path = opts.path + host + '.iso'
+                    else:
+                        opts.path = opts.path +'/'+ host +'.iso'
+                # path is relative in vsphere, so we strip off the first char.
+                if opts.path.startswith('/'):
+                    opts.path = opts.path.lstrip('/')
+
+        if opts.cmd == 'upload':
+            # trailing slash is in upload method, so we strip it out here.
+            if opts.dest.endswith('/'):
+                opts.dest = opts.dest.rstrip('/')
+            # path is relative in vsphere, so we strip off the first character.
+            if opts.dest.startswith('/'):
+                opts.dest = opts.dest.lstrip('/')
+            # verify_ssl needs to be a boolean value.
+            if opts.verify_ssl:
+                opts.verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
+
+        return opts
+
     def setup_args(self, **dotrc):
         """
         Method loads all the argparse parsers.
