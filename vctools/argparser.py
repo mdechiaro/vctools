@@ -73,39 +73,45 @@ class ArgParser(Logger):
 
         return params
 
-
-    def general_parser(self):
+    @classmethod
+    def general(cls, **defaults):
         """General Parser."""
         # general (parent)
         general_parser = argparse.ArgumentParser(add_help=False)
+
+        # positional argument
         general_parser.add_argument(
             'host',
             help='vCenter host'
         )
-        general_parser.add_argument(
+
+        genopts = general_parser.add_argument_group('general options')
+
+        genopts.add_argument(
             '--passwd-file', metavar='',
             help='GPG encrypted passwd file'
         )
-        general_parser.add_argument(
+
+        genopts.add_argument(
             '--user', metavar='',
             help='username'
         )
-        general_parser.add_argument(
+
+        genopts.add_argument(
             '--domain', metavar='',
             help='domain'
         )
-        general_parser.add_argument(
+
+        genopts.add_argument(
             '--passwd', metavar='',
             help='password'
         )
-
-        # ConfigParser overrides
-        if 'general' in self.dotrc:
-            general_parser.set_defaults(**self.dotrc['general'])
+        if defaults:
+            general_parser.set_defaults(**defaults)
 
         return general_parser
 
-    def add_parser(self, parent):
+    def add(self, *parents, **defaults):
         """ Add Hardware to Virtual Machines """
         # add
         usage = """
@@ -113,19 +119,21 @@ class ArgParser(Logger):
         help: vctools add -h
 
         vctools add <vc> <name> --device <options>
-        
+
         # add a network card
         vctools add <vc> <name> --device nic  --network <network>
         """
         add_parser = self.subparsers.add_parser(
             'add',
-            parents=[parent],
+            parents=list(parents),
             formatter_class=argparse.RawDescriptionHelpFormatter,
             usage=textwrap.dedent(usage),
-            description=textwrap.dedent(self.add_parser.__doc__),
+            description=textwrap.dedent(self.add.__doc__),
             help='Add Hardware to Virtual Machines.'
         )
+
         add_parser.set_defaults(cmd='add')
+
         add_parser.add_argument(
             '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
@@ -149,19 +157,24 @@ class ArgParser(Logger):
             '--network', metavar='',
             help='The network of the interface, i.e. vlan_1234_network'
         )
+
         add_nic_opts.add_argument(
             '--driver', metavar='', choices=['vmxnet3', 'e1000'],
             help='The network driver, default: vmxnet3'
         )
 
-    def create_parser(self, parent):
+        if defaults:
+            add_parser.set_defaults(**defaults)
+
+    def create(self, *parents, **defaults):
         """Create Parser."""
         # create
         create_parser = self.subparsers.add_parser(
-            'create', parents=[parent],
+            'create', parents=list(parents),
             description='Example: vctools create <vc> <config> <configN>',
             help='Create Virtual Machines'
         )
+
         create_parser.set_defaults(cmd='create')
 
         create_parser.add_argument(
@@ -173,15 +186,15 @@ class ArgParser(Logger):
             '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
-        if 'create' in self.dotrc:
-            create_parser.set_defaults(**self.dotrc['vmconfig']['datacenter'])
 
+        if defaults:
+            create_parser.set_defaults(**defaults)
 
-    def mount_parser(self, parent):
+    def mount(self, *parents, **defaults):
         """Mount Parser."""
         # mount
         mount_parser = self.subparsers.add_parser(
-            'mount', parents=[parent],
+            'mount', parents=list(parents),
             help='Mount ISO to CD-Rom device'
         )
 
@@ -201,17 +214,18 @@ class ArgParser(Logger):
             '--name', nargs='+', metavar='',
             help='name attribute of Virtual Machine object.'
         )
-        if 'mount' in self.dotrc:
-            mount_parser.set_defaults(**self.dotrc['mount'])
 
+        if defaults:
+            mount_parser.set_defaults(**defaults)
 
-    def power_parser(self, parent):
+    def power(self, *parents, **defaults):
         """Power Parser."""
         # power
         power_parser = self.subparsers.add_parser(
-            'power', parents=[parent],
+            'power', parents=list(parents),
             help='Power Management for Virtual Machines'
         )
+
         power_parser.set_defaults(cmd='power')
 
         power_parser.add_argument(
@@ -219,61 +233,71 @@ class ArgParser(Logger):
             help='change power state of VM'
 
         )
+
         power_parser.add_argument(
             '--name', nargs='+', metavar='',
             help='name attribute of Virtual Machine object.'
         )
 
+        if defaults:
+            power_parser.set_defaults(**defaults)
 
-    def query_parser(self, parent):
+    def query(self, *parents, **defaults):
         """Query Parser."""
         # query
         query_parser = self.subparsers.add_parser(
-            'query', parents=[parent],
+            'query', parents=list(parents),
             help='Query Info'
         )
+
         query_parser.set_defaults(cmd='query')
 
-        query_parser.add_argument(
+        query_opts = query_parser.add_argument_group('query options')
+
+        query_opts.add_argument(
             '--datastores', action='store_true',
             help='Returns information about Datastores.'
         )
 
-        query_parser.add_argument(
+        query_opts.add_argument(
             '--vms', action='store_true',
             help='Returns information about Virtual Machines.'
         )
 
-        query_parser.add_argument(
+        query_opts.add_argument(
             '--folders', action='store_true',
             help='Returns information about Folders.'
         )
 
-        query_parser.add_argument(
+        query_opts.add_argument(
             '--networks', action='store_true',
             help='Returns information about Networks.'
         )
 
-        query_parser.add_argument(
+        query_opts.add_argument(
             '--clusters', action='store_true',
             help='Returns information about ComputeResources.'
         )
 
-        query_parser.add_argument(
+        query_opts.add_argument(
             '--cluster', metavar='',
             help='vCenter ComputeResource.'
         )
 
-        query_parser.add_argument(
+        query_opts.add_argument(
             '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
-        query_parser.add_argument(
+
+        query_opts.add_argument(
             '--vmconfig', nargs='+', metavar='',
             help='Virtual machine config'
         )
 
-    def reconfig_parser(self, parent):
+        if defaults:
+            query_parser.set_defaults(**defaults)
+
+    def reconfig(self, *parents, **defaults):
         """ Reconfig VM Attributes and Hardware """
         # reconfig
         usage = """
@@ -297,10 +321,10 @@ class ArgParser(Logger):
         """
         reconfig_parser = self.subparsers.add_parser(
             'reconfig',
-            parents=[parent],
+            parents=list(parents),
             formatter_class=argparse.RawDescriptionHelpFormatter,
             usage=textwrap.dedent(usage),
-            description=textwrap.dedent(self.reconfig_parser.__doc__),
+            description=textwrap.dedent(self.reconfig.__doc__),
             help='Reconfigure Attributes for Virtual Machines.'
         )
         reconfig_parser.set_defaults(cmd='reconfig')
@@ -366,12 +390,14 @@ class ArgParser(Logger):
             '--driver', metavar='', choices=['vmxnet3', 'e1000'],
             help='The network driver, default: vmxnet3'
         )
+        if defaults:
+            reconfig_parser.set_defaults(**defaults)
 
-    def umount_parser(self, parent):
+    def umount(self, *parents, **defaults):
         """ Umount Parser """
         # umount
         umount_parser = self.subparsers.add_parser(
-            'umount', parents=[parent],
+            'umount', parents=list(parents),
             help='Unmount ISO from CD-Rom device'
         )
 
@@ -381,13 +407,14 @@ class ArgParser(Logger):
             '--name', nargs='+',
             help='name attribute of Virtual Machine object.'
         )
+        if defaults:
+            umount_parser.set_defaults(**defaults)
 
-
-    def upload_parser(self, parent):
+    def upload(self, *parents, **defaults):
         """ Upload Parser """
         # upload
         upload_parser = self.subparsers.add_parser(
-            'upload', parents=[parent],
+            'upload', parents=list(parents),
             help='Upload File'
         )
         upload_parser.set_defaults(cmd='upload')
@@ -416,19 +443,43 @@ class ArgParser(Logger):
             '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
-        if 'upload' in self.dotrc:
-            upload_parser.set_defaults(**self.dotrc['upload'])
+        if defaults:
+            upload_parser.set_defaults(**defaults)
+
+    def setup_args(self, **dotrc):
+        """
+        Method loads all the argparse parsers.
+
+        Args:
+            dotrc (dict): A config file of overrides
+        """
+
+        parent_parsers = ['general', 'logging']
+        parents = []
+
+        subparsers = ['add', 'create', 'query', 'mount', 'power', 'reconfig', 'umount', 'upload']
+
+        try:
+            # load parsers using defaults
+            for parent in parent_parsers:
+                if dotrc:
+                    if parent in dotrc.keys():
+                        parents.append(getattr(self, str(parent))(**dotrc[str(parent)]))
+                    else:
+                        parents.append(getattr(self, str(parent))())
+                else:
+                    parents.append(getattr(self, str(parent))())
+
+            for parser in subparsers:
+                if dotrc:
+                    if parser in dotrc.keys():
+                        getattr(self, str(parser))(*parents, **dotrc[str(parser)])
+                    else:
+                        getattr(self, str(parser))(*parents)
+                else:
+                    getattr(self, str(parser))(*parents)
+
+        except AttributeError:
+            raise
 
 
-    def setup_args(self):
-        """Method loads all the argparse parsers."""
-
-        general_parser = self.general_parser()
-        self.add_parser(general_parser)
-        self.create_parser(general_parser)
-        self.mount_parser(general_parser)
-        self.power_parser(general_parser)
-        self.query_parser(general_parser)
-        self.reconfig_parser(general_parser)
-        self.umount_parser(general_parser)
-        self.upload_parser(general_parser)
