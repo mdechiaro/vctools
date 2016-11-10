@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # vim: ts=4 sw=4 et
-""" Class for handling argparse parsers. """
+"""Class for handling argparse parsers. Methods are configured as subparsers."""
 import argparse
 import os
 import subprocess
@@ -11,7 +11,7 @@ from vctools import Logger
 
 # pylint: disable=too-many-instance-attributes
 class ArgParser(Logger):
-    """Placeholder."""
+    """Argparser class. It handles the user inputs and config files."""
     def __init__(self):
         self.syspath = sys.path[0]
         self.gitrev = subprocess.check_output(
@@ -19,6 +19,7 @@ class ArgParser(Logger):
                 'git', '--git-dir', self.syspath + '/.git', 'rev-parse', '--short', 'HEAD'
             ]
         )
+
         self.__version__ = self.gitrev
         self.help = None
         self.opts = None
