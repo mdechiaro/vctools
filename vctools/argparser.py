@@ -111,6 +111,29 @@ class ArgParser(Logger):
 
         return general_parser
 
+    @classmethod
+    def logging(cls, **defaults):
+        """ Logging Parser """
+        # logging (parent)
+        logging_parser = argparse.ArgumentParser(add_help=False)
+
+        logging_opts = logging_parser.add_argument_group('logging options')
+
+        logging_opts.add_argument(
+            '--level', metavar='', choices=['info', 'debug'], default='info',
+            help='set logging level choices=[%(choices)s] default: %(default)s'
+        )
+
+        logging_opts.add_argument(
+            '--logfile', metavar='', default='/var/log/vctools.log',
+            help='set logging path: %(default)s'
+        )
+
+        if defaults:
+            logging_parser.set_defaults(**defaults)
+
+        return logging_parser
+
     def add(self, *parents, **defaults):
         """ Add Hardware to Virtual Machines """
         # add

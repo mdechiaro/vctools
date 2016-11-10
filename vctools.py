@@ -733,7 +733,7 @@ if __name__ == '__main__':
     options = argparser.sanitize(argparser.parser.parse_args())
 
     # setup logging
-    log_level = options.verbosity.upper()
+    log_level = options.level.upper()
     log_file = options.logfile
     log_format = '%(asctime)s %(username)s %(levelname)s %(module)s %(funcName)s %(message)s'
     logging.basicConfig(
