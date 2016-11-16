@@ -192,7 +192,7 @@ class VCTools(Logger):
 
         for cfg in yaml_cfg:
 
-            spec = self.dict_merge(self.dotrc, yaml.load(cfg))
+            spec = self.dict_merge(argparser.dotrc, yaml.load(cfg))
             # sanitize the config and prompt for more info if necessary
             results = self.cfg_checker(spec)
 
@@ -315,9 +315,9 @@ class VCTools(Logger):
             if 'vctools' in spec:
                 # run additional argparse options if declared in yaml cfg.
                 if 'upload' in spec['vctools']:
-                    datastore = self.dotrc['upload']['datastore']
-                    dest = self.dotrc['upload']['dest']
-                    verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
+                    datastore = argparser.dotrc['upload']['datastore']
+                    dest = argparser.dotrc['upload']['dest']
+                    verify_ssl = bool(argparser.dotrc['upload']['verify_ssl'])
 
                     # trailing slash is in upload method, so we strip it out
                     if dest.endswith('/'):
@@ -329,7 +329,7 @@ class VCTools(Logger):
 
                     # verify_ssl needs to be a boolean value.
                     if verify_ssl:
-                        verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
+                        verify_ssl = bool(argparser.dotrc['upload']['verify_ssl'])
 
                     if iso_path:
                         iso = iso_path + '/' + iso_name
@@ -340,8 +340,8 @@ class VCTools(Logger):
                     print()
 
                 if 'mount' in spec['vctools']:
-                    datastore = self.dotrc['mount']['datastore']
-                    path = self.dotrc['mount']['path']
+                    datastore = argparser.dotrc['mount']['datastore']
+                    path = argparser.dotrc['mount']['path']
                     name = spec['vmconfig']['name']
 
                     if not path.endswith('.iso'):
