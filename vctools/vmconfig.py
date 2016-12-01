@@ -170,7 +170,7 @@ class VMConfig(Query, Logger):
     @classmethod
     def assign_ip(cls, dhcp=False, *static):
         """
-        Method uploads iso to dest_folder.
+        Method assigns a static IP on the vm
 
         Args:
             dhcp (bool):    Enable or Disable DHCP
