@@ -318,6 +318,13 @@ class ArgParser(Logger):
             help='Virtual machine config'
         )
 
+        query_vmcfg_opts = query_parser.add_argument_group('vmconfig options')
+
+        query_vmcfg_opts.add_argument(
+            '--createcfg', metavar='',
+            help='Create a build config from --vmconfig spec.'
+        )
+
         if defaults:
             query_parser.set_defaults(**defaults)
 
@@ -543,5 +550,3 @@ class ArgParser(Logger):
 
         except AttributeError:
             raise
-
-

@@ -700,12 +700,23 @@ class VCTools(Logger):
 
                 if self.opts.vmconfig:
                     for name in self.opts.vmconfig:
-                        print(
-                            yaml.dump(
-                                self.query.vm_config(self.virtual_machines.view, name),
-                                default_flow_style=False
+                        if self.opts.createcfg:
+                            print(
+                                yaml.dump(
+                                    self.query.vm_config(
+                                        self.virtual_machines.view, name, self.opts.createcfg
+                                    ),
+                                    default_flow_style=False
+                                )
                             )
-                        )
+                        else:
+                            print(
+                                yaml.dump(
+                                    self.query.vm_config(self.virtual_machines.view, name),
+                                    default_flow_style=False
+                                )
+                            )
+
 
             self.auth.logout()
 

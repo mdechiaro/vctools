@@ -311,7 +311,7 @@ class Query(Logger):
 
 
     @classmethod
-    def vm_config(cls, container, name):
+    def vm_config(cls, container, name, createcfg=None):
         """
         Method will output the config for a Virtual Machine object.
 
@@ -323,6 +323,7 @@ class Query(Logger):
         """
         virtmachine = Query.get_obj(container, name)
         cfg = {}
+        cfg['vmconfig'] = {}
         def vm_deep_query(data):
             """ deep query vmconfig """
             for key, val in data.__dict__.iteritems():
@@ -333,28 +334,54 @@ class Query(Logger):
                             'memoryMB', 'numCPU', 'guestId', 'name', 'annotation',
                             'cpuHotAddEnabled', 'memoryHotAddEnabled'
                     ):
-                        cfg.update({key : val})
+                        cfg['vmconfig'].update({key : val})
 
         vm_deep_query(virtmachine.config)
 
         # overriding key since numCPUs is how the value is assigned
-        cfg['numCPUs'] = cfg.pop('numCPU')
-        cfg['nics'] = {}
-        cfg['disks'] = {}
+        cfg['vmconfig']['numCPUs'] = cfg['vmconfig'].pop('numCPU')
+        cfg['vmconfig']['nics'] = {}
+        cfg['vmconfig']['disks'] = {}
         for item in virtmachine.config.hardware.device:
             if 'Hard disk' in item.deviceInfo.label:
                 if not item.capacityInBytes:
                     # try using the KiloBytes parameter if Bytes is None
                     capacity = item.capacityInKB / 1024 / 1024
-                    cfg['disks'].update({item.deviceInfo.label : int(capacity)})
+                    cfg['vmconfig']['disks'].update({item.deviceInfo.label : int(capacity)})
                 else:
                     capacity = item.capacityInBytes / 1024 / 1024 / 1024
-                    cfg['disks'].update({item.deviceInfo.label : int(capacity)})
+                    cfg['vmconfig']['disks'].update({item.deviceInfo.label : int(capacity)})
             elif 'Network adapter' in item.deviceInfo.label:
-                cfg['nics'].update({
+                cfg['vmconfig']['nics'].update({
                     item.deviceInfo.label : [
                         item.macAddress, item.deviceInfo.summary
                         ]
                     })
 
-        return cfg
+        if not createcfg:
+            return cfg
+        else:
+            # make note of copy before overrides
+            cfg['vmconfig'].update(
+                {'annotation' : 'vctools cfg copy {0}'.format(cfg['vmconfig']['name'])}
+            )
+
+            cfg['vmconfig'].update({'name' : createcfg})
+
+            # sort the disks correctly
+            cfg['vmconfig'].update(
+                {'disks': [
+                    value for (dummy, value) in sorted(cfg['vmconfig']['disks'].items())
+                    ]
+                }
+            )
+
+            # sort the nics correctly, and the last item in array is the network name
+            cfg['vmconfig'].update(
+                {'nics': [
+                    value[-1] for (dummy, value) in sorted(cfg['vmconfig']['nics'].items())
+                    ]
+                }
+            )
+
+            return cfg
