@@ -35,35 +35,49 @@ class VMConfig(Query, Logger):
         """
 
         if host.runtime.question:
-            qid = host.runtime.question.id
+            try:
+                qid = host.runtime.question.id
 
-            if not qid in answered.keys():
-                print('\n')
-                print('\n'.join(textwrap.wrap(host.runtime.question.text, 80)))
-                choices = {}
-                for option in host.runtime.question.choice.choiceInfo:
-                    choices.update({option.key : option.label})
-                    sys.stdout.write('\t%s: %s' % (option.key, option.label))
+                if not qid in answered.keys():
+                    # systemd does not provide a mechanism for disabling cdrom lock
+                    if 'CD-ROM door' in host.runtime.question.text:
+                        choices = {}
+                        for option in host.runtime.question.choice.choiceInfo:
+                            choices.update({option.key : option.label})
 
-                warn = textwrap.dedent("""\
-                    Warning: The VM may be in a suspended
-                    state until this question is answered.""").strip()
-
-                print(textwrap.fill(warn, width=80))
-
-                while True:
-                    answer = raw_input('\nPlease select number: ').strip()
-
-                    # check if answer is an appropriate number
-                    if int(answer) <= len(choices.keys()) - 1:
-                        break
+                        for key, val in choices.iteritems():
+                            if 'Yes' in val:
+                                answer = key
                     else:
-                        continue
+                        print('\n')
+                        print('\n'.join(textwrap.wrap(host.runtime.question.text, 80)))
+                        choices = {}
+                        for option in host.runtime.question.choice.choiceInfo:
+                            choices.update({option.key : option.label})
+                            sys.stdout.write('\t%s: %s' % (option.key, option.label))
 
-                if answer:
-                    host.AnswerVM(qid, str(answer))
-                    answered.update({qid:answer})
-                    return answered
+                        warn = textwrap.dedent("""\
+                            Warning: The VM may be in a suspended
+                            state until this question is answered.""").strip()
+
+                        print(textwrap.fill(warn, width=80))
+
+                        while True:
+                            answer = raw_input('\nPlease select number: ').strip()
+
+                            # check if answer is an appropriate number
+                            if int(answer) <= len(choices.keys()) - 1:
+                                break
+                            else:
+                                continue
+
+                    if answer:
+                        host.AnswerVM(qid, str(answer))
+                        answered.update({qid:answer})
+                        return answered
+            # pass onto next iteration during race condition in task_monitor while loop
+            except AttributeError:
+                pass
 
 
     def upload_iso(self, **kwargs):
