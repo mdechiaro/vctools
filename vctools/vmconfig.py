@@ -25,39 +25,45 @@ class VMConfig(Query, Logger):
 
 
     @classmethod
-    def question_and_answer(cls, host):
+    def question_and_answer(cls, host, **answered):
         """
         Method handles the questions and answers provided by the program.
 
         Args:
             host (obj): VirtualMachine object
+            answered (dict): A key value pair of already answered questions.
         """
 
         if host.runtime.question:
             qid = host.runtime.question.id
-            print('\n')
-            print('\n'.join(textwrap.wrap(host.runtime.question.text, 80)))
-            choices = {}
-            for option in host.runtime.question.choice.choiceInfo:
-                choices.update({option.key : option.label})
-                print('\t%s: %s' % (option.key, option.label))
 
-            warn = textwrap.dedent("""\
-                Warning: The VM may be in a suspended
-                state until this question is answered.""").strip()
+            if not qid in answered.keys():
+                print('\n')
+                print('\n'.join(textwrap.wrap(host.runtime.question.text, 80)))
+                choices = {}
+                for option in host.runtime.question.choice.choiceInfo:
+                    choices.update({option.key : option.label})
+                    sys.stdout.write('\t%s: %s' % (option.key, option.label))
 
-            print(textwrap.fill(warn, width=80))
+                warn = textwrap.dedent("""\
+                    Warning: The VM may be in a suspended
+                    state until this question is answered.""").strip()
 
-            while True:
-                answer = raw_input('\nPlease select number: ').strip()
+                print(textwrap.fill(warn, width=80))
 
-                # check if answer is an appropriate number
-                if int(answer) <= len(choices.keys()) - 1:
-                    break
-                else:
-                    continue
+                while True:
+                    answer = raw_input('\nPlease select number: ').strip()
 
-            host.AnswerVM(qid, str(answer))
+                    # check if answer is an appropriate number
+                    if int(answer) <= len(choices.keys()) - 1:
+                        break
+                    else:
+                        continue
+
+                if answer:
+                    host.AnswerVM(qid, str(answer))
+                    answered.update({qid:answer})
+                    return answered
 
 
     def upload_iso(self, **kwargs):
@@ -114,32 +120,32 @@ class VMConfig(Query, Logger):
         """
         Method monitors the state of called task and outputs the current status.
         Some tasks require that questions be answered before completion, and are
-        optional arguments in the case that some tasks don't require them.  The
-        VM object is required if the question argument is True.
+        optional arguments in the case that some tasks don't require them. It
+        will continually check for questions while in progress. The VM object is
+        required if the question argument is True.
 
         Args:
             task (obj):      TaskManager object
             question (bool): Enable or Disable Question
             host (obj):      VirtualMachine object
         """
+        # keep track of answered questions
+        answered = {}
 
         while task.info.state == 'running':
             while task.info.progress:
-                # Continually check to see if a question was raised.
                 if question and host:
-                    self.question_and_answer(host)
-                # Ensure it's an integer before printing, otherwise None
-                # Tracebacks appear.
+                    result = self.question_and_answer(host, **answered)
+                    if result:
+                        answered.update(result)
                 if isinstance(task.info.progress, int):
                     sys.stdout.write(
-                        '\r[' + task.info.state + '] | ' +
-                        str(task.info.progress)
+                        '\r[' + task.info.state + '] | ' + str(task.info.progress)
                     )
                     sys.stdout.flush()
                     if task.info.progress == 100:
                         sys.stdout.write(
-                            '\r[' + task.info.state + '] | ' +
-                            str(task.info.progress)
+                            '\r[' + task.info.state + '] | ' + str(task.info.progress)
                         )
                         sys.stdout.flush()
                         break
@@ -147,24 +153,15 @@ class VMConfig(Query, Logger):
                     sys.stdout.flush()
                     break
 
-        print()
-
         if task.info.state == 'error':
-            sys.stdout.write(
-                '\r[' + task.info.state + '] | ' + task.info.error.msg
-            )
-            self.logger.info('\r[' + task.info.state + '] | ' + task.info.error.msg)
+            sys.stdout.write('\r[' + task.info.state + '] | ' + task.info.error.msg + '\n')
+            self.logger.info('[' + task.info.state + '] | ' + task.info.error.msg)
             sys.stdout.flush()
 
         if task.info.state == 'success':
-            sys.stdout.write(
-                '\r[' + task.info.state + '] | ' +
-                'task successfully completed.'
-            )
-            self.logger.info('task successfully completed')
+            sys.stdout.write('\r[' + task.info.state + '] | task successfully completed.\n')
+            self.logger.info('[' + task.info.state + '] | task successfully completed.')
             sys.stdout.flush()
-
-        print()
 
 
     @classmethod
