@@ -1,0 +1,4 @@
+# api.wsgi
+import sys
+sys.path.insert(0, '/path/to/vctools')
+from api import api as application
