@@ -128,7 +128,7 @@ Here's a quick way to set it up in the Python intepreter and then you
 can move freely around the interface. The commands dir() and getattr()
 are very helpful.
 
-    from pyvmomi import vim
+    from pyVmomi import vim
     from vctools.auth import Auth
     from vctools.query import Query
     auth = Auth(<vcenter_host>)
@@ -142,7 +142,7 @@ are very helpful.
         auth.session, auth.session.content.rootFolder, [vim.VirtualMachine], True
     )
 
-    clusters = self.query.create_container(
+    clusters = query.create_container(
         auth.session, auth.session.content.rootFolder, [vim.ComputeResource], True
     )
 
