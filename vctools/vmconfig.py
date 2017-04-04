@@ -6,6 +6,7 @@ import textwrap
 import sys
 from random import uniform
 import requests
+import time
 from pyVmomi import vim # pylint: disable=E0611
 from vctools.query import Query
 from vctools import Logger
@@ -166,6 +167,9 @@ class VMConfig(Query, Logger):
                 else:
                     sys.stdout.flush()
                     break
+
+        # pause method to ensure a state of error or success is caught.
+        time.sleep(5)
 
         if task.info.state == 'error':
             sys.stdout.write('\r[' + task.info.state + '] | ' + task.info.error.msg + '\n')
