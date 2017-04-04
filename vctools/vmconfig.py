@@ -172,8 +172,15 @@ class VMConfig(Query, Logger):
         time.sleep(5)
 
         if task.info.state == 'error':
-            sys.stdout.write('\r[' + task.info.state + '] | ' + task.info.error.msg + '\n')
-            self.logger.info('[' + task.info.state + '] | ' + task.info.error.msg)
+            # collect all the error messages we can find
+            errors = []
+            errors.append(task.info.error.msg)
+
+            for items in task.info.error.faultMessage:
+                errors.append(items.message)
+
+            sys.stdout.write('\r[' + task.info.state + '] | ' + ' '.join(errors) + '\n')
+            self.logger.info('[' + task.info.state + '] | ' + ' '.join(errors))
             sys.stdout.flush()
 
         if task.info.state == 'success':
