@@ -8,6 +8,7 @@ https://github.com/mdechiaro/vctools/
 """
 # pylint: disable=no-name-in-module
 from __future__ import print_function
+from __future__ import division
 import logging
 from getpass import getuser
 import os
@@ -576,7 +577,7 @@ class VCTools(Logger):
                 if self.opts.device == 'disk':
                     disk_cfg_opts = {}
                     # KB
-                    tobytes = 1024*1024
+                    tokbytes = 1024*1024
                     label = self.opts.disk_prefix + ' ' + str(self.opts.disk_id)
                     try:
                         key, controller = self.query.get_key(host, label)
@@ -585,28 +586,38 @@ class VCTools(Logger):
                     if self.opts.disk_id:
                         for item in host.config.hardware.device:
                             if label == item.deviceInfo.label:
-                                if self.opts.sizeGB:
-                                    if self.opts.sizeGB * tobytes > item.capacityInKB:
-                                        filename = item.backing.fileName
-                                        disk_cfg_opts.update(
-                                            {
-                                                'size' : self.opts.sizeGB * tobytes,
-                                                'key' : key,
-                                                'controller' : controller,
-                                                'unit' : item.unitNumber,
-                                                'filename' : filename,
-                                            }
+                                disk_new_size = self.opts.sizeGB * tokbytes
+                                if disk_new_size == item.capacityInKB:
+                                    raise ValueError(
+                                        'New size and existing size are equal'.format()
+                                    )
+                                elif disk_new_size < item.capacityInKB:
+                                    raise ValueError(
+                                        'Size {0} does not exceed {1}'.format(
+                                            disk_new_size, item.capacityInKB
                                         )
-                                    elif self.opts.sizeGB == item.capacityInKB:
-                                        raise ValueError(
-                                            'New size and existing size are equal'.format()
+                                    )
+                                disk_delta = disk_new_size - item.capacityInKB
+                                ds_capacity_kb = item.backing.datastore.summary.capacity / 1024
+                                ds_free_kb = item.backing.datastore.summary.freeSpace / 1024
+                                threshold_pct = 0.10
+                                if (ds_free_kb - disk_delta) / ds_capacity_kb < threshold_pct:
+                                    raise ValueError(
+                                        '{0} {1} disk space low, aborting.'.format(
+                                            host.resourcePool.parent.name,
+                                            item.backing.datastore.name
                                         )
-                                    else:
-                                        raise ValueError(
-                                            'Size {0} does not exceed {1}'.format(
-                                                self.opts.sizeGB * tobytes, item.capacityInKB
-                                                )
-                                        )
+                                    )
+                                else:
+                                    disk_cfg_opts.update(
+                                        {
+                                            'size' : disk_new_size,
+                                            'key' : key,
+                                            'controller' : controller,
+                                            'unit' : item.unitNumber,
+                                            'filename' : item.backing.fileName
+                                        }
+                                    )
 
                         if disk_cfg_opts:
                             devices.append(self.vmcfg.disk_config(edit=edit, **disk_cfg_opts))
