@@ -342,15 +342,28 @@ class Query(Logger):
         cfg['vmconfig']['numCPUs'] = cfg['vmconfig'].pop('numCPU')
         cfg['vmconfig']['nics'] = {}
         cfg['vmconfig']['disks'] = {}
+        cfg['vmconfig']['cluster'] = virtmachine.resourcePool.parent.name
         for item in virtmachine.config.hardware.device:
             if 'Hard disk' in item.deviceInfo.label:
                 if not item.capacityInBytes:
                     # try using the KiloBytes parameter if Bytes is None
                     capacity = item.capacityInKB / 1024 / 1024
-                    cfg['vmconfig']['disks'].update({item.deviceInfo.label : int(capacity)})
+                    cfg['vmconfig']['disks'].update({
+                        item.deviceInfo.label : {
+                            'capacityGB' : int(capacity),
+                            'datastore' : item.backing.datastore.name,
+                            'thin' : item.backing.thinProvisioned,
+                        },
+                    })
                 else:
                     capacity = item.capacityInBytes / 1024 / 1024 / 1024
-                    cfg['vmconfig']['disks'].update({item.deviceInfo.label : int(capacity)})
+                    cfg['vmconfig']['disks'].update({
+                        item.deviceInfo.label : {
+                            'capacityGB' : int(capacity),
+                            'datastore' : item.backing.datastore.name,
+                            'thin' : item.backing.thinProvisioned,
+                        },
+                    })
             elif 'Network adapter' in item.deviceInfo.label:
                 cfg['vmconfig']['nics'].update({
                     item.deviceInfo.label : [
