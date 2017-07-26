@@ -210,6 +210,10 @@ class ArgParser(Logger):
             '--datacenter', metavar='', default='Linux',
             help='vCenter Datacenter. default: %(default)s'
         )
+        create_parser.add_argument(
+            '--power', action='store_true', default=True,
+            help='Power on the VM after creation. default: %(default)s'
+        )
 
         if defaults:
             create_parser.set_defaults(**defaults)
