@@ -3,16 +3,11 @@
 """ An API for curl enthusiasts."""
 from __future__ import print_function
 import os
-import logging
 import subprocess
 import textwrap
-import yaml
-from flask import Flask, request, jsonify
-from pyVmomi import vim
+from flask import Flask, request
 #
-from vctools.auth import Auth
 from vctools.query import Query
-from vctools.vmconfig import VMConfig
 
 api = Flask(__name__)
 # allow trailing slash or not

@@ -50,7 +50,12 @@ class VCTools(Logger):
 
         These containers can then be queried to obtain different information
         about an object.
+            vim.Datacenter
+            vim.ComputeResource
+            vim.Folder
+            vim.VirtualMachine
         """
+
 
         self.datacenters = self.query.create_container(
             self.auth.session, self.auth.session.content.rootFolder,
@@ -127,7 +132,6 @@ class VCTools(Logger):
             datastore = spec['vmconfig']['datastore']
             folder = spec['vmconfig']['folder']
 
-
             self.logger.info('vmconfig %s', server_cfg)
             cluster_obj = Query.get_obj(self.clusters.view, cluster)
 
@@ -166,7 +170,6 @@ class VCTools(Logger):
                 nic_cfg_opts = {}
                 nic_cfg_opts.update({'container' : cluster_obj.network, 'network' : nic})
                 devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
-                #devices.append(self.vmcfg.nic_config(cluster_obj.network, nic))
 
             spec['vmconfig'].update({'deviceChange':devices})
 
@@ -191,7 +194,7 @@ class VCTools(Logger):
 
             # create a boot iso
             if spec.get('mkbootiso', None):
-               # if the guestId matches a default os config, then merge it
+                # if the guestId matches a default os config, then merge it
                 for key, dummy in spec['mkbootiso']['defaults'].iteritems():
                     if key == spec['vmconfig']['guestId']:
                         spec['mkbootiso'] = self.dict_merge(
