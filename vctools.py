@@ -270,6 +270,7 @@ class VCTools(Logger):
             names (tuple): a tuple of VM names in vCenter.
         """
         for name in names:
+            print('Umount ISO from %s' % (name))
             host = self.query.get_obj(self.virtual_machines.view, name)
 
             key, controller = Query.get_key(host, 'CD/DVD')
@@ -300,9 +301,15 @@ class VCTools(Logger):
                 uploaded.  The path for each iso should be absolute.
         """
         for iso in isos:
-            self.logger.info('uploading ISO: %s', iso)
-            self.logger.info('file size: %s', self.query.disk_size_format(os.path.getsize(iso)))
-            self.logger.info('remote location: [%s] %s', datastore, dest)
+            print(
+                'Uploading ISO: %s, file size: %s, remote location: [%s] %s' % (
+                    iso, self.query.disk_size_format(os.path.getsize(iso)), datastore, dest
+                )
+            )
+            self.logger.info(
+                'Uploading ISO: %s, file size: %s, remote location: [%s] %s',
+                iso, self.query.disk_size_format(os.path.getsize(iso)), datastore, dest
+            )
             upload_args = {}
 
             # pylint: disable=protected-access

@@ -121,14 +121,20 @@ class VMConfig(Query, Logger):
         params = {'dcPath' : datacenter, 'dsName' : datastore}
         url = 'https://' + host + dest_folder + '/' + iso_name
 
-        with open(iso, 'rb') as data:
-            response = requests.put(
-                url, params=params, cookies=cookie, data=data, verify=verify
-            )
+        try:
+            with open(iso, 'rb') as data:
+                response = requests.put(
+                    url, params=params, cookies=cookie, data=data, verify=verify
+                )
+            self.logger.info('status: %s', response.status_code)
+            self.logger.debug(response.status_code, kwargs)
+            return response.status_code
 
-        self.logger.info('status: %s', response.status_code)
-        self.logger.debug(response.status_code, kwargs)
-        return response.status_code
+        except requests.exceptions.ConnectionError as err:
+            self.logger.error(err, exc_info=False)
+            self.logger.error('%s %s %s %s', url, params, cookie, verify)
+            print(err)
+
 
 
     def task_monitor(self, task, question=True, host=False):
@@ -143,6 +149,8 @@ class VMConfig(Query, Logger):
             task (obj):      TaskManager object
             question (bool): Enable or Disable Question
             host (obj):      VirtualMachine object
+        Returns:
+            boolean (bool):  True if successful or False if error
         """
         # keep track of answered questions
         answered = {}
@@ -182,12 +190,13 @@ class VMConfig(Query, Logger):
             sys.stdout.write('\r[' + task.info.state + '] | ' + ' '.join(errors) + '\n')
             self.logger.info('[' + task.info.state + '] | ' + ' '.join(errors))
             sys.stdout.flush()
+            return False
 
         if task.info.state == 'success':
             sys.stdout.write('\r[' + task.info.state + '] | task successfully completed.\n')
             self.logger.info('[' + task.info.state + '] | task successfully completed.')
             sys.stdout.flush()
-
+            return True
 
     @classmethod
     def assign_ip(cls, dhcp=False, *static):
@@ -474,6 +483,8 @@ class VMConfig(Query, Logger):
             pool (obj):      ResourcePool object
             datastore (str): Datastore for vmx files
             config (dict):   A dict containing vim.vm.ConfigSpec attributes
+        Returns:
+            result (bool): Result of task_monitor
         """
 
         vmxfile = vim.vm.FileInfo(vmPathName='[' + datastore + ']')
@@ -483,7 +494,8 @@ class VMConfig(Query, Logger):
         self.logger.info('%s', config['name'])
         self.logger.debug('%s %s %s %s', folder, datastore, pool, config)
 
-        self.task_monitor(task, False)
+        result = self.task_monitor(task, False)
+        return result
 
 
     def reconfig(self, host, **config):
@@ -494,11 +506,14 @@ class VMConfig(Query, Logger):
             host (obj):    VirtualMachine object
             config (dict): A dictionary of vim.vm.ConfigSpec attributes and
                 their values.
+        Returns:
+            result (bool): Result of task_monitor
         """
 
         self.logger.debug('%s %s', host.name, config)
         task = host.ReconfigVM_Task(vim.vm.ConfigSpec(**config))
-        self.task_monitor(task, True, host)
+        result = self.task_monitor(task, True, host)
+        return result
 
 
     def power(self, host, state):
