@@ -24,6 +24,7 @@ from vctools.auth import Auth
 from vctools.vmconfig import VMConfig
 from vctools.query import Query
 from vctools.prompts import Prompts
+from vctools.cfgchecker import CfgCheck
 # pylint: disable=import-self
 from vctools import Logger
 
@@ -71,88 +72,6 @@ class VCTools(Logger):
             [vim.VirtualMachine], True
         )
 
-    # pylint: disable=too-many-branches, too-many-statements
-    def cfg_checker(self, cfg):
-        """
-        Checks config for a valid configuration, and prompts user if
-        information is missing
-
-        Args:
-            cfg    (obj): Yaml object
-        """
-        # name
-        if 'vmconfig' in cfg:
-
-            # name
-            if 'name' in cfg['vmconfig']:
-                name = cfg['vmconfig']['name']
-            else:
-                name = Prompts.name()
-            # guestid
-            if 'guestId' in cfg['vmconfig']:
-                guestid = cfg['vmconfig']['guestId']
-            else:
-                guestid = Prompts.guestids()
-                print('\n%s selected.' % (guestid))
-            # cluster
-            if 'cluster' in cfg['vmconfig']:
-                cluster = cfg['vmconfig']['cluster']
-                cluster_obj = Query.get_obj(self.clusters.view, cluster)
-            else:
-                cluster = Prompts.clusters(self.auth.session)
-                cluster_obj = Query.get_obj(self.clusters.view, cluster)
-                print('\n%s selected.' % (cluster))
-            # datastore
-            if 'datastore' in cfg['vmconfig']:
-                datastore = cfg['vmconfig']['datastore']
-            else:
-                datastore = Prompts.datastores(self.auth.session, cluster)
-                print('\n%s selected.' % (datastore))
-            # datacenter
-            if not self.opts.datacenter:
-                datacenter = Prompts.datacenters(self.auth.session)
-                print('\n%s selected.' % (datacenter))
-            else:
-                datacenter = self.opts.datacenter
-            # nics
-            if 'nics' in cfg['vmconfig']:
-                nics = cfg['vmconfig']['nics']
-                print('nics: %s' % (nics))
-            else:
-                nics = Prompts.networks(cluster_obj)
-                print('\n%s selected.' % (','.join(nics)))
-            # folder
-            if 'folder' in cfg['vmconfig']:
-                folder = cfg['vmconfig']['folder']
-            else:
-                folder = Prompts.folders(self.auth.session, datacenter)
-                print('\n%s selected.' % (folder))
-        else:
-            name = Prompts.name()
-            guestid = Prompts.guestids()
-            print('\n%s selected.' % (guestid))
-            cluster = Prompts.clusters(self.auth.session)
-            print('\n%s selected.' % (cluster))
-            datastore = Prompts.datastores(self.auth.session, cluster)
-            print('\n%s selected.' % (datastore))
-            datacenter = Prompts.datacenters(self.auth.session)
-            print('\n%s selected.' % (datacenter))
-            nics = Prompts.networks(cluster_obj)
-            print('\n%s selected.' % (','.join(nics)))
-            folder = Prompts.folders(self.auth.session, datacenter)
-            print('\n%s selected.' % (folder))
-
-        output = {
-            'name': name,
-            'guestId': guestid,
-            'cluster': cluster,
-            'datastore': datastore,
-            'nics': nics,
-            'folder': folder
-        }
-
-        return output
-
     def dict_merge(self, first, second):
         """
         Method deep merges two dictionaries of unknown value types and
@@ -196,7 +115,7 @@ class VCTools(Logger):
 
             spec = self.dict_merge(argparser.dotrc, yaml.load(cfg))
             # sanitize the config and prompt for more info if necessary
-            results = self.cfg_checker(spec)
+            results = CfgCheck.cfg_checker(spec, self.auth, self.clusters, self.opts.datacenter)
 
             spec['vmconfig'].update(self.dict_merge(spec['vmconfig'], results))
 
