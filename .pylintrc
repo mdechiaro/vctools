@@ -8,7 +8,4 @@ max-statements = 200
 max-nested-blocks = 10
 min-public-methods = 1
 [MESSAGES CONTROL]
-disable=no-name-in-module,protected-access,invalid-name,no-member
-
-[TYPECHECK]
-ignored-classes=Plugins
+disable=protected-access,no-member,no-else-return,invalid-name
