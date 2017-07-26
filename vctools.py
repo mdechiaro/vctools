@@ -189,47 +189,6 @@ class VCTools(Logger):
 
             self.vmcfg.create(folder, datastore, pool, **spec['vmconfig'])
 
-            if 'vctools' in spec:
-                # run additional argparse options if declared in yaml cfg.
-                if 'upload' in spec['vctools']:
-                    datastore = argparser.dotrc['upload']['datastore']
-                    dest = argparser.dotrc['upload']['dest']
-                    verify_ssl = bool(argparser.dotrc['upload']['verify_ssl'])
-
-                    # trailing slash is in upload method, so we strip it out
-                    if dest.endswith('/'):
-                        dest = dest.rstrip('/')
-
-                    # path is relative (strip first character)
-                    if dest.startswith('/'):
-                        dest = dest.lstrip('/')
-
-                    # verify_ssl needs to be a boolean value.
-                    if verify_ssl:
-                        verify_ssl = bool(argparser.dotrc['upload']['verify_ssl'])
-
-                    if iso_path:
-                        iso = iso_path + '/' + iso_name
-                    else:
-                        iso = spec['upload']['iso']
-
-                    self.upload_wrapper(datastore, dest, verify_ssl, iso)
-                    print()
-
-                if 'mount' in spec['vctools']:
-                    datastore = argparser.dotrc['mount']['datastore']
-                    path = argparser.dotrc['mount']['path']
-                    name = spec['vmconfig']['name']
-
-                    if not path.endswith('.iso'):
-                        if path.endswith('/'):
-                            path = path + name + '.iso'
-                        else:
-                            path = path +'/'+ name +'.iso'
-
-                    # path is relative (strip first character)
-                    if path.startswith('/'):
-                        path = path.lstrip('/')
             # create a boot iso
             if spec.get('mkbootiso', None):
                # if the guestId matches a default os config, then merge it
@@ -239,18 +198,11 @@ class VCTools(Logger):
                             spec['mkbootiso']['defaults'][key], spec['mkbootiso']
                         )
 
-                    self.mount_wrapper(datastore, path, name)
-                    print()
                         # cleanup dict for server config
                         del spec['mkbootiso']['defaults']
 
-                if 'power' in spec['vctools']:
-                    state = spec['vctools']['power']
-                    name = spec['vmconfig']['name']
                         self.logger.info('mkbootiso %s', spec['mkbootiso'])
 
-                    self.power_wrapper(state, name)
-                    print()
                 mkbootiso_url = 'https://{0}/api/mkbootiso'.format(socket.getfqdn())
                 headers = {'Content-Type' : 'application/json'}
                 requests.post(mkbootiso_url, json=spec['mkbootiso'], headers=headers, verify=False)
@@ -399,10 +351,102 @@ class VCTools(Logger):
                             yaml.dump(cfg, default_flow_style=False),
                             file=open(filename, 'w')
                         )
+
+                        # hooks for upload, mount, power
+                        if self.opts.upload:
+                            datastore = argparser.dotrc['upload']['datastore']
+                            dest = argparser.dotrc['upload']['dest']
+                            iso_path = '/tmp'
+                            verify_ssl = bool(argparser.dotrc['upload']['verify_ssl'])
+                            iso_name = cfg['vmconfig']['name'] + '.iso'
+                            # trailing slash is in upload method, so we strip it out
+                            if dest.endswith('/'):
+                                dest = dest.rstrip('/')
+
+                            # path is relative (strip first character)
+                            if dest.startswith('/'):
+                                dest = dest.lstrip('/')
+
+                            if iso_path:
+                                iso = iso_path + '/' + iso_name
+                            else:
+                                iso = cfg['upload']['iso']
+
+                            self.upload_wrapper(datastore, dest, verify_ssl, iso)
+
+                        if self.opts.mount:
+                            datastore = argparser.dotrc['mount']['datastore']
+                            path = argparser.dotrc['mount']['path']
+                            name = cfg['vmconfig']['name']
+
+                            if not path.endswith('.iso'):
+                                if path.endswith('/'):
+                                    path = path + name + '.iso'
+                                else:
+                                    path = path +'/'+ name +'.iso'
+
+                            # path is relative (strip first character)
+                            if path.startswith('/'):
+                                path = path.lstrip('/')
+
+                            self.mount_wrapper(datastore, path, name)
+
+                        if self.opts.power:
+                            state = 'on'
+                            name = cfg['vmconfig']['name']
+                            self.power_wrapper(state, name)
+
                 else:
                     # allow for prompts for vm creation if necessary
                     self.create_wrapper()
 
+                    # hooks for upload, mount, power
+                    if self.opts.mount:
+                        datastore = argparser.dotrc['mount']['datastore']
+                        path = argparser.dotrc['mount']['path']
+                        name = cfg['vmconfig']['name']
+
+                        if not path.endswith('.iso'):
+                            if path.endswith('/'):
+                                path = path + name + '.iso'
+                            else:
+                                path = path +'/'+ name +'.iso'
+
+                        # path is relative (strip first character)
+                        if path.startswith('/'):
+                            path = path.lstrip('/')
+
+                        self.mount_wrapper(datastore, path, name)
+
+                    if self.opts.upload:
+                        datastore = argparser.dotrc['upload']['datastore']
+                        dest = argparser.dotrc['upload']['dest']
+                        iso_path = '/tmp'
+                        verify_ssl = bool(argparser.dotrc['upload']['verify_ssl'])
+                        iso_name = cfg['vmconfig']['name'] + '.iso'
+                        # trailing slash is in upload method, so we strip it out
+                        if dest.endswith('/'):
+                            dest = dest.rstrip('/')
+
+                        # path is relative (strip first character)
+                        if dest.startswith('/'):
+                            dest = dest.lstrip('/')
+
+                        # verify_ssl needs to be a boolean value.
+                        if verify_ssl:
+                            verify_ssl = bool(argparser.dotrc['upload']['verify_ssl'])
+
+                        if iso_path:
+                            iso = iso_path + '/' + iso_name
+                        else:
+                            iso = cfg['upload']['iso']
+
+                        self.upload_wrapper(datastore, dest, verify_ssl, iso)
+
+                    if self.opts.power:
+                        state = 'on'
+                        name = cfg['vmconfig']['name']
+                        self.power_wrapper(state, name)
 
             if self.opts.cmd == 'mount':
                 self.mount_wrapper(self.opts.datastore, self.opts.path, *self.opts.name)
