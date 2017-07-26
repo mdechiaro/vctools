@@ -14,15 +14,16 @@ from getpass import getuser
 import os
 import sys
 import copy
+import socket
 import yaml
 #
+import requests
 from pyVmomi import vim
 from vctools.argparser import ArgParser
 from vctools.auth import Auth
 from vctools.vmconfig import VMConfig
 from vctools.query import Query
 from vctools.prompts import Prompts
-from vctools.plugins.mkbootiso import MkBootISO
 # pylint: disable=import-self
 from vctools import Logger
 
@@ -269,50 +270,6 @@ class VCTools(Logger):
 
             self.vmcfg.create(folder, datastore, pool, **spec['vmconfig'])
 
-            # if mkbootiso is in the spec, then create the iso
-            if 'mkbootiso' in spec:
-
-                if 'template' in spec['mkbootiso']:
-                    tmpl = MkBootISO.load_template(
-                        spec['mkbootiso'], spec['mkbootiso']['template']
-                    )
-                    spec['mkbootiso'].update(self.dict_merge(spec['mkbootiso'], tmpl))
-
-
-                # strip out templates for cleanliness
-                spec['mkbootiso'] = {
-                    k:v for k, v in spec['mkbootiso'].iteritems() if 'template' not in k
-                }
-                server_cfg['mkbootiso'] = {}
-                server_cfg['mkbootiso'].update(spec['mkbootiso'])
-
-                mkbootiso = spec['mkbootiso']
-                iso_name = spec['vmconfig']['name'] + '.iso'
-
-                # where mkbootiso should write the iso file
-                if 'destination' in spec['mkbootiso']:
-                    iso_path = spec['mkbootiso']['destination']
-                else:
-                    iso_path = '/tmp'
-
-                if 'raw' in mkbootiso:
-                    MkBootISO.updateiso(
-                        mkbootiso['source'], mkbootiso['ks'], sanity=False, raw=mkbootiso['raw']
-                    )
-                    self.logger.info(
-                        'creating boot ISO for %s raw: %s',
-                        spec['vmconfig']['name'], mkbootiso['raw'],
-                    )
-                else:
-                    MkBootISO.updateiso(
-                        mkbootiso['source'], mkbootiso['ks'], **mkbootiso['options']
-                    )
-                    self.logger.info(
-                        'creating boot ISO for %s config: %s',
-                        spec['vmconfig']['name'], spec['mkbootiso'],
-                    )
-                MkBootISO.createiso(mkbootiso['source'], iso_path, iso_name)
-
             if 'vctools' in spec:
                 # run additional argparse options if declared in yaml cfg.
                 if 'upload' in spec['vctools']:
@@ -354,16 +311,31 @@ class VCTools(Logger):
                     # path is relative (strip first character)
                     if path.startswith('/'):
                         path = path.lstrip('/')
+            # create a boot iso
+            if spec.get('mkbootiso', None):
+               # if the guestId matches a default os config, then merge it
+                for key, dummy in spec['mkbootiso']['defaults'].iteritems():
+                    if key == spec['vmconfig']['guestId']:
+                        spec['mkbootiso'] = self.dict_merge(
+                            spec['mkbootiso']['defaults'][key], spec['mkbootiso']
+                        )
 
                     self.mount_wrapper(datastore, path, name)
                     print()
+                        # cleanup dict for server config
+                        del spec['mkbootiso']['defaults']
 
                 if 'power' in spec['vctools']:
                     state = spec['vctools']['power']
                     name = spec['vmconfig']['name']
+                        self.logger.info('mkbootiso %s', spec['mkbootiso'])
 
                     self.power_wrapper(state, name)
                     print()
+                mkbootiso_url = 'https://{0}/api/mkbootiso'.format(socket.getfqdn())
+                headers = {'Content-Type' : 'application/json'}
+                requests.post(mkbootiso_url, json=spec['mkbootiso'], headers=headers, verify=False)
+                server_cfg.update({'mkbootiso':spec['mkbootiso']})
 
             return server_cfg
 
