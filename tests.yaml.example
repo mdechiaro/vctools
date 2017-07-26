@@ -1,0 +1,52 @@
+---
+# configs for various tests.
+# Remove blocks for tests that should be skipped, and connect is a required step.
+connect:
+  host: hostname.domain.com
+  port: 443
+  domain: adlocal
+create:
+  vmconfig:
+    annotation: unit testing
+    cluster: 1234_cluster
+    cpuHotAddEnabled: true
+    datacenter: Linux
+    datastore: super_ssd_datastore
+    disks:
+    - 50
+    - 25
+    folder: Linux
+    guestId: rhel7_64Guest
+    memoryHotAddEnabled: true
+    memoryMB: 4096
+    name: hostname
+    nics:
+    - vlan_1234_abc_net
+    numCPUs: 2
+mkbootiso:
+  ks: http://ks.domain.com/rhel7-ks.cfg
+  options:
+    biosdevname: '0'
+    hostname: hostname.domain.com
+    gateway: 10.10.10.1
+    ip: 10.10.10.10
+    nameserver: 4.2.2.2
+    net.ifnames: '0'
+    netmask: 255.255.255.0
+  source: /opt/isos/rhel7
+  output: /tmp
+mount:
+  name: hostname
+  path: /ISOs/OS/mkbootiso
+  datastore: ISO_Templates
+power:
+  name: hostname
+  state: 'on'
+umount:
+  name: hostname
+upload:
+  datacenter: Linux
+  dest_folder: /ISOs/OS/mkbootiso
+  datastore: ISO_Templates
+  verify: False
+  iso: /tmp/hostname.domain.com.iso
