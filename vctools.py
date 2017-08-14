@@ -204,8 +204,9 @@ class VCTools(Logger):
                         # cleanup dict for server config
                         del spec['mkbootiso']['defaults']
 
-                        self.logger.info('mkbootiso %s', spec['mkbootiso'])
 
+                spec['mkbootiso'].update({'filename' : spec['vmconfig']['name'] + '.iso'})
+                self.logger.info('mkbootiso %s', spec['mkbootiso'])
                 mkbootiso_url = 'https://{0}/api/mkbootiso'.format(socket.getfqdn())
                 headers = {'Content-Type' : 'application/json'}
                 requests.post(mkbootiso_url, json=spec['mkbootiso'], headers=headers, verify=False)

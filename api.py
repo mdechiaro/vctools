@@ -103,18 +103,20 @@ def mkbootiso():
             append initrd=initrd.img {1} {2}
 
             """.format(__name__, 'ks=' + data['ks'],
-                   ' '.join("%s=%s" % (key, val) for (key, val) in data['options'].iteritems()))
+                       ' '.join("%s=%s" % (key, val) for (key, val) in data['options'].iteritems()))
 
         # update the iso
         with open(data['source'] + '/isolinux/isolinux.cfg', 'w') as iso_cfg:
             iso_cfg.write(textwrap.dedent(label))
 
+        if not data.get('filename', None):
+            data.update({'filename' : data['options']['hostname'] + '.iso'})
+
         cmd = """
               /usr/bin/genisoimage -quiet -J -T -o {0} -b isolinux/isolinux.bin
               -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R
               -m TRANS.TBL -graft-points {1}""".format(
-                  data['output'] + '/' + data['options']['hostname'] + '.iso', data['source']
-        )
+                  data['output'] + '/' + data['filename'], data['source'])
 
         # create the iso
         create_iso = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, shell=False)
@@ -128,11 +130,11 @@ def mkbootiso():
 
         if create_iso.returncode == 0:
             iso_size = Query.disk_size_format(
-                os.stat(data['output'] + '/' + data['options']['hostname'] + '.iso').st_size
+                os.stat(data['output'] + '/' + data['filename']).st_size
             )
 
             return '{0} {1}\n'.format(
-                data['output'] + '/' + data['options']['hostname'] + '.iso', iso_size
+                data['output'] + '/' + data['filename'], iso_size
             )
 
 
