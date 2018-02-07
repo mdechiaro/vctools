@@ -204,6 +204,11 @@ class VCTools(Logger):
                         # cleanup dict for server config
                         del spec['mkbootiso']['defaults']
 
+                if not spec['mkbootiso'].get('ip', None):
+                    ipaddr, netmask, gateway = Prompts.ip_info()
+                    spec['mkbootiso']['options'].update({
+                        'ip' : ipaddr, 'netmask' : netmask, 'gateway' : gateway
+                    })
 
                 spec['mkbootiso'].update({'filename' : spec['vmconfig']['name'] + '.iso'})
                 self.logger.info('mkbootiso %s', spec['mkbootiso'])

@@ -3,6 +3,7 @@
 """Prompts for User Inputs"""
 from __future__ import print_function
 import sys
+import re
 from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.query import Query
 from vctools import Logger
@@ -266,3 +267,41 @@ class Prompts(Logger):
 
         cls.logger.info(selected_guestid)
         return selected_guestid
+
+    @classmethod
+    def ip_info(cls):
+        """ Method will prompt for basic IP information """
+        while True:
+            ipaddr = raw_input('\nPlease enter IP: ').strip()
+            if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', ipaddr):
+                if ipaddr.split('.')[3] == '1':
+                    print('IP ends in .1, which can potentially conflict with a gateway. Proceed?')
+                    answer = raw_input('\nConfirm yes or no: ').strip()
+                    if 'no' in answer:
+                        continue
+                    elif 'yes' in answer:
+                        break
+                    else:
+                        print('Invalid answer')
+                        continue
+                else:
+                    break
+            else:
+                print('Invalid address')
+                continue
+        while True:
+            netmask = raw_input('\nPlease enter Netmask: ').strip()
+            if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', netmask):
+                break
+            else:
+                print('Invalid address')
+                continue
+        while True:
+            gateway = raw_input('\nPlease enter Gateway: ').strip()
+            if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', gateway):
+                break
+            else:
+                print('Invalid address')
+                continue
+
+        return (ipaddr, netmask, gateway)
