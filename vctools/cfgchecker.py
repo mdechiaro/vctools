@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """ Checks the user config and prompts for more info"""
 from __future__ import print_function
+from pyVmomi import vim # pylint: disable=E0611
 from vctools.prompts import Prompts
 from vctools.query import Query
 
@@ -10,7 +11,7 @@ class CfgCheck(object):
         pass
 
     @staticmethod
-    def cfg_checker(cfg, auth, clusters, datacenter):
+    def cfg_checker(cfg, auth, opts):
         """
         Checks config for a valid configuration, and prompts user if
         information is missing
@@ -18,6 +19,10 @@ class CfgCheck(object):
         Args:
             cfg    (obj): Yaml object
         """
+        clusters = Query.create_container(
+            auth.session, auth.session.content.rootFolder,
+            [vim.ComputeResource], True
+        )
         # name
         if 'vmconfig' in cfg:
 
@@ -47,11 +52,11 @@ class CfgCheck(object):
                 datastore = Prompts.datastores(auth.session, cluster)
                 print('\n%s selected.' % (datastore))
             # datacenter
-            if not datacenter:
+            if not opts.datacenter:
                 datacenter = Prompts.datacenters(auth.session)
                 print('\n%s selected.' % (datacenter))
             else:
-                datacenter = datacenter
+                datacenter = opts.datacenter
             # nics
             if 'nics' in cfg['vmconfig']:
                 nics = cfg['vmconfig']['nics']
