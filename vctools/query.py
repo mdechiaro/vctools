@@ -27,6 +27,7 @@ class Query(Logger):
             if num < 1024.0:
                 return '%3.2f %s' % (num, attr)
             num /= 1024.0
+        return None
 
 
     @classmethod
@@ -75,8 +76,8 @@ class Query(Logger):
         """
         if view:
             return [getattr(obj, attr) for obj in container.view]
-        else:
-            return [getattr(obj, attr) for obj in container]
+
+        return [getattr(obj, attr) for obj in container]
 
 
     @classmethod
@@ -104,6 +105,7 @@ class Query(Logger):
                         if hasattr(item, 'childType'):
                             if item.name == name:
                                 return item
+        return None
 
     @classmethod
     def list_vm_folders(cls, container, datacenter):
@@ -155,6 +157,7 @@ class Query(Logger):
             for key, value in datastores.iteritems():
                 if value == most:
                     return key
+        return None
 
 
     @classmethod
@@ -212,6 +215,7 @@ class Query(Logger):
                 datastore_info.insert(0, header)
 
             return datastore_info
+        return None
 
 
     @classmethod
@@ -259,6 +263,7 @@ class Query(Logger):
                 else:
                     if virt.name == name:
                         return virt._moId
+        return None
 
 
     @classmethod
@@ -358,9 +363,7 @@ class Query(Logger):
                         ]
                     })
 
-        if not createcfg:
-            return cfg
-        else:
+        if createcfg:
             # make note of copy before overrides
             cfg['vmconfig'].update(
                 {'annotation' : 'vctools cfg copy {0}'.format(cfg['vmconfig']['name'])}
@@ -385,3 +388,5 @@ class Query(Logger):
             )
 
             return cfg
+
+        return cfg

@@ -7,7 +7,6 @@ from flask import Flask
 #
 from apis.mkbootiso import mkbootiso
 
-# pylint: disable=invalid-name
 vctools_api = Flask(__name__)
 
 # allow trailing slash or not

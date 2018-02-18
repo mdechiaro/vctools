@@ -6,24 +6,21 @@ operations inside VMWare vCenter.
 
 https://github.com/mdechiaro/vctools/
 """
-# pylint: disable=no-name-in-module
 from __future__ import print_function
 import logging
 from getpass import getuser
 import sys
 import yaml
 #
-from pyVmomi import vim
+from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.argparser import ArgParser
 from vctools.auth import Auth
 from vctools.vmconfig_helper import VMConfigHelper
 from vctools.query import Query
 from vctools.prompts import Prompts
 from vctools.cfgchecker import CfgCheck
-# pylint: disable=import-self
 from vctools import Logger
 
-# pylint: disable=too-many-instance-attributes
 class VCTools(Logger):
     """
     Main VCTools class.
@@ -246,8 +243,6 @@ class VCTools(Logger):
 
 
 if __name__ == '__main__':
-    # pylint: disable=invalid-name
-
     # setup argument parsing
     argparser = ArgParser()
     argparser.setup_args(**argparser.dotrc)
@@ -267,7 +262,6 @@ if __name__ == '__main__':
     logging.getLogger().addHandler(console)
 
     # force username on logs and apply to all handlers
-    # pylint: disable=too-few-public-methods
     class AddFilter(logging.Filter):
         """ Add filter class for adding attributes to logs """
         def filter(self, record):
@@ -277,5 +271,5 @@ if __name__ == '__main__':
     for handler in logging.root.handlers:
         handler.addFilter(AddFilter())
 
-    vc = VCTools(options)
-    sys.exit(vc.main())
+    vctools = VCTools(options)
+    sys.exit(vctools.main())

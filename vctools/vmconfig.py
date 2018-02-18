@@ -5,8 +5,8 @@ from __future__ import print_function
 import textwrap
 import sys
 from random import uniform
-import requests
 import time
+import requests
 from pyVmomi import vim # pylint: disable=E0611
 from vctools.query import Query
 from vctools import Logger
@@ -79,6 +79,8 @@ class VMConfig(Query, Logger):
             # pass onto next iteration during race condition in task_monitor while loop
             except AttributeError:
                 pass
+
+        return None
 
 
     def upload_iso(self, **kwargs):
@@ -234,6 +236,8 @@ class VMConfig(Query, Logger):
             nic.adapter.dnsServerList = [dns1, dns2]
 
             return nic
+
+        return nic
 
     @classmethod
     def scsi_config(cls, bus_number=0, shared_bus='noSharing'):

@@ -11,7 +11,6 @@ from vctools.query import Query
 
 mkbootiso = Blueprint('mkbootiso', __name__)
 
-# pylint: disable=inconsistent-return-statements
 @mkbootiso.route('/', methods=['GET', 'POST'])
 def create():
     """
@@ -116,3 +115,5 @@ def create():
             return '{0} {1}\n'.format(
                 data['output'] + '/' + data['filename'], iso_size
             )
+
+    return None
