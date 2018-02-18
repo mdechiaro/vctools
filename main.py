@@ -29,46 +29,8 @@ class VCTools(Logger):
     def __init__(self, opts):
         self.opts = opts
         self.auth = None
-        self.clusters = None
-        self.datacenters = None
-        self.folders = None
-        self.query = None
-        self.virtual_machines = None
         self.vmcfg = None
-
-    def create_containers(self):
-        """
-        Sets up different containers, or views, inside vSphere.
-
-        These containers can then be queried to obtain different information
-        about an object.
-            vim.Datacenter
-            vim.ComputeResource
-            vim.Folder
-            vim.VirtualMachine
-        """
-
-
-        self.datacenters = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
-            [vim.Datacenter], True
-        )
-
-        self.clusters = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
-            [vim.ComputeResource], True
-        )
-
-        self.folders = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
-            [vim.Folder], True
-        )
-
-        self.virtual_machines = self.query.create_container(
-            self.auth.session, self.auth.session.content.rootFolder,
-            [vim.VirtualMachine], True
-        )
-
+        self.call_count = None
 
     def main(self):
         """
@@ -83,9 +45,16 @@ class VCTools(Logger):
             self.auth.login(
                 self.opts.user, self.opts.passwd, self.opts.domain, self.opts.passwd_file
             )
-            self.query = Query()
-            self.create_containers()
+
+            self.call_count = self.auth.session.content.sessionManager.currentSession.callCount
+
+            virtual_machines_container = Query.create_container(
+                self.auth.session, self.auth.session.content.rootFolder,
+                [vim.VirtualMachine], True
+            )
+
             self.vmcfg = VMConfigHelper(self.auth, self.opts, argparser.dotrc)
+
             if self.opts.cmd == 'create':
                 if self.opts.config:
                     for cfg in self.opts.config:
@@ -130,7 +99,7 @@ class VCTools(Logger):
 
             if self.opts.cmd == 'add':
                 devices = []
-                hostname = self.query.get_obj(self.virtual_machines.view, self.opts.name)
+                hostname = Query.get_obj(virtual_machines_container.view, self.opts.name)
 
                 # nics
                 if self.opts.device == 'nic':
@@ -153,7 +122,7 @@ class VCTools(Logger):
                         self.vmcfg.reconfig(hostname, **{'deviceChange': devices})
 
             if self.opts.cmd == 'reconfig':
-                host = Query.get_obj(self.virtual_machines.view, self.opts.name)
+                host = Query.get_obj(virtual_machines_container.view, self.opts.name)
                 if self.opts.cfgs:
                     self.logger.info(
                         'reconfig: %s cfgs: %s', host.name,
@@ -168,10 +137,18 @@ class VCTools(Logger):
                     self.vmcfg.nic_recfg()
 
             if self.opts.cmd == 'query':
+                datacenters_container = Query.create_container(
+                    self.auth.session, self.auth.session.content.rootFolder,
+                    [vim.Datacenter], True
+                )
+                clusters_container = Query.create_container(
+                    self.auth.session, self.auth.session.content.rootFolder,
+                    [vim.ComputeResource], True
+                )
                 if self.opts.datastores:
                     if self.opts.cluster:
-                        datastores = self.query.return_datastores(
-                            self.clusters.view, self.opts.cluster
+                        datastores = Query.return_datastores(
+                            clusters_container.view, self.opts.cluster
                         )
 
                         for row in datastores:
@@ -180,8 +157,8 @@ class VCTools(Logger):
                         print('--cluster <name> required with --datastores flag')
                 if self.opts.folders:
                     if self.opts.datacenter:
-                        folders = self.query.list_vm_folders(
-                            self.datacenters.view, self.opts.datacenter
+                        folders = Query.list_vm_folders(
+                            datacenters_container.view, self.opts.datacenter
                         )
                         folders.sort()
                         for folder in folders:
@@ -189,21 +166,21 @@ class VCTools(Logger):
                     else:
                         print('--datacenter <name> required with --folders flag')
                 if self.opts.clusters:
-                    clusters = self.query.list_obj_attrs(self.clusters, 'name')
+                    clusters = Query.list_obj_attrs(clusters_container, 'name')
                     clusters.sort()
                     for cluster in clusters:
                         print(cluster)
                 if self.opts.networks:
                     if self.opts.cluster:
-                        cluster = self.query.get_obj(self.clusters.view, self.opts.cluster)
-                        networks = self.query.list_obj_attrs(cluster.network, 'name', view=False)
+                        cluster = Query.get_obj(clusters_container.view, self.opts.cluster)
+                        networks = Query.list_obj_attrs(cluster.network, 'name', view=False)
                         networks.sort()
                         for net in networks:
                             print(net)
                     else:
                         print('--cluster <name> required with --networks flag')
                 if self.opts.vms:
-                    vms = self.query.list_vm_info(self.datacenters.view, self.opts.datacenter)
+                    vms = Query.list_vm_info(datacenters_container.view, self.opts.datacenter)
                     for key, value in vms.iteritems():
                         print(key, value)
                 if self.opts.vmconfig:
@@ -211,8 +188,8 @@ class VCTools(Logger):
                         if self.opts.createcfg:
                             print(
                                 yaml.dump(
-                                    self.query.vm_config(
-                                        self.virtual_machines.view, name, self.opts.createcfg
+                                    Query.vm_config(
+                                        virtual_machines_container.view, name, self.opts.createcfg
                                     ),
                                     default_flow_style=False
                                 )
@@ -220,16 +197,18 @@ class VCTools(Logger):
                         else:
                             print(
                                 yaml.dump(
-                                    self.query.vm_config(self.virtual_machines.view, name),
+                                    Query.vm_config(virtual_machines_container.view, name),
                                     default_flow_style=False
                                 )
                             )
 
             self.auth.logout()
+            self.logger.info('Call count used this session: {0}'.format(self.call_count))
 
         except ValueError as err:
             self.logger.error(err, exc_info=False)
             self.auth.logout()
+            self.logger.info('Call count used this session: {0}'.format(self.call_count))
             sys.exit(3)
 
         except vim.fault.InvalidLogin as loginerr:
@@ -239,6 +218,7 @@ class VCTools(Logger):
         except KeyboardInterrupt as err:
             self.logger.error(err, exc_info=False)
             self.auth.logout()
+            self.logger.info('Call count used this session: {0}'.format(self.call_count))
             sys.exit(1)
 
 
