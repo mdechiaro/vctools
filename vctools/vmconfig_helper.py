@@ -140,6 +140,7 @@ class VMConfigHelper(VMConfig, Logger):
 
         pool = cluster_obj.resourcePool
 
+        self.logger.debug(folder, datastore, pool, devices, spec)
         self.create(folder, datastore, pool, **spec['vmconfig'])
 
         return spec
@@ -176,6 +177,7 @@ class VMConfigHelper(VMConfig, Logger):
             cdrom_cfg.append(self.cdrom_config(**cdrom_cfg_opts))
 
             config = {'deviceChange' : cdrom_cfg}
+            self.logger.debug(cdrom_cfg_opts, config)
             self.reconfig(host, **config)
 
 
@@ -190,6 +192,7 @@ class VMConfigHelper(VMConfig, Logger):
         for name in names:
             host = Query.get_obj(self.virtual_machines.view, name)
             print('%s changing power state to %s' % (name, state))
+            self.logger.debug(host, state)
             self.power(host, state)
 
 
@@ -220,6 +223,7 @@ class VMConfigHelper(VMConfig, Logger):
             #cdrom_cfg.append(self.cdrom_config(umount=True, key=key,
             #    controller=controller))
             config = {'deviceChange' : cdrom_cfg}
+            self.logger.debug(host, config)
             self.reconfig(host, **config)
 
 
@@ -257,11 +261,12 @@ class VMConfigHelper(VMConfig, Logger):
             )
 
             result = self.upload_iso(**upload_args)
+            self.logger.debug(result, upload_args)
 
             if result == 200 or 201:
                 self.logger.info('result: %s %s uploaded successfully', result, iso)
             else:
-                self.logger.info('result: %s %s upload failed', result, iso)
+                self.logger.error('result: %s %s upload failed', result, iso)
 
     def pre_create_hooks(self, **spec):
         """
@@ -367,17 +372,19 @@ class VMConfigHelper(VMConfig, Logger):
             for item in host.config.hardware.device:
                 if label == item.deviceInfo.label:
                     disk_new_size = self.opts.sizeGB * tokbytes
-                    if disk_new_size == item.capacityInKB:
+                    current_size = item.capacityInKB
+                    current_size_gb = int(current_size / (1024*1024))
+                    if disk_new_size == current_size:
                         raise ValueError(
                             'New size and existing size are equal'.format()
                         )
-                    elif disk_new_size < item.capacityInKB:
+                    elif disk_new_size < current_size:
                         raise ValueError(
                             'Size {0} does not exceed {1}'.format(
-                                disk_new_size, item.capacityInKB
+                                disk_new_size, current_size
                             )
                         )
-                    disk_delta = disk_new_size - item.capacityInKB
+                    disk_delta = disk_new_size - current_size
                     ds_capacity_kb = item.backing.datastore.summary.capacity / 1024
                     ds_free_kb = item.backing.datastore.summary.freeSpace / 1024
                     threshold_pct = 0.10
@@ -401,8 +408,8 @@ class VMConfigHelper(VMConfig, Logger):
             if disk_cfg_opts:
                 devices.append(self.disk_config(edit=edit, **disk_cfg_opts))
                 self.logger.info(
-                    '%s label: %s %s size: %s', host.name,
-                    self.opts.disk_prefix, self.opts.disk_id, self.opts.sizeGB
+                    '%s label: %s %s current_size: %s new_size: %s', host.name,
+                    self.opts.disk_prefix, self.opts.disk_id, current_size_gb, self.opts.sizeGB
                 )
                 self.reconfig(host, **{'deviceChange': devices})
 

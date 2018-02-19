@@ -126,6 +126,15 @@ class ArgParser(Logger):
         )
 
         logging_opts.add_argument(
+            '--console-level', metavar='', choices=['info', 'error', 'debug'], default='error',
+            help='set console log level choices=[%(choices)s] default: %(default)s'
+        )
+        logging_opts.add_argument(
+            '--console-stream', metavar='', choices=['stdout', 'stderr'], default='stderr',
+            help='set console logging stream output choices=[%(choices)s] default: %(default)s'
+        )
+
+        logging_opts.add_argument(
             '--logfile', metavar='', default='/var/log/vctools.log',
             help='set logging path: %(default)s'
         )

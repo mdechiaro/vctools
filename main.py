@@ -223,33 +223,35 @@ class VCTools(Logger):
 
 
 if __name__ == '__main__':
-    # setup argument parsing
     argparser = ArgParser()
     argparser.setup_args(**argparser.dotrc)
     options = argparser.sanitize(argparser.parser.parse_args())
 
-    # setup logging
     log_level = options.level.upper()
     log_file = options.logfile
     log_format = '%(asctime)s %(username)s %(levelname)s %(module)s %(funcName)s %(message)s'
+
     logging.basicConfig(
         filename=log_file, level=getattr(logging, log_level), format=log_format
     )
 
-    # set up logging to console for error messages
-    console = logging.StreamHandler()
-    console.setLevel(logging.ERROR)
+    console_log_level = options.console_level.upper()
+    console = logging.StreamHandler(stream=getattr(sys, options.console_stream))
+    console.setLevel(getattr(logging, console_log_level))
+
     logging.getLogger().addHandler(console)
 
-    # force username on logs and apply to all handlers
     class AddFilter(logging.Filter):
-        """ Add filter class for adding attributes to logs """
+        """
+        Class adds attributes to logging that can be added to the logging format
+        """
         def filter(self, record):
+            # force username on logs
             record.username = getuser()
             return True
 
     for handler in logging.root.handlers:
         handler.addFilter(AddFilter())
 
-    vctools = VCTools(options)
-    sys.exit(vctools.main())
+    vct = VCTools(options)
+    sys.exit(vct.main())

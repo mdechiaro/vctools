@@ -129,7 +129,7 @@ class VMConfig(Query, Logger):
                     url, params=params, cookies=cookie, data=data, verify=verify
                 )
             self.logger.info('status: %s', response.status_code)
-            self.logger.debug(response.status_code, kwargs)
+            self.logger.debug(response, kwargs)
             return response.status_code
 
         except requests.exceptions.ConnectionError as err:
