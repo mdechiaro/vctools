@@ -154,7 +154,7 @@ class VCTools(Logger):
                         for row in datastores:
                             print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
                     else:
-                        print('--cluster <name> required with --datastores flag')
+                        raise ValueError('--cluster <name> required with --datastores flag')
                 if self.opts.folders:
                     if self.opts.datacenter:
                         folders = Query.list_vm_folders(
@@ -164,7 +164,7 @@ class VCTools(Logger):
                         for folder in folders:
                             print(folder)
                     else:
-                        print('--datacenter <name> required with --folders flag')
+                        raise ValueError('--datacenter <name> required with --folders flag')
                 if self.opts.clusters:
                     clusters = Query.list_obj_attrs(clusters_container, 'name')
                     clusters.sort()
@@ -178,7 +178,7 @@ class VCTools(Logger):
                         for net in networks:
                             print(net)
                     else:
-                        print('--cluster <name> required with --networks flag')
+                        raise ValueError('--cluster <name> required with --networks flag')
                 if self.opts.vms:
                     vms = Query.list_vm_info(datacenters_container.view, self.opts.datacenter)
                     for key, value in vms.iteritems():
