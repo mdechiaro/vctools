@@ -23,6 +23,14 @@ Quick Install (on Linux Mint 17.2):
 
     sudo pip install pyvmomi
     cp .vctoolsrc.yaml.example ~/.vctoolsrc.yaml
+    sudo ln -s /path/to/vctools/main.py /usr/local/bin/vctools
+
+If you wish to share this proect with other users, then copy the file to
+the root of the project and edit the group perms so that they are
+readable.
+
+    cp /path/to/vctools/.vctoolsrc.yaml.example \
+        /path/to/vctools/vctoolsrc.yaml
 
 VM Creation:
 
@@ -82,15 +90,15 @@ Command Line (Argparse) Usage:
 
 Create a New VM:
 
-    vctools.py create vcenter sample.yaml sample2.yaml sampleN.yaml
+    vctools create vcenter sample.yaml sample2.yaml sampleN.yaml
 
 Mount an ISO:
 
-    vctools.py mount vcenter --name server --path /path/to/file.iso --datastore datastore
+    vctools mount vcenter --name server --path /path/to/file.iso --datastore datastore
 
 Query Datastore Info:
 
-    vctools.py query vcenter --cluster cluster --datastores
+    vctools query vcenter --cluster cluster --datastores
 
 Reconfig Parameters
 
@@ -98,21 +106,21 @@ Reconfig Parameters
 
     # reconfigure config settings
     # lookup vmware sdk configspec for all options
-    vctools.py reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
+    vctools reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
 
     # reconfigure a disk
-    vctools.py reconfig <vc> <name> --device disk --disk-id <int> --sizeGB <int>
+    vctools reconfig <vc> <name> --device disk --disk-id <int> --sizeGB <int>
 
     # reconfigure a network card
-    vctools.py reconfig <vc> <name> --device nic --nic-id <int> --network <network>
+    vctools reconfig <vc> <name> --device nic --nic-id <int> --network <network>
 
 Unmount an ISO:
 
-    vctools.py umount vcenter --name server
+    vctools umount vcenter --name server
 
 Upload ISO to Datastore:
 
-    vctools.py upload vcenter --iso /local/path/to/file.iso \
+    vctools upload vcenter --iso /local/path/to/file.iso \
       --dest /remote/path/to/iso/folder --datastore datastore \
       --datacenter datacenter
 
