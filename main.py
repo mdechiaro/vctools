@@ -45,7 +45,6 @@ class VCTools(Logger):
                 self.opts.user, self.opts.passwd, self.opts.domain, self.opts.passwd_file
             )
 
-            self.call_count = self.auth.session.content.sessionManager.currentSession.callCount
 
             virtual_machines_container = Query.create_container(
                 self.auth.session, self.auth.session.content.rootFolder,
@@ -184,13 +183,14 @@ class VCTools(Logger):
                                 )
                             )
 
+            self.call_count = self.auth.session.content.sessionManager.currentSession.callCount
             self.auth.logout()
-            self.logger.info('Call count used this session: {0}'.format(self.call_count))
+            self.logger.debug('Call count: {0}'.format(self.call_count))
 
         except ValueError as err:
             self.logger.error(err, exc_info=False)
             self.auth.logout()
-            self.logger.info('Call count used this session: {0}'.format(self.call_count))
+            self.logger.debug('Call count: {0}'.format(self.call_count))
             sys.exit(3)
 
         except vim.fault.InvalidLogin as loginerr:
@@ -200,7 +200,7 @@ class VCTools(Logger):
         except KeyboardInterrupt as err:
             self.logger.error(err, exc_info=False)
             self.auth.logout()
-            self.logger.info('Call count used this session: {0}'.format(self.call_count))
+            self.logger.debug('Call count: {0}'.format(self.call_count))
             sys.exit(1)
 
 
