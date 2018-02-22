@@ -459,3 +459,24 @@ class VMConfigHelper(VMConfig, Logger):
         )
         self.logger.info('%s folder: %s', host.name, self.opts.folder)
         self.mvfolder(host, folder)
+
+    def add_nic_recfg(self, vm_name):
+        """ Add new network adapter to VM. """
+        # Prompt if network is not declared
+        devices = []
+        if not self.opts.network:
+            # only first selection allowed for now
+            network = Prompts.networks(vm_name.summary.runtime.host)[0]
+        else:
+            network = self.opts.network
+        nic_cfg_opts = {}
+        esx_host_net = vm_name.summary.runtime.host.network
+        nic_cfg_opts.update({'container' : esx_host_net, 'network' : network})
+        if self.opts.driver == 'e1000':
+            nic_cfg_opts.update({'driver': 'VirtualE1000'})
+        devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
+        if devices:
+            self.logger.info(
+                'add hardware %s network: %s', vm_name.name, network
+            )
+            self.vmcfg.reconfig(vm_name, **{'deviceChange': devices})

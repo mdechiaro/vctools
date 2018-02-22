@@ -17,7 +17,6 @@ from vctools.argparser import ArgParser
 from vctools.auth import Auth
 from vctools.vmconfig_helper import VMConfigHelper
 from vctools.query import Query
-from vctools.prompts import Prompts
 from vctools.cfgchecker import CfgCheck
 from vctools import Logger
 
@@ -98,28 +97,11 @@ class VCTools(Logger):
                 )
 
             if self.opts.cmd == 'add':
-                devices = []
                 hostname = Query.get_obj(virtual_machines_container.view, self.opts.name)
 
                 # nics
                 if self.opts.device == 'nic':
-                    # Prompt if network is not declared
-                    if not self.opts.network:
-                        # only first selection allowed for now
-                        network = Prompts.networks(hostname.summary.runtime.host)[0]
-                    else:
-                        network = self.opts.network
-                    nic_cfg_opts = {}
-                    esx_host_net = hostname.summary.runtime.host.network
-                    nic_cfg_opts.update({'container' : esx_host_net, 'network' : network})
-                    if self.opts.driver == 'e1000':
-                        nic_cfg_opts.update({'driver': 'VirtualE1000'})
-                    devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
-                    if devices:
-                        self.logger.info(
-                            'add hardware %s network: %s', hostname.name, network
-                        )
-                        self.vmcfg.reconfig(hostname, **{'deviceChange': devices})
+                    self.vmcfg.add_nic_recfg(hostname)
 
             if self.opts.cmd == 'reconfig':
                 host = Query.get_obj(virtual_machines_container.view, self.opts.name)
