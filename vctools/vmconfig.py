@@ -201,39 +201,40 @@ class VMConfig(Query, Logger):
             return True
 
     @classmethod
-    def assign_ip(cls, dhcp=False, *static):
+    def assign_ip(cls, **kwargs):
         """
         Method assigns a static IP on the vm
 
-        Args:
-            dhcp (bool):    Enable or Disable DHCP
-            static (list): A list that contains the following:
-                ipaddr, netmask, gateway, domain, dns1, dns2
+        Kwargs:
+            dhcp (bool): Enable DHCP
+            ipaddr (attr): IP Address
+            netmask (str): Netmask
+            gateway (str): Gateway
+            domain (str): Domain
+            dns (list): An array of DNS nameservers
 
         Returns:
             nic (obj): A configured object for IP assignments.  this should be
                 appended to ConfigSpec devices attribute.
         """
+        dhcp = kwargs.get('dhcp', None)
+        ipaddr = kwargs.get('ipaddr', None)
+        netmask = kwargs.get('netmask', None)
+        gateway = kwargs.get('gateway', None)
+        domain = kwargs.get('domain', None)
+        dns = kwargs.get('dns', None)
 
         if dhcp:
             nic = vim.vm.customization.AdapterMapping()
             nic.adapter = vim.vm.customization.DhcpIpGenerator()
-
-            return nic
         else:
-            ipaddr = static[0]
-            netmask = static[1]
-            gateway = static[2]
-            domain = static[3]
-            dns1 = static[4]
-            dns2 = static[5]
             nic.adapter = vim.vm.customization.IPSettings()
             nic.adapter.ip = vim.vm.customization.FixedIp()
             nic.adapter.ip.ipAddress = ipaddr
             nic.adapter.subnetMask = netmask
             nic.adapter.gateway = gateway
             nic.adapter.dnsDomain = domain
-            nic.adapter.dnsServerList = [dns1, dns2]
+            nic.adapter.dnsServerList = dns
 
             return nic
 
