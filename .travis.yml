@@ -2,7 +2,7 @@ language: python
 python:
   - "2.7"
 install:
-  - pip install --upgrade pip
-  - pip install --upgrade pylint
+  - pip install --upgrade pip 
+  - pip install --upgrade pylint pyvmomi requests PyYAML flask
 script:
   - find . -name "*.py" -type f | xargs pylint -d duplicate-code --rcfile=.pylintrc
