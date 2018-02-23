@@ -74,9 +74,8 @@ class VMConfigHelper(VMConfig, Logger):
                 in the dotrc file.
         """
 
-        server_cfg = {}
-        server_cfg['vmconfig'] = {}
-        server_cfg['vmconfig'].update(spec['vmconfig'])
+        # create a copy before manipulating the data for vsphere
+        server_cfg = copy.deepcopy(spec)
 
         cluster = spec['vmconfig']['cluster']
         datastore = spec['vmconfig']['datastore']
@@ -143,7 +142,7 @@ class VMConfigHelper(VMConfig, Logger):
         self.logger.debug(folder, datastore, pool, devices, spec)
         self.create(folder, datastore, pool, **spec['vmconfig'])
 
-        return spec
+        return server_cfg
 
 
     def mount_wrapper(self, datastore, path, *names):

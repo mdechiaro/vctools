@@ -71,10 +71,6 @@ class VCTools(Logger):
                         if spec.get('mkbootiso', None):
                             server_cfg['mkbootiso'] = {}
                             server_cfg['mkbootiso'].update(spec['mkbootiso'])
-
-                        # yaml cannot parse this format
-                        del server_cfg['vmconfig']['deviceChange']
-
                         print(
                             yaml.dump(server_cfg, default_flow_style=False),
                             file=open(filename, 'w')
