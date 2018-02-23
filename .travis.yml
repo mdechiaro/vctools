@@ -1,0 +1,8 @@
+language: python
+python:
+  - "2.7"
+install:
+  - pip install --upgrade pip
+  - pip install --upgrade pylint
+script:
+  - find . -name "*.py" -type f | xargs pylint -d duplicate-code --rcfile=.pylintrc
