@@ -297,6 +297,11 @@ class ArgParser(Logger):
         )
 
         query_opts.add_argument(
+            '--datastore', metavar='',
+            help='vCenter Datastore.'
+        )
+
+        query_opts.add_argument(
             '--vms', action='store_true',
             help='Returns information about Virtual Machines.'
         )
@@ -331,12 +336,17 @@ class ArgParser(Logger):
             help='Virtual machine config'
         )
 
+        query_opts.add_argument(
+            '--vm-by-datastore', action='store_true',
+            help='List the VMs associated with datastore.'
+        )
         query_vmcfg_opts = query_parser.add_argument_group('vmconfig options')
 
         query_vmcfg_opts.add_argument(
             '--createcfg', metavar='',
             help='Create a build config from --vmconfig spec.'
         )
+
 
         if defaults:
             query_parser.set_defaults(**defaults)

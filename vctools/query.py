@@ -390,3 +390,25 @@ class Query(Logger):
             return cfg
 
         return cfg
+
+    @classmethod
+    def vm_by_datastore(cls, container, cluster, datastore_name):
+        """
+        Method returns a list of VM names that are associated with cluster and datastore
+
+        Args:
+            container (obj): cluster constainer object
+            cluster (str): Name of cluster to start the search
+            datastore (str): Name of datastore to query
+
+        Returns:
+            vms (list): A sorted list of VM names.
+        """
+        obj = Query.get_obj(container, cluster)
+        vms = []
+        if hasattr(obj, 'datastore'):
+            for datastore in obj.datastore:
+                if datastore.name == datastore_name:
+                    for virtual_machine in datastore.vm:
+                        vms.append(virtual_machine.name)
+        return sorted(vms)

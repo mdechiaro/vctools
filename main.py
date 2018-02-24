@@ -178,6 +178,15 @@ class VCTools(Logger):
                                     default_flow_style=False
                                 )
                             )
+                if self.opts.vm_by_datastore:
+                    if self.opts.cluster and self.opts.datastore:
+                        vms = Query.vm_by_datastore(
+                            clusters_container.view, self.opts.cluster, self.opts.datastore
+                        )
+                        for vm_name in vms:
+                            print(vm_name)
+                    else:
+                        raise ValueError('--cluster <name> and --datastore <name> required')
 
             self.call_count = self.auth.session.content.sessionManager.currentSession.callCount
             self.auth.logout()
