@@ -30,7 +30,6 @@ class VCTools(Logger):
         self.opts = opts
         self.auth = None
         self.vmcfg = None
-        self.call_count = None
 
     def main(self):
         """
@@ -208,14 +207,14 @@ class VCTools(Logger):
                         for vm_name in vms:
                             print(vm_name)
 
-            self.call_count = self.auth.session.content.sessionManager.currentSession.callCount
+            call_count = self.auth.session.content.sessionManager.currentSession.callCount
             self.auth.logout()
-            self.logger.debug('Call count: {0}'.format(self.call_count))
+            self.logger.debug('Call count: {0}'.format(call_count))
 
         except ValueError as err:
             self.logger.error(err, exc_info=False)
             self.auth.logout()
-            self.logger.debug('Call count: {0}'.format(self.call_count))
+            self.logger.debug('Call count: {0}'.format(call_count))
             sys.exit(3)
 
         except vim.fault.InvalidLogin as loginerr:
@@ -225,7 +224,7 @@ class VCTools(Logger):
         except KeyboardInterrupt as err:
             self.logger.error(err, exc_info=False)
             self.auth.logout()
-            self.logger.debug('Call count: {0}'.format(self.call_count))
+            self.logger.debug('Call count: {0}'.format(call_count))
             sys.exit(1)
 
 
