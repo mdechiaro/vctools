@@ -16,6 +16,7 @@ from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.argparser import ArgParser
 from vctools.auth import Auth
 from vctools.vmconfig_helper import VMConfigHelper
+from vctools.prompts import Prompts
 from vctools.query import Query
 from vctools.cfgchecker import CfgCheck
 from vctools import Logger
@@ -127,11 +128,13 @@ class VCTools(Logger):
                         datastores = Query.return_datastores(
                             clusters_container.view, self.opts.cluster
                         )
-
                         for row in datastores:
                             print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
                     else:
-                        raise ValueError('--cluster <name> required with --datastores flag')
+                        cluster = Prompts.clusters(self.auth.session)
+                        datastores = Query.return_datastores(clusters_container.view, cluster)
+                        for row in datastores:
+                            print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
                 if self.opts.folders:
                     if self.opts.datacenter:
                         folders = Query.list_vm_folders(
@@ -141,7 +144,11 @@ class VCTools(Logger):
                         for folder in folders:
                             print(folder)
                     else:
-                        raise ValueError('--datacenter <name> required with --folders flag')
+                        datacenter = Prompts.datacenters(self.auth.session)
+                        folders = Query.list_vm_folders(datacenters_container.view, datacenter)
+                        folders.sort()
+                        for folder in folders:
+                            print(folder)
                 if self.opts.clusters:
                     clusters = Query.list_obj_attrs(clusters_container, 'name')
                     clusters.sort()
@@ -155,7 +162,12 @@ class VCTools(Logger):
                         for net in networks:
                             print(net)
                     else:
-                        raise ValueError('--cluster <name> required with --networks flag')
+                        cluster_name = Prompts.clusters(self.auth.session)
+                        cluster = Query.get_obj(clusters_container.view, cluster_name)
+                        networks = Query.list_obj_attrs(cluster.network, 'name', view=False)
+                        networks.sort()
+                        for net in networks:
+                            print(net)
                 if self.opts.vms:
                     vms = Query.list_vm_info(datacenters_container.view, self.opts.datacenter)
                     for key, value in vms.iteritems():
@@ -186,7 +198,15 @@ class VCTools(Logger):
                         for vm_name in vms:
                             print(vm_name)
                     else:
-                        raise ValueError('--cluster <name> and --datastore <name> required')
+                        if not self.opts.cluster:
+                            cluster = Prompts.clusters(self.auth.session)
+                        if not self.opts.datastore:
+                            datastore = Prompts.datastores(self.auth.session, cluster)
+                        print()
+
+                        vms = Query.vm_by_datastore(clusters_container.view, cluster, datastore)
+                        for vm_name in vms:
+                            print(vm_name)
 
             self.call_count = self.auth.session.content.sessionManager.currentSession.callCount
             self.auth.logout()
