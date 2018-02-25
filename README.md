@@ -8,20 +8,21 @@ state of this project is beta, and so far it can do the following:
   - Completely automate a new VM creation from start to finish. This
     includes creating a boot ISO if your environment does not support DHCP.
   - Reconfigure VM hardware like networks, disks, CPU, and memory
-  - Query various information on VMs
+  - Query various information on VMs, Datastores, Datacenters, etc
   - Upload ISOs to remote datastores, and mount and unmount them on VMs.
 
-Dependencies:
-  - Python 2.7+
-  - python-argparse
-  - python-pip
-  - python-requests
-  - python-yaml
+Python: 2.7
+
+Dependencies (all available from pip):
+  - argparse
+  - requests
+  - PyYAML
+  - flask
   - pyvmomi
 
-Quick Install (on Linux Mint 17.2):
+Quick Install:
 
-    sudo pip install pyvmomi
+    sudo pip install argparse flask requests pyvmomi PyYAML
     cp .vctoolsrc.yaml.example ~/.vctoolsrc.yaml
     sudo ln -s /path/to/vctools/main.py /usr/local/bin/vctools
 
@@ -34,10 +35,10 @@ readable.
 
 VM Creation:
 
-This program will merge a default config (.vctoolsrc.yaml) and a server
-config (sample.yaml) into a VM creation config. It will prompt the user
-for any missing info that is required to create a VM, and then automate
-the build process from start to finish.
+This program will merge a default rc config file and a server config
+into a VM creation config. It will prompt the user for any missing info
+that is required to create a VM, and then automate the build process
+from start to finish.
 
 It is capable of creating a boot ISO per server (mkbootiso) for
 situations when DHCP or PXE booting is not an option. It can also
@@ -50,12 +51,10 @@ An example yaml config:
     mkbootiso:
       ks: http://host.domain.com/ks.cfg
       options:
-        biosdevname: '0'
         gateway: 10.1.1.1
         hostname: hostname.domain.com
         ip: 10.1.1.10
         nameserver: 4.2.2.2
-        net.ifnames: '0'
         netmask: 255.255.255.0
       source: /opt/isos/rhel7
     vmconfig:
@@ -126,11 +125,12 @@ Upload ISO to Datastore:
 
 Contributing:
 
-Pull requests are welcome. Please follow PEP 8, and pylint is
-recommended for ensuring the code follows those standards. Disabling
-certain pylints is allowed (like star-args), so use your best
-judgment. Please disable using a comment in the vicinity of where the
-error occurs in the file. Keep maximum characters to 100 per line.
+Pull requests are welcome. Travis CI will test for syntax errors, so I
+recommend running this code when making changes and before you commit.
+
+    # run inside project directory
+    find . -name "*.py" -type f | xargs pylint --rcfile=.pylintrc
+
 
 Here's a quick way to set it up in the Python intepreter and then you
 can move freely around the interface. The commands dir() and getattr()
