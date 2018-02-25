@@ -15,6 +15,10 @@
   #user=userid
   #domain=adlocal
   #passwd_file=~/Documents/.pass.asc
+create:
+  upload: True
+  mount: True
+  power: True
 upload:
   # sub-options for uploading an iso
   #
@@ -62,9 +66,3 @@ vmconfig:
   # disks are in GB, max 4
   disks:
     - 30
-vctools:
-  # sub-options for vctools
-  # The options below will tell vctools to run extra argparse commands after VM creation
-  upload:
-  mount:
-  power: 'on'
