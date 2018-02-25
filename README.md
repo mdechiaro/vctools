@@ -125,8 +125,9 @@ Upload ISO to Datastore:
 
 Contributing:
 
-Pull requests are welcome. Travis CI will test for syntax errors, so I
-recommend running this code when making changes and before you commit.
+Pull requests are welcome. Travis CI will test for syntax errors, so it
+is recommended that you run this code when making changes and before you
+commit.
 
     # run inside project directory
     find . -name "*.py" -type f | xargs pylint --rcfile=.pylintrc
