@@ -38,12 +38,14 @@ class VCTools(Logger):
         """
 
         try:
-            self.logger.debug(self.opts)
 
             self.auth = Auth(self.opts.host)
             self.auth.login(
                 self.opts.user, self.opts.passwd, self.opts.domain, self.opts.passwd_file
             )
+
+            self.opts.passwd = None
+            self.logger.debug(self.opts)
 
 
             virtual_machines_container = Query.create_container(
