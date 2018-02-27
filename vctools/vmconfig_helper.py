@@ -84,35 +84,45 @@ class VMConfigHelper(VMConfig, Logger):
         self.logger.info('vmconfig %s', server_cfg)
         cluster_obj = Query.get_obj(self.clusters.view, cluster)
 
-        # list of scsi devices, max is 4.  Layout is a tuple containing the
-        # key and configured device
-        scsis = []
         # list of cdrom and disk devices
         devices = []
 
         # add the cdrom device
         devices.append(self.cdrom_config())
 
-        # configure scsi controller and add disks to them.
-        # to keep things simple, the max disks we allow in this example is
-        # 4 (max scsi).
-        for scsi, disk in enumerate(spec['vmconfig']['disks']):
-            # setup the first four disks on a separate scsi controller
-            # disk size is in GB
-            scsis.append(self.scsi_config(scsi))
-            devices.append(scsis[scsi][1])
-            disk_cfg_opts = {}
-
-            disk_cfg_opts.update(
-                {
-                    'container' : cluster_obj.datastore,
-                    'datastore' : datastore,
-                    'size' : int(disk) * (1024*1024),
-                    'controller' : scsis[scsi][0],
-                    'unit' : 0,
-                }
-            )
-            devices.append(self.disk_config(**disk_cfg_opts))
+        scsis = []
+        if isinstance(spec['vmconfig']['disks'], dict):
+            for scsi, disks in spec['vmconfig']['disks'].iteritems():
+                scsis.append(self.scsi_config(scsi))
+                devices.append(scsis[scsi][1])
+                for disk in enumerate(disks):
+                    disk_cfg_opts = {}
+                    disk_cfg_opts.update(
+                        {
+                            'container' : cluster_obj.datastore,
+                            'datastore' : datastore,
+                            'size' : int(disk[1]) * (1024*1024),
+                            'controller' : scsis[scsi][0],
+                            'unit' : disk[0],
+                        }
+                    )
+                    devices.append(self.disk_config(**disk_cfg_opts))
+        else:
+            # attach up to four disks, each on its own scsi adapter
+            for scsi, disk in enumerate(spec['vmconfig']['disks']):
+                scsis.append(self.scsi_config(scsi))
+                devices.append(scsis[scsi][1])
+                disk_cfg_opts = {}
+                disk_cfg_opts.update(
+                    {
+                        'container' : cluster_obj.datastore,
+                        'datastore' : datastore,
+                        'size' : int(disk) * (1024*1024),
+                        'controller' : scsis[scsi][0],
+                        'unit' : 0,
+                    }
+                )
+                devices.append(self.disk_config(**disk_cfg_opts))
 
         # configure each network and add to devices
         for nic in spec['vmconfig']['nics']:
