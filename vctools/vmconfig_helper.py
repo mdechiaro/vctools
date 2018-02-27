@@ -246,7 +246,6 @@ class VMConfigHelper(VMConfig, Logger):
             )
             upload_args = {}
 
-            # pylint: disable=protected-access
             upload_args.update(
                 {
                     'host': self.opts.host,

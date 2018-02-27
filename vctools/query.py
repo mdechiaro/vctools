@@ -232,7 +232,6 @@ class Query(Logger):
         # recurse through datacenter object attributes looking for vms.
         if hasattr(obj, 'vmFolder'):
             for virtmachine in obj.vmFolder.childEntity:
-                # pylint: disable=protected-access
                 if hasattr(virtmachine, 'childEntity'):
                     for virt in virtmachine.childEntity:
                         vms.update({virt.name:virt._moId})
@@ -255,7 +254,6 @@ class Query(Logger):
         # matches hostname.
         if hasattr(obj, 'vmFolder'):
             for virtmachine in obj.vmFolder.childEntity:
-                # pylint: disable=protected-access
                 if hasattr(virtmachine, 'childEntity'):
                     for virt in virtmachine.childEntity:
                         if virt.name == name:
