@@ -5,7 +5,7 @@ from __future__ import print_function
 import textwrap
 from flask import Flask
 #
-from apis.mkbootiso import mkbootiso
+from api.mkbootiso import mkbootiso
 
 vctools_api = Flask(__name__)
 
