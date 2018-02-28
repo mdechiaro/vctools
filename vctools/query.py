@@ -296,6 +296,34 @@ class Query(Logger):
 
 
     @classmethod
+    def get_label(cls, obj, query):
+        """
+        Method will attempt to return the label associated with the device key.
+        It will loop through all possible devices and return the key that
+        matches query with the label attribute.
+
+        Example:
+            To get the label for a device with key 1001, assuming obj is a
+            VirtualMachine object
+
+            get_label(virtual_machine, 1001)
+
+        Args:
+            obj (obj): VirtualMachine object
+            query (int): A string representation of the object attribute.
+
+        Returns:
+            keys (str): The label associated with the key
+        """
+
+        if hasattr(obj, 'config'):
+            for item in obj.config.hardware.device:
+                if query == item.key:
+                    label = item.deviceInfo.label
+
+        return label
+
+    @classmethod
     def list_guestids(cls):
         """
         Method will return an array of all supported guestids
@@ -347,13 +375,16 @@ class Query(Logger):
         cfg['vmconfig']['disks'] = {}
         for item in virtmachine.config.hardware.device:
             if 'Hard disk' in item.deviceInfo.label:
+                scsi = Query.get_label(virtmachine, item.controllerKey)
+                if not scsi in cfg['vmconfig']['disks']:
+                    cfg['vmconfig']['disks'].update({scsi : {}})
                 if not item.capacityInBytes:
                     # try using the KiloBytes parameter if Bytes is None
                     capacity = item.capacityInKB / 1024 / 1024
-                    cfg['vmconfig']['disks'].update({item.deviceInfo.label : int(capacity)})
+                    cfg['vmconfig']['disks'][scsi].update({item.deviceInfo.label : int(capacity)})
                 else:
                     capacity = item.capacityInBytes / 1024 / 1024 / 1024
-                    cfg['vmconfig']['disks'].update({item.deviceInfo.label : int(capacity)})
+                    cfg['vmconfig']['disks'][scsi].update({item.deviceInfo.label : int(capacity)})
             elif 'Network adapter' in item.deviceInfo.label:
                 cfg['vmconfig']['nics'].update({
                     item.deviceInfo.label : [
@@ -369,13 +400,13 @@ class Query(Logger):
 
             cfg['vmconfig'].update({'name' : createcfg})
 
-            # sort the disks correctly
-            cfg['vmconfig'].update(
-                {'disks': [
-                    value for (dummy, value) in sorted(cfg['vmconfig']['disks'].items())
-                    ]
-                }
-            )
+            cfg['vmconfig']['temp_disks'] = {}
+            for scsi, disks in cfg['vmconfig']['disks'].iteritems():
+                cfg['vmconfig']['temp_disks'].update({int(scsi.split()[2]) : []})
+                for dummy, val in disks.iteritems():
+                    cfg['vmconfig']['temp_disks'][int(scsi.split()[2])].append(val)
+
+            cfg['vmconfig']['disks'] = cfg['vmconfig'].pop('temp_disks')
 
             # sort the nics correctly, and the last item in array is the network name
             cfg['vmconfig'].update(
