@@ -175,6 +175,8 @@ class VCTools(Logger):
                         print(key, value)
                 if self.opts.vmconfig:
                     for name in self.opts.vmconfig:
+                        virtmachine = Query.get_obj(virtual_machines_container.view, name)
+                        self.logger.debug(virtmachine.config)
                         if self.opts.createcfg:
                             print(
                                 yaml.dump(
