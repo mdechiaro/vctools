@@ -55,6 +55,8 @@ class VCTools(Logger):
 
             self.vmcfg = VMConfigHelper(self.auth, self.opts, argparser.dotrc)
 
+            call_count = self.auth.session.content.sessionManager.currentSession.callCount
+
             if self.opts.cmd == 'create':
                 if self.opts.config:
                     for cfg in self.opts.config:
@@ -211,7 +213,6 @@ class VCTools(Logger):
                         for vm_name in vms:
                             print(vm_name)
 
-            call_count = self.auth.session.content.sessionManager.currentSession.callCount
             self.auth.logout()
             self.logger.debug('Call count: {0}'.format(call_count))
 
