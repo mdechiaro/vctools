@@ -1,10 +1,10 @@
 # vim: ts=4 sw=4 et
 [DESIGN]
-max-branches = 50
+max-branches = 75
 max-args = 10
 max-attributes = 15
 max-locals = 35
-max-statements = 125
+max-statements = 150
 max-nested-blocks = 10
 min-public-methods = 1
 const-rgx = [a-z_][a-z0-9_]{2,30}
