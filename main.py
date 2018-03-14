@@ -127,7 +127,7 @@ class VCTools(Logger):
                     [vim.ClusterComputeResource], True
                 )
 
-                if self.opts.antiaffinityrules:
+                if self.opts.anti_affinity_rules:
                     if self.opts.cluster:
                         antiaffinityrules = Query.return_antiaffinityrules(
                             clusters_container.view, self.opts.cluster

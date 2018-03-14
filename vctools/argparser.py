@@ -292,7 +292,7 @@ class ArgParser(Logger):
         query_opts = query_parser.add_argument_group('query options')
 
         query_opts.add_argument(
-            '--antiaffinityrules', action='store_true',
+            '--anti-affinity-rules', action='store_true',
             help='Returns information about AntiAffinityRules.'
         )
 
