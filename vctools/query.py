@@ -219,6 +219,36 @@ class Query(Logger):
 
 
     @classmethod
+    def return_antiaffinityrules(cls, container, cluster):
+        """
+        Returns antiaffinity rules
+
+        Args:
+            container (obj): Container object
+            cluster (str):   Name of cluster
+        """
+
+        cluster_obj = Query.get_obj(container, cluster)
+        antiaffinityrules = {}
+
+        if hasattr(cluster_obj, 'configuration'):
+            if hasattr(cluster_obj.configuration, 'rule'):
+                for rule in cluster_obj.configuration.rule:
+
+                    if isinstance(rule, vim.cluster.AntiAffinityRuleSpec):
+
+                        aa_vms = []
+                        if hasattr(rule, 'vm'):
+                            for rule_vm in rule.vm:
+                                aa_vms.append(rule_vm.name)
+                        aa_rule = {rule.name : aa_vms}
+                        antiaffinityrules.update(aa_rule)
+
+            return antiaffinityrules
+        return None
+
+
+    @classmethod
     def list_vm_info(cls, container, datacenter):
         """
         Returns a list of names for VMs located inside a datacenter.

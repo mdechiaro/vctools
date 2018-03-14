@@ -124,20 +124,38 @@ class VCTools(Logger):
                 )
                 clusters_container = Query.create_container(
                     self.auth.session, self.auth.session.content.rootFolder,
-                    [vim.ComputeResource], True
+                    [vim.ClusterComputeResource], True
                 )
+
+                if self.opts.anti_affinity_rules:
+                    if self.opts.cluster:
+                        antiaffinityrules = Query.return_antiaffinityrules(
+                            clusters_container.view, self.opts.cluster
+                        )
+                    else:
+                        cluster = Prompts.clusters(self.auth.session)
+                        antiaffinityrules = Query.return_antiaffinityrules(
+                            clusters_container.view, cluster
+                        )
+                    if not antiaffinityrules:
+                        print('No antiaffinity rules defined.')
+                    else:
+                        print('Antiaffinity rules:')
+
+                        for key, val in antiaffinityrules.iteritems():
+                            print('{0} : {1}'.format(key, '\t'.join(val)))
+
                 if self.opts.datastores:
                     if self.opts.cluster:
                         datastores = Query.return_datastores(
                             clusters_container.view, self.opts.cluster
                         )
-                        for row in datastores:
-                            print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
                     else:
                         cluster = Prompts.clusters(self.auth.session)
                         datastores = Query.return_datastores(clusters_container.view, cluster)
-                        for row in datastores:
-                            print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
+                    for row in datastores:
+                        print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
+
                 if self.opts.folders:
                     if self.opts.datacenter:
                         folders = Query.list_vm_folders(
