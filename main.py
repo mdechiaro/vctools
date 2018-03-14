@@ -137,17 +137,13 @@ class VCTools(Logger):
                         antiaffinityrules = Query.return_antiaffinityrules(
                             clusters_container.view, cluster
                         )
-
                     if not antiaffinityrules:
                         print('No antiaffinity rules defined.')
                     else:
                         print('Antiaffinity rules:')
-                        for rule in antiaffinityrules:
-                            print(rule[0], end=':')
-                            for i in range(1, len(rule)):
-                                print('\t', end='')
-                                print(rule[i], end='')
-                            print()
+
+                        for key, val in antiaffinityrules.iteritems():
+                            print('{0} : {1}'.format(key, '\t'.join(val)))
 
                 if self.opts.datastores:
                     if self.opts.cluster:

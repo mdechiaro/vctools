@@ -229,7 +229,7 @@ class Query(Logger):
         """
 
         cluster_obj = Query.get_obj(container, cluster)
-        antiaffinityrules = []
+        antiaffinityrules = {}
 
         if hasattr(cluster_obj, 'configuration'):
             if hasattr(cluster_obj.configuration, 'rule'):
@@ -237,13 +237,12 @@ class Query(Logger):
 
                     if isinstance(rule, vim.cluster.AntiAffinityRuleSpec):
 
-                        aa_rule = []
-                        # first entry in the aa_rule list will always be name, next is VMs
-                        aa_rule.append(rule.name)
+                        aa_vms = []
                         if hasattr(rule, 'vm'):
                             for rule_vm in rule.vm:
-                                aa_rule.append(rule_vm.name)
-                        antiaffinityrules.append(aa_rule)
+                                aa_vms.append(rule_vm.name)
+                        aa_rule = {rule.name : aa_vms}
+                        antiaffinityrules.update(aa_rule)
 
             return antiaffinityrules
         return None
