@@ -25,7 +25,7 @@ upload:
   # dest: destination folder where the iso will reside.
   # datastore: name of datastore where the iso will reside.
   # verify-ssl: verify SSL certificate.
-  # datacenter: default datacenter view when accessing vsphere.  
+  # datacenter: default datacenter view when accessing vsphere.
   datacenter: Linux
   datastore: ISO_Templates
   dest: /ISOs/OS/mkbootiso/
@@ -54,7 +54,7 @@ mkbootiso:
         net.ifnames: '0'
         biosdevname: '0'
 vmconfig:
-  # datacenter: default datacenter view when accessing vsphere.  
+  # datacenter: default datacenter view when accessing vsphere.
   datacenter: Linux
   # default config values for VM creations
   # You can get an idea of what is can be set here by looking at the ConfigSpec in VMware's SDK
