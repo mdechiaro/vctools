@@ -142,8 +142,8 @@ class VCTools(Logger):
                     else:
                         print('Antiaffinity rules:')
 
-                        for key, val in antiaffinityrules.iteritems():
-                            print('{0} : {1}'.format(key, '\t'.join(val)))
+                        for key, val in sorted(antiaffinityrules.iteritems()):
+                            print('{0}: {1}'.format(key, ' '.join(sorted(val))))
 
                 if self.opts.datastores:
                     if self.opts.cluster:
