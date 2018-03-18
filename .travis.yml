@@ -4,4 +4,5 @@ python:
 install:
   - pip install --upgrade pylint pyvmomi requests PyYAML flask
 script:
+  - python tests/commit_check.py $TRAVIS_COMMIT
   - find . -name "*.py" -type f | xargs pylint --rcfile=.pylintrc
