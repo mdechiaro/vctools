@@ -505,6 +505,26 @@ class ArgParser(Logger):
         if defaults:
             upload_parser.set_defaults(**defaults)
 
+    def add_aa_rule(self, *parents):
+        """ Adding an anti affinity rule"""
+        add_aa_rule_parser = self.subparsers.add_parser(
+            'add-aa-rule', parents=list(parents),
+            help='Adds an AntiAffinity rule to a cluster'
+        )
+        add_aa_rule_parser.set_defaults(cmd='add-aa-rule')
+        add_aa_rule_parser.add_argument(
+            '--name', metavar='', type=str,
+            help='Name of the new AntiAffinity Rule'
+        )
+        add_aa_rule_parser.add_argument(
+            '--vms', nargs='+', metavar='', type=str,
+            help='VMs to be added to AntiAffinity Rule'
+        )
+        add_aa_rule_parser.add_argument(
+            '--cluster', metavar='',
+            help='vCenter ComputeResource.'
+        )
+
     def sanitize(self, opts):
         """
         Sanitize arguments. This will override the user / config input to a supported state.
@@ -554,7 +574,8 @@ class ArgParser(Logger):
         parent_parsers = ['general', 'logging']
         parents = []
 
-        subparsers = ['add', 'create', 'mount', 'power', 'query', 'reconfig', 'umount', 'upload']
+        subparsers = ['add', 'create', 'mount', 'power', 'query', 'reconfig', 'umount',
+                      'upload', 'add_aa_rule']
 
         try:
             # load parsers using defaults

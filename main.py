@@ -16,6 +16,7 @@ from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.argparser import ArgParser
 from vctools.auth import Auth
 from vctools.vmconfig_helper import VMConfigHelper
+from vctools.clusterconfig import ClusterConfig
 from vctools.prompts import Prompts
 from vctools.query import Query
 from vctools.cfgchecker import CfgCheck
@@ -30,6 +31,7 @@ class VCTools(Logger):
         self.opts = opts
         self.auth = None
         self.vmcfg = None
+        self.clustercfg = None
 
     def main(self):
         """
@@ -54,6 +56,7 @@ class VCTools(Logger):
             )
 
             self.vmcfg = VMConfigHelper(self.auth, self.opts, argparser.dotrc)
+            self.clustercfg = ClusterConfig(self.auth, self.opts, argparser.dotrc)
 
             call_count = self.auth.session.content.sessionManager.currentSession.callCount
 
@@ -116,6 +119,19 @@ class VCTools(Logger):
                     self.vmcfg.disk_recfg()
                 if self.opts.device == 'nic':
                     self.vmcfg.nic_recfg()
+
+            if self.opts.cmd == 'add-aa-rule':
+                if not self.opts.cluster:
+                    raise ValueError('Error: cluster required')
+                if not self.opts.name:
+                    raise ValueError('Error: name required')
+                if not self.opts.vms:
+                    raise ValueError('Error: vms required')
+                if len(self.opts.vms) == 1:
+                    raise ValueError('Error: more than one vm must be specified')
+                #print('In add_aa_rule')
+                #print(self.opts.vms)
+                self.clustercfg.add_aa_rule()
 
             if self.opts.cmd == 'query':
                 datacenters_container = Query.create_container(
