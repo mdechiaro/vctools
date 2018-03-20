@@ -11,7 +11,7 @@ from pyVmomi import vim # pylint: disable=E0611
 from vctools.query import Query
 from vctools import Logger
 
-class VMConfig(Query, Logger):
+class VMConfig(Logger):
     """
     Class simplifies VM builds outside of using the client or Web App.
     Class can handle setting up a complete VM with multiple devices attached.
@@ -21,7 +21,6 @@ class VMConfig(Query, Logger):
 
     def __init__(self):
         """ Define our class attributes here. """
-        Query.__init__(self)
         self.scsi_key = None
 
 
