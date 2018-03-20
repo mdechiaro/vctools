@@ -2,13 +2,11 @@
 # vim: ts=4 sw=4 et
 """Various config options for Virtual Machines."""
 from __future__ import print_function
-import textwrap
-import sys
 from random import uniform
-import time
 import requests
 from pyVmomi import vim # pylint: disable=E0611
 from vctools.query import Query
+from vctools.tasks import Tasks
 from vctools import Logger
 
 class VMConfig(Logger):
@@ -22,65 +20,6 @@ class VMConfig(Logger):
     def __init__(self):
         """ Define our class attributes here. """
         self.scsi_key = None
-
-
-    @classmethod
-    def question_and_answer(cls, host, **answered):
-        """
-        Method handles the questions and answers provided by the program.
-
-        Args:
-            host (obj): VirtualMachine object
-            answered (dict): A key value pair of already answered questions.
-        """
-
-        if host.runtime.question:
-            try:
-                qid = host.runtime.question.id
-
-                if not qid in answered.keys():
-                    # systemd does not provide a mechanism for disabling cdrom lock
-                    if 'CD-ROM door' in host.runtime.question.text:
-                        choices = {}
-                        for option in host.runtime.question.choice.choiceInfo:
-                            choices.update({option.key : option.label})
-
-                        for key, val in choices.iteritems():
-                            if 'Yes' in val:
-                                answer = key
-                    else:
-                        print('\n')
-                        print('\n'.join(textwrap.wrap(host.runtime.question.text, 80)))
-                        choices = {}
-                        for option in host.runtime.question.choice.choiceInfo:
-                            choices.update({option.key : option.label})
-                            sys.stdout.write('\t%s: %s' % (option.key, option.label))
-
-                        warn = textwrap.dedent("""\
-                            Warning: The VM may be in a suspended
-                            state until this question is answered.""").strip()
-
-                        print(textwrap.fill(warn, width=80))
-
-                        while True:
-                            answer = raw_input('\nPlease select number: ').strip()
-
-                            # check if answer is an appropriate number
-                            if int(answer) <= len(choices.keys()) - 1:
-                                break
-                            else:
-                                continue
-
-                    if answer:
-                        host.AnswerVM(qid, str(answer))
-                        answered.update({qid:answer})
-                        return answered
-            # pass onto next iteration during race condition in task_monitor while loop
-            except AttributeError:
-                pass
-
-        return None
-
 
     def upload_iso(self, **kwargs):
         """
@@ -138,66 +77,6 @@ class VMConfig(Logger):
 
 
 
-    def task_monitor(self, task, question=True, host=False):
-        """
-        Method monitors the state of called task and outputs the current status.
-        Some tasks require that questions be answered before completion, and are
-        optional arguments in the case that some tasks don't require them. It
-        will continually check for questions while in progress. The VM object is
-        required if the question argument is True.
-
-        Args:
-            task (obj):      TaskManager object
-            question (bool): Enable or Disable Question
-            host (obj):      VirtualMachine object
-        Returns:
-            boolean (bool):  True if successful or False if error
-        """
-        # keep track of answered questions
-        answered = {}
-
-        while task.info.state == 'running':
-            while task.info.progress:
-                if question and host:
-                    result = self.question_and_answer(host, **answered)
-                    if result:
-                        answered.update(result)
-                if isinstance(task.info.progress, int):
-                    sys.stdout.write(
-                        '\r[' + task.info.state + '] | ' + str(task.info.progress)
-                    )
-                    sys.stdout.flush()
-                    if task.info.progress == 100:
-                        sys.stdout.write(
-                            '\r[' + task.info.state + '] | ' + str(task.info.progress)
-                        )
-                        sys.stdout.flush()
-                        break
-                else:
-                    sys.stdout.flush()
-                    break
-
-        # pause method to ensure a state of error or success is caught.
-        time.sleep(5)
-
-        if task.info.state == 'error':
-            # collect all the error messages we can find
-            errors = []
-            errors.append(task.info.error.msg)
-
-            for items in task.info.error.faultMessage:
-                errors.append(items.message)
-
-            sys.stdout.write('\r[' + task.info.state + '] | ' + ' '.join(errors) + '\n')
-            self.logger.info('[' + task.info.state + '] | ' + ' '.join(errors))
-            sys.stdout.flush()
-            return False
-
-        if task.info.state == 'success':
-            sys.stdout.write('\r[' + task.info.state + '] | task successfully completed.\n')
-            self.logger.info('[' + task.info.state + '] | task successfully completed.')
-            sys.stdout.flush()
-            return True
 
     @classmethod
     def assign_ip(cls, **kwargs):
@@ -498,7 +377,7 @@ class VMConfig(Logger):
         self.logger.info('%s', config['name'])
         self.logger.debug('%s %s %s %s', folder, datastore, pool, config)
 
-        result = self.task_monitor(task, False)
+        result = Tasks.task_monitor(task, False)
         return result
 
 
@@ -516,7 +395,7 @@ class VMConfig(Logger):
 
         self.logger.debug('%s %s', host.name, config)
         task = host.ReconfigVM_Task(vim.vm.ConfigSpec(**config))
-        result = self.task_monitor(task, True, host)
+        result = Tasks.task_monitor(task, True, host)
         return result
 
 
@@ -530,16 +409,16 @@ class VMConfig(Logger):
         """
         self.logger.info('%s %s', host.name, state)
         if state == 'off':
-            self.task_monitor(host.PowerOff(), True, host)
+            Tasks.task_monitor(host.PowerOff(), True, host)
 
         if state == 'on':
-            self.task_monitor(host.PowerOn(), True, host)
+            Tasks.task_monitor(host.PowerOn(), True, host)
 
         if state == 'reset':
-            self.task_monitor(host.Reset(), True, host)
+            Tasks.task_monitor(host.Reset(), True, host)
 
         if state == 'reboot':
-            self.task_monitor(host.RebootGuest(), True, host)
+            Tasks.task_monitor(host.RebootGuest(), True, host)
 
         if state == 'shutdown':
             host.ShutdownGuest()
@@ -556,4 +435,4 @@ class VMConfig(Logger):
 
         self.logger.info('Move VM %s to %s folder', host.name, folder.name)
         task = folder.MoveIntoFolder_Task([host])
-        self.task_monitor(task, True, host)
+        Tasks.task_monitor(task, True, host)
