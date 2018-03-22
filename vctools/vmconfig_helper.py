@@ -366,7 +366,7 @@ class VMConfigHelper(VMConfig, Logger):
             self.power_wrapper(state, name)
 
     def disk_recfg(self):
-        """ Reconfigure a disk."""
+        """ Reconfigure a VM disk."""
         devices = []
         edit = True
         host = Query.get_obj(self.virtual_machines.view, self.opts.name)
@@ -424,7 +424,7 @@ class VMConfigHelper(VMConfig, Logger):
                 self.reconfig(host, **{'deviceChange': devices})
 
     def nic_recfg(self):
-        """ Reconfigure a disk."""
+        """ Reconfigure a VM network adapter """
         devices = []
         edit = True
         host = Query.get_obj(self.virtual_machines.view, self.opts.name)
@@ -471,7 +471,7 @@ class VMConfigHelper(VMConfig, Logger):
         self.mvfolder(host, folder)
 
     def add_nic_recfg(self, vm_name):
-        """ Add new network adapter to VM. """
+        """ Add network adapter to VM. """
         # Prompt if network is not declared
         devices = []
         if not self.opts.network:
