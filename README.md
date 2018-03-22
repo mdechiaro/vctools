@@ -1,6 +1,8 @@
 vctools
 ======
 
+[![Status](https://travis-ci.org/mdechiaro/vctools.svg?branch=master)](https://travis-ci.org/mdechiaro/vctools)
+
 This is a Python module using pyvmomi which aims to simplify
 command-line operations inside vCenter for linux sysadmins. The current
 state of this project is beta, and so far it can do the following:
