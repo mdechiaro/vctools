@@ -81,6 +81,8 @@ class VMConfigHelper(VMConfig, Logger):
         datastore = spec['vmconfig']['datastore']
         folder = spec['vmconfig']['folder']
 
+        del server_cfg['general']['passwd']
+
         self.logger.info('vmconfig %s', server_cfg)
         cluster_obj = Query.get_obj(self.clusters.view, cluster)
 
