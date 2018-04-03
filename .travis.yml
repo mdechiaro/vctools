@@ -1,8 +1,41 @@
+# vim: et ts=2 sw=2
 language: python
 python:
   - "2.7"
+addons:
+  hosts:
+  - hostname.domain.com
 install:
-  - pip install --upgrade pylint pyvmomi requests PyYAML flask
+  - sudo apt-get install -y apache2 libapache2-mod-wsgi openssl
+  - pip install --upgrade flask pylint pyvmomi PyYAML requests
+before_script:
+  - sudo mkdir /etc/apache2/ssl
+  - sudo openssl req -nodes -new -x509 -newkey rsa:2048
+    -keyout /etc/apache2/ssl/hostname.domain.com.key
+    -out /etc/apache2/ssl/hostname.domain.com.cert
+    -days 1 -subj "/CN=hostname.domain.com"
+  - sed -i "s,Directory /path/to/vctools,Directory \"$TRAVIS_BUILD_DIR\"," examples/api/api.conf
+  - sed -i "s,/path/to/vctools,$TRAVIS_BUILD_DIR," examples/api/api.conf
+  - sed -i "s,/path/to/vctools,$TRAVIS_BUILD_DIR," examples/api/api.wsgi
+  - sed -i "s,^# ,," examples/api/api.wsgi
+  - sudo sed -i "s,www-data,travis,g" /etc/apache2/envvars
+  - sudo sed -i "s,www-data,travis,g" examples/api/api.conf
+  - sudo cp examples/api/api.conf /etc/apache2/sites-available/
+  - sudo a2enmod rewrite
+  - sudo a2enmod ssl
+  - sudo a2ensite api.conf
+  - cp examples/api/api.wsgi $TRAVIS_BUILD_DIR
+  - cp examples/vctoolsrc.yaml $TRAVIS_BUILD_DIR
 script:
   - python tests/commit_check.py $TRAVIS_COMMIT
   - find . -name "*.py" -type f | xargs pylint --rcfile=.pylintrc
+  - python main.py --version
+  - sudo service apache2 restart
+  - curl -Ik --tlsv1.2 https://hostname.domain.com/api | head -n 1 | grep OK
+
+after_failure:
+  - sudo cat /var/log/apache2/error.log
+  - sudo cat /etc/apache2/sites-available/api.conf
+  - sudo cat api.wsgi
+  - ls -lh $TRAVIS_BUILD_DIR
+  - sudo find / -name "activate_this.py" -type f
