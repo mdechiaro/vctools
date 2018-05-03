@@ -300,6 +300,11 @@ class VMConfigHelper(VMConfig, Logger):
                 if not spec['mkbootiso'].get('options', None):
                     spec['mkbootiso']['options'] = {}
 
+                if not spec['mkbootiso']['options'].get('hostname', None):
+                    fqdn = Prompts.fqdn()
+                    spec['mkbootiso']['options'].update({
+                        'hostname' : fqdn
+                    })
                 if not spec['mkbootiso']['options'].get('ip', None):
                     ipaddr, netmask, gateway = Prompts.ip_info()
                     spec['mkbootiso']['options'].update({

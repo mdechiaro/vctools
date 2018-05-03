@@ -18,6 +18,11 @@ class Prompts(Logger):
         pass
 
     @classmethod
+    def fqdn(cls):
+        """ Returns string name. """
+        return raw_input('FQDN: ')
+
+    @classmethod
     def name(cls):
         """ Returns string name. """
         return raw_input('Name: ')
