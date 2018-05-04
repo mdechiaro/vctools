@@ -345,6 +345,11 @@ class ArgParser(Logger):
             '--vm-by-datastore', action='store_true',
             help='List the VMs associated with datastore.'
         )
+        query_opts.add_argument(
+            '--vm-guest-ids', action='store_true',
+            help='Show all vm guest ids.'
+        )
+
         query_vmcfg_opts = query_parser.add_argument_group('vmconfig options')
 
         query_vmcfg_opts.add_argument(

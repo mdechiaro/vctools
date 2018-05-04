@@ -231,6 +231,10 @@ class VCTools(Logger):
                         for vm_name in vms:
                             print(vm_name)
 
+                if self.opts.vm_guest_ids:
+                    for guest_id in Query.list_guestids():
+                        print(guest_id)
+
             self.auth.logout()
             self.logger.debug('Call count: {0}'.format(call_count))
 
