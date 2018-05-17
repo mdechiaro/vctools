@@ -219,7 +219,7 @@ class Query(Logger):
 
 
     @classmethod
-    def return_antiaffinityrules(cls, container, cluster):
+    def return_anti_affinity_rules(cls, container, cluster):
         """
         Returns antiaffinity rules
 
@@ -229,7 +229,7 @@ class Query(Logger):
         """
 
         cluster_obj = Query.get_obj(container, cluster)
-        antiaffinityrules = {}
+        anti_affinity_rules = {}
 
         if hasattr(cluster_obj, 'configuration'):
             if hasattr(cluster_obj.configuration, 'rule'):
@@ -242,9 +242,9 @@ class Query(Logger):
                             for rule_vm in rule.vm:
                                 aa_vms.append(rule_vm.name)
                         aa_rule = {rule.name : aa_vms}
-                        antiaffinityrules.update(aa_rule)
+                        anti_affinity_rules.update(aa_rule)
 
-            return antiaffinityrules
+            return anti_affinity_rules
         return None
 
 
@@ -456,7 +456,7 @@ class Query(Logger):
         Method returns a list of VM names that are associated with cluster and datastore
 
         Args:
-            container (obj): cluster constainer object
+            container (obj): cluster container object
             cluster (str): Name of cluster to start the search
             datastore (str): Name of datastore to query
 
@@ -471,3 +471,43 @@ class Query(Logger):
                     for virtual_machine in datastore.vm:
                         vms.append(virtual_machine.name)
         return sorted(vms)
+
+
+    @classmethod
+    def is_anti_affinity_rule(cls, cluster_obj, rule_name):
+        """
+        Method returns true if an AntiAffinity rule of the specified name exists
+        in the specified cluster
+
+        Args:
+            cluster_obj (obj): cluster object for search
+            rule_name (str): name of the AntiAffinity rule searched for
+
+        Returns:
+            True|False: true if rule exists, false if not
+        """
+        for existing_rule in cluster_obj.configuration.rule:
+            if existing_rule.name == rule_name:
+                return True
+        return False
+
+
+    @classmethod
+    def is_vm_in_cluster(cls, cluster_obj, vm_obj):
+        """
+        Method returns true if the VM object listed exists in the stated cluster object,
+        false otherwise.
+
+        Args:
+            cluster_obj (obj): cluster object for search
+            vm_obj (obj): vm object searched for
+
+        Returns:
+            True|False: true if VM exists in cluster, false if not
+        """
+        match = False
+        for clus_vm in cluster_obj.resourcePool.vm:
+            if vm_obj == clus_vm:
+                match = True
+
+        return match
