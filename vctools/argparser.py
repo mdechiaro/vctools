@@ -510,6 +510,57 @@ class ArgParser(Logger):
         if defaults:
             upload_parser.set_defaults(**defaults)
 
+    def drs(self, *parents):
+        """Distributed Resource Scheduler rules, currently only anti-affinity"""
+
+        usage = """
+        Cluster DRS Rules
+        currently only anti-affinity rules are supported
+
+        help: vctools drs -h
+
+        vctools drs <vc> anti-affinity add <name> --vms <vm1 vm2...>
+        vctools drs <vc> anti-affinity delete <name>
+
+        """
+
+        drs_parser = self.subparsers.add_parser(
+            'drs', parents=list(parents),
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            usage=textwrap.dedent(usage),
+            description=textwrap.dedent(self.drs.__doc__),
+            help='Cluster DRS rules'
+        )
+
+        drs_parser.set_defaults(cmd='drs')
+
+        drs_parser.add_argument(
+            'drs_type', choices=['anti-affinity'],
+            help='options: anti-affinity (other options may come later)'
+        )
+        drs_parser.add_argument(
+            'function', choices=['add', 'delete'],
+            help='options: add|delete'
+        )
+        drs_parser.add_argument(
+            'name', metavar='', type=str,
+            help='Name of the DRS Rule'
+        )
+        drs_parser.add_argument(
+            '--vms', nargs='+', metavar='', type=str,
+            help='VMs to be added to the DRS rule'
+        )
+        drs_parser.add_argument(
+            '--cluster', metavar='',
+            help='vCenter ComputeResource'
+        )
+        drs_parser.add_argument(
+            '--prefix', metavar='', type=str,
+            help='Cluster DRS rule name prefix'
+        )
+
+
+
     def sanitize(self, opts):
         """
         Sanitize arguments. This will override the user / config input to a supported state.
@@ -522,6 +573,11 @@ class ArgParser(Logger):
         Args:
            opts (obj): argparse namespace parsed args
         """
+        # DRS rule names should always begin with the prefix
+        if opts.cmd == 'drs':
+            if not opts.name.startswith(opts.prefix):
+                opts.name = opts.prefix + opts.name
+
         # mount path needs to point to an iso, and it doesn't make sense to add
         # to the dotrc file, so this will append the self.opts.name value to it
         if opts.cmd == 'mount':
@@ -559,7 +615,8 @@ class ArgParser(Logger):
         parent_parsers = ['general', 'logging']
         parents = []
 
-        subparsers = ['add', 'create', 'mount', 'power', 'query', 'reconfig', 'umount', 'upload']
+        subparsers = ['add', 'create', 'drs', 'mount', 'power', 'query', 'reconfig',
+                      'umount', 'upload']
 
         try:
             # load parsers using defaults

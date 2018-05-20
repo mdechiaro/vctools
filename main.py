@@ -16,6 +16,7 @@ from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools.argparser import ArgParser
 from vctools.auth import Auth
 from vctools.vmconfig_helper import VMConfigHelper
+from vctools.clusterconfig import ClusterConfig
 from vctools.prompts import Prompts
 from vctools.query import Query
 from vctools.cfgchecker import CfgCheck
@@ -30,6 +31,7 @@ class VCTools(Logger):
         self.opts = opts
         self.auth = None
         self.vmcfg = None
+        self.clustercfg = None
 
     def main(self):
         """
@@ -54,6 +56,7 @@ class VCTools(Logger):
             )
 
             self.vmcfg = VMConfigHelper(self.auth, self.opts, argparser.dotrc)
+            self.clustercfg = ClusterConfig(self.auth, self.opts, argparser.dotrc)
 
             call_count = self.auth.session.content.sessionManager.currentSession.callCount
 
@@ -117,6 +120,11 @@ class VCTools(Logger):
                 if self.opts.device == 'nic':
                     self.vmcfg.nic_recfg()
 
+            if self.opts.cmd == 'drs':
+                if not self.opts.cluster:
+                    self.opts.cluster = Prompts.clusters(self.auth.session)
+                self.clustercfg.drs_rule()
+
             if self.opts.cmd == 'query':
                 datacenters_container = Query.create_container(
                     self.auth.session, self.auth.session.content.rootFolder,
@@ -129,20 +137,20 @@ class VCTools(Logger):
 
                 if self.opts.anti_affinity_rules:
                     if self.opts.cluster:
-                        antiaffinityrules = Query.return_antiaffinityrules(
+                        anti_affinity_rules = Query.return_anti_affinity_rules(
                             clusters_container.view, self.opts.cluster
                         )
                     else:
                         cluster = Prompts.clusters(self.auth.session)
-                        antiaffinityrules = Query.return_antiaffinityrules(
+                        anti_affinity_rules = Query.return_anti_affinity_rules(
                             clusters_container.view, cluster
                         )
-                    if not antiaffinityrules:
+                    if not anti_affinity_rules:
                         print('No antiaffinity rules defined.')
                     else:
                         print('Antiaffinity rules:')
 
-                        for key, val in sorted(antiaffinityrules.iteritems()):
+                        for key, val in sorted(anti_affinity_rules.iteritems()):
                             print('{0}: {1}'.format(key, ' '.join(sorted(val))))
 
                 if self.opts.datastores:
