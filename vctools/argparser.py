@@ -575,6 +575,8 @@ class ArgParser(Logger):
         """
         # DRS rule names should always begin with the prefix
         if opts.cmd == 'drs':
+            if not opts.prefix:
+                opts.prefix = self.dotrc['clusterconfig']['prefix']
             if not opts.name.startswith(opts.prefix):
                 opts.name = opts.prefix + opts.name
 
