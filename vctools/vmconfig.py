@@ -41,6 +41,7 @@ class VMConfig(Logger):
         datastore = kwargs.get('datastore', None)
         iso = kwargs.get('iso', None)
         verify = kwargs.get('verify', False)
+        retry = kwargs.get('retry', True)
 
         # we need the absolute path to open the binary locally, but only the
         # filename for uploading to the datastore.
@@ -71,9 +72,16 @@ class VMConfig(Logger):
             return response.status_code
 
         except requests.exceptions.ConnectionError as err:
-            self.logger.error(err, exc_info=False)
-            self.logger.error('%s %s %s %s', url, params, cookie, verify)
-            print(err)
+            if retry:
+                print(err)
+                print('Upload failed, retrying')
+                response = requests.put(
+                    url, params=params, cookies=cookie, data=data, verify=verify
+                )
+            else:
+                self.logger.error(err, exc_info=False)
+                self.logger.error('%s %s %s %s', url, params, cookie, verify)
+                print(err)
 
 
 
