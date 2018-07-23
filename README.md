@@ -4,8 +4,8 @@ vctools
 [![Status](https://travis-ci.org/mdechiaro/vctools.svg?branch=master)](https://travis-ci.org/mdechiaro/vctools)
 
 This is a Python module using pyvmomi which aims to simplify
-command-line operations inside vCenter for linux sysadmins. The current
-state of this project is beta, and so far it can do the following:
+command-line operations inside vCenter for linux sysadmins. Here is a
+short list of what it can do:
 
   - Completely automate a new VM creation from start to finish. This
     includes creating a boot ISO if your environment does not support DHCP.
@@ -22,14 +22,14 @@ Dependencies (all available from pip):
   - flask
   - pyvmomi
 
-Quick Install:
+Install:
 
     sudo pip install argparse flask requests pyvmomi PyYAML
     cp .vctoolsrc.yaml.example ~/.vctoolsrc.yaml
     sudo ln -s /path/to/vctools/main.py /usr/local/bin/vctools
 
-If you wish to share this proect with other users, then copy the file to
-the root of the project and edit the group perms so that they are
+If you wish to share this project with other users, then copy the file to
+the root of the project and edit the group permissions so that they are
 readable.
 
     cp /path/to/vctools/.vctoolsrc.yaml.example \
@@ -37,19 +37,21 @@ readable.
 
 VM Creation:
 
-This program will merge a default rc config file and a server config
+This program will merge a default "rc" config file and a server config
 into a VM creation config. It will prompt the user for any missing info
 that is required to create a VM, and then automate the build process
 from start to finish.
 
-It is capable of creating a boot ISO per server (mkbootiso) for
-situations when DHCP or PXE booting is not an option. It can also
-upload, mount, and power on the VM after its creation making the process
-completely automated. It can handle multiple configs at once and merge
-them separately with the dotrc for complex configurations.
+It is capable of creating a boot ISO per server for situations when DHCP
+or PXE booting is not an option. It can also upload, mount, and power on
+the VM after its creation making the process completely automated. It
+can handle multiple configs at once and merge them separately with the
+dotrc for complex configurations.
 
-An example yaml config:
+An example yaml config (leave options out and be prompted if necessary):
 
+    # hostname.yaml
+    ---
     mkbootiso:
       ks: http://host.domain.com/ks.cfg
       options:
@@ -64,9 +66,11 @@ An example yaml config:
       cpuHotAddEnabled: true
       datacenter: Linux
       datastore: 1234_datastore_01
-      disks:
-      - 50
-      - 1500
+      disks: # assign disks to specific scsis
+        0:
+        - 50
+        1:
+        - 1500
       folder: Linux Team
       guestId: rhel7_64Guest
       memoryHotAddEnabled: true
@@ -75,23 +79,27 @@ An example yaml config:
       nics:
       - 1000_foo_network
       - 1001_bar_network
-      numCPUs: 1
+      numCPUs: 2
 
 
 Any configs that you wish to be set as defaults should be added to
-.vctoolsrc.yaml, and then can be overridden on a per server basis with
-user supplied configs. In addition, any features that you do not need
-(mkbootiso) should be omitted.
+`~/.vctoolsrc.yaml` or `/path/to/vctools/vctoolsrc.yaml`, and then can
+be overridden on a per server basis with user supplied configs. In
+addition, any features that you do not need should be completely
+omitted.
 
 The creation process will output all configurations for the server in
-YaML format for easy rebuilds in the future. Committing these files to
-your favorite version control system is recommended.
+YaML format for easy rebuilds in the future.
 
 Command Line (Argparse) Usage:
 
 Create a New VM:
 
-    vctools create vcenter sample.yaml sample2.yaml sampleN.yaml
+    vctools create vcenter hostname.yaml hostnameN.yaml
+
+Create a VM config from an existing system:
+
+    vctools query vcenter --vmconfig existing_vm --createcfg new_vm > new_vm.yaml
 
 Mount an ISO:
 
