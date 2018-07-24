@@ -173,6 +173,10 @@ class Prompts(Logger):
                 continue
 
         cls.logger.info(selected_folder)
+
+        if '->' in selected_folder:
+            return selected_folder.split('->')[-1].strip()
+
         return selected_folder
 
 
