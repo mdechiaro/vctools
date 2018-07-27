@@ -9,6 +9,7 @@ https://github.com/mdechiaro/vctools/
 from __future__ import print_function
 import logging
 from getpass import getuser
+import os
 import sys
 import yaml
 #
@@ -264,8 +265,22 @@ class VCTools(Logger):
 
 
 if __name__ == '__main__':
+    vctools_dir = os.path.dirname(os.path.realpath(__file__))
+    grouprc = vctools_dir + '/' + 'vctoolsrc.yaml'
+    homerc = '~/.vctoolsrc.yaml'
+    rc_files = [grouprc, homerc]
+    for rc_file in rc_files:
+        try:
+            dotrc = yaml.load(open(os.path.expanduser(rc_file)))
+        except IOError:
+            # if it does not exist, then skip it
+            pass
     argparser = ArgParser()
-    argparser.setup_args(**argparser.dotrc)
+    argparser(**dotrc)
+
+    rcfile = argparser.parser.parse_args().rcfile
+    if rcfile:
+        argparser(**yaml.load(rcfile))
     options = argparser.sanitize(argparser.parser.parse_args())
 
     log_level = options.level.upper()

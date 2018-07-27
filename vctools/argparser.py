@@ -2,53 +2,77 @@
 # vim: ts=4 sw=4 et
 """Class for handling argparse parsers. Methods are configured as subparsers."""
 import argparse
-import os
 import subprocess
 import sys
 import textwrap
-import yaml
 from vctools import Logger
 
-# pylint: disable=too-many-instance-attributes
 class ArgParser(Logger):
     """Argparser class. It handles the user inputs and config files."""
     def __init__(self):
         self.syspath = sys.path[0]
-        self.gitrev = subprocess.check_output(
+        self.__version__ = subprocess.check_output(
             [
                 'git', '--git-dir', self.syspath + '/.git', 'rev-parse', '--short', 'HEAD'
             ]
         )
 
-        self.__version__ = self.gitrev
-        self.help = None
-        self.opts = None
-        self.dotrc = None
-
         self.parser = argparse.ArgumentParser(
             description='vCenter Tools CLI'
         )
-
         self.parser.add_argument(
             '--version', '-v', action='version',
             version=self.__version__,
             help='version number'
         )
-
-        # subparser
         self.subparsers = self.parser.add_subparsers(metavar='')
-        # override options with defaults in dotfiles
-        rootdir = os.path.dirname(os.path.abspath(__file__ + '/../'))
-        rc_files = [rootdir + '/vctoolsrc.yaml', '~/.vctoolsrc.yaml']
-        for rc_file in rc_files:
-            try:
-                dotrc_yaml = open(os.path.expanduser(rc_file))
-                self.dotrc = yaml.load(dotrc_yaml)
-            except IOError:
-                pass
 
-        if not self.dotrc:
-            raise ValueError('Cannot load dotrc file.')
+        self.help = None
+        self.opts = None
+        self.dotrc = None
+
+    def __call__(self, **dotrc):
+        """
+        Load the argparse parsers with the option for a dotrc override.
+
+        Args:
+            dotrc (dict): A dict were key is the argparse subparser and its
+                val are the argument overrides.
+        """
+        self.dotrc = dotrc
+
+        # parent_parsers are accessible to all subparsers
+        parent_parsers = ['general', 'logging']
+        parents = []
+
+        # subparsers are methods that create positional arguments
+        subparsers = [
+            'add', 'create', 'drs', 'mount', 'power', 'query', 'reconfig', 'umount', 'upload'
+        ]
+
+        try:
+            # load parsers and subparsers and override with dotrc dict
+            for parent in parent_parsers:
+                if self.dotrc:
+                    if parent in self.dotrc.keys():
+                        parents.append(getattr(self, str(parent))(**self.dotrc[str(parent)]))
+                    else:
+                        parents.append(getattr(self, str(parent))())
+                else:
+                    parents.append(getattr(self, str(parent))())
+
+            for parser in subparsers:
+                if self.dotrc:
+                    if parser in self.dotrc.keys():
+                        getattr(self, str(parser))(*parents, **self.dotrc[str(parser)])
+                    else:
+                        getattr(self, str(parser))(*parents)
+                else:
+                    getattr(self, str(parser))(*parents)
+
+        except AttributeError:
+            raise
+
 
     @staticmethod
     def _mkdict(args):
@@ -107,6 +131,12 @@ class ArgParser(Logger):
             '--passwd', metavar='',
             help='password'
         )
+
+        genopts.add_argument(
+            '--rcfile', metavar='', type=argparse.FileType('r'),
+            help='A custom config for vctools options'
+        )
+
         if defaults:
             general_parser.set_defaults(**defaults)
 
@@ -559,8 +589,6 @@ class ArgParser(Logger):
             help='Cluster DRS rule name prefix'
         )
 
-
-
     def sanitize(self, opts):
         """
         Sanitize arguments. This will override the user / config input to a supported state.
@@ -605,40 +633,3 @@ class ArgParser(Logger):
                 opts.verify_ssl = bool(self.dotrc['upload']['verify_ssl'])
 
         return opts
-
-    def setup_args(self, **dotrc):
-        """
-        Method loads all the argparse parsers.
-
-        Args:
-            dotrc (dict): A config file of overrides
-        """
-
-        parent_parsers = ['general', 'logging']
-        parents = []
-
-        subparsers = ['add', 'create', 'drs', 'mount', 'power', 'query', 'reconfig',
-                      'umount', 'upload']
-
-        try:
-            # load parsers using defaults
-            for parent in parent_parsers:
-                if dotrc:
-                    if parent in dotrc.keys():
-                        parents.append(getattr(self, str(parent))(**dotrc[str(parent)]))
-                    else:
-                        parents.append(getattr(self, str(parent))())
-                else:
-                    parents.append(getattr(self, str(parent))())
-
-            for parser in subparsers:
-                if dotrc:
-                    if parser in dotrc.keys():
-                        getattr(self, str(parser))(*parents, **dotrc[str(parser)])
-                    else:
-                        getattr(self, str(parser))(*parents)
-                else:
-                    getattr(self, str(parser))(*parents)
-
-        except AttributeError:
-            raise
