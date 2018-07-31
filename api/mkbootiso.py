@@ -14,7 +14,7 @@ mkbootiso = Blueprint('mkbootiso', __name__)
 @mkbootiso.route('/', methods=['GET', 'POST'])
 def create():
     """
-    POST /mkbootiso/mkbootiso <json>
+    POST /api/mkbootiso <json>
 
     Create ISOs on remote server.
 
@@ -47,18 +47,16 @@ def create():
     Example:
 
         curl -i -k -H "Content-Type: application/json" -X POST \\
-        https://hostname.domain.com/mkbootiso/mkbootiso \\
+        https://hostname.domain.com/api/mkbootiso \\
         -d @- << EOF
             {
                 "source" : "/opt/isos/rhel7",
                 "ks" : "http://ks.domain.com/rhel7-ks.cfg",
                 "options" : {
-                    "biosdevname" : "0",
                     "gateway" : "10.10.10.1",
                     "hostname" : "hostname.domain.com",
                     "ip" : "10.10.10.10",
                     "nameserver" : "4.2.2.2",
-                    "net.ifnames" : "0",
                     "netmask" : "255.255.255.0"
                 },
                 "output": "/tmp"
