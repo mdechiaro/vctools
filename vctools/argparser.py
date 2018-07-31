@@ -137,6 +137,11 @@ class ArgParser(Logger):
             help='A custom config for vctools options'
         )
 
+        genopts.add_argument(
+            '--datacenter', metavar='', default='Linux',
+            help='vCenter Datacenter. default: %(default)s'
+        )
+
         if defaults:
             general_parser.set_defaults(**defaults)
 
@@ -197,11 +202,6 @@ class ArgParser(Logger):
 
         add_parser.set_defaults(cmd='add')
 
-        add_parser.add_argument(
-            '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
-        )
-
         add_type_opts = add_parser.add_argument_group('type options')
 
         add_parser.add_argument(
@@ -245,10 +245,6 @@ class ArgParser(Logger):
             help='YaML config for creating new Virtual Machines.'
         )
 
-        create_parser.add_argument(
-            '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
-        )
         create_parser.add_argument(
             '--power', action='store_true', default=True,
             help='Power on the VM after creation. default: %(default)s'
@@ -362,11 +358,6 @@ class ArgParser(Logger):
         )
 
         query_opts.add_argument(
-            '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
-        )
-
-        query_opts.add_argument(
             '--vmconfig', nargs='+', metavar='',
             help='Virtual machine config'
         )
@@ -422,10 +413,6 @@ class ArgParser(Logger):
             help='Reconfigure Attributes for Virtual Machines.'
         )
         reconfig_parser.set_defaults(cmd='reconfig')
-        reconfig_parser.add_argument(
-            '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
-        )
 
         reconfig_type_opts = reconfig_parser.add_argument_group('type options')
 
@@ -533,10 +520,6 @@ class ArgParser(Logger):
             help='verify SSL certificate. default: %(default)s'
         )
 
-        upload_parser.add_argument(
-            '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
-        )
         if defaults:
             upload_parser.set_defaults(**defaults)
 
