@@ -489,9 +489,9 @@ class VMConfigHelper(VMConfig, Logger):
         nic_cfg_opts.update({'container' : esx_host_net, 'network' : network})
         if self.opts.driver == 'e1000':
             nic_cfg_opts.update({'driver': 'VirtualE1000'})
-        devices.append(self.vmcfg.nic_config(**nic_cfg_opts))
+        devices.append(self.nic_config(**nic_cfg_opts))
         if devices:
             self.logger.info(
                 'add hardware %s network: %s', vm_name.name, network
             )
-            self.vmcfg.reconfig(vm_name, **{'deviceChange': devices})
+            self.reconfig(vm_name, **{'deviceChange': devices})
