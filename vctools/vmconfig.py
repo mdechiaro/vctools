@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim: ts=4 sw=4 et
 """Various config options for Virtual Machines."""
-from __future__ import print_function
+
 from random import uniform
 import requests
 from pyVmomi import vim # pylint: disable=E0611

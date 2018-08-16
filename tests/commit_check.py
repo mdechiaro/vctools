@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """ Check for standard format in git message """
-from __future__ import print_function
+
 import subprocess
 import sys
 import re

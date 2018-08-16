@@ -1,8 +1,8 @@
 """Various config options for Virtual Machines."""
 #!/usr/bin/python
 # vim: ts=4 sw=4 et
-from __future__ import print_function
-from __future__ import division
+
+
 import os
 import socket
 import copy
@@ -54,7 +54,7 @@ class VMConfigHelper(VMConfig, Logger):
         # deep copy the first to maintain it's structure
         new = copy.deepcopy(first)
 
-        for key, value in second.iteritems():
+        for key, value in second.items():
             if key in new and isinstance(new[key], dict):
                 new[key] = self.dict_merge(new[key], value)
             else:
@@ -94,7 +94,7 @@ class VMConfigHelper(VMConfig, Logger):
 
         scsis = []
         if isinstance(spec['vmconfig']['disks'], dict):
-            for scsi, disks in spec['vmconfig']['disks'].iteritems():
+            for scsi, disks in spec['vmconfig']['disks'].items():
                 scsis.append(self.scsi_config(scsi))
                 devices.append(scsis[scsi][1])
                 for disk in enumerate(disks):
@@ -288,7 +288,7 @@ class VMConfigHelper(VMConfig, Logger):
         # create a boot iso
         if spec.get('mkbootiso', None):
             # if the guestId matches a default os config, then merge it
-            for key, dummy in spec['mkbootiso']['defaults'].iteritems():
+            for key, dummy in spec['mkbootiso']['defaults'].items():
                 if key == spec['vmconfig']['guestId']:
                     spec['mkbootiso'] = self.dict_merge(
                         spec['mkbootiso']['defaults'][key], spec['mkbootiso']

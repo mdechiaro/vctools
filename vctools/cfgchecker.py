@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """ Checks the user config and prompts for more info"""
-from __future__ import print_function
+
 from pyVmomi import vim # pylint: disable=E0611
 from vctools.prompts import Prompts
 from vctools.query import Query

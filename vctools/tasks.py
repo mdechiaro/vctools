@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """ Task Monitor Class """
-from __future__ import print_function
+
 import textwrap
 import time
 import sys
@@ -25,14 +25,14 @@ class Tasks(Logger):
             try:
                 qid = host.runtime.question.id
 
-                if not qid in answered.keys():
+                if not qid in list(answered.keys()):
                     # systemd does not provide a mechanism for disabling cdrom lock
                     if 'CD-ROM door' in host.runtime.question.text:
                         choices = {}
                         for option in host.runtime.question.choice.choiceInfo:
                             choices.update({option.key : option.label})
 
-                        for key, val in choices.iteritems():
+                        for key, val in choices.items():
                             if 'Yes' in val:
                                 answer = key
                     else:
@@ -50,10 +50,10 @@ class Tasks(Logger):
                         print(textwrap.fill(warn, width=80))
 
                         while True:
-                            answer = raw_input('\nPlease select number: ').strip()
+                            answer = input('\nPlease select number: ').strip()
 
                             # check if answer is an appropriate number
-                            if int(answer) <= len(choices.keys()) - 1:
+                            if int(answer) <= len(list(choices.keys())) - 1:
                                 break
                             else:
                                 continue

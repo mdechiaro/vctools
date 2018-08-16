@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim: et ts=4 sw=4
 """ Create a Boot ISO """
-from __future__ import print_function
+
 import os
 import subprocess
 import textwrap
@@ -80,7 +80,7 @@ def create():
             append initrd=initrd.img {1} {2}
 
             """.format(__name__, 'ks=' + data['ks'],
-                       ' '.join("%s=%s" % (key, val) for (key, val) in data['options'].iteritems()))
+                       ' '.join("%s=%s" % (key, val) for (key, val) in data['options'].items()))
 
         # update the iso
         with open(data['source'] + '/isolinux/isolinux.cfg', 'w') as iso_cfg:

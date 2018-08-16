@@ -6,7 +6,7 @@ operations inside VMWare vCenter.
 
 https://github.com/mdechiaro/vctools/
 """
-from __future__ import print_function
+
 import logging
 from getpass import getuser
 import os
@@ -111,7 +111,7 @@ class VCTools(Logger):
                 if self.opts.cfgs:
                     self.logger.info(
                         'reconfig: %s cfgs: %s', host.name,
-                        ' '.join('%s=%s' % (k, v) for k, v in self.opts.cfgs.iteritems())
+                        ' '.join('%s=%s' % (k, v) for k, v in self.opts.cfgs.items())
                     )
                     self.vmcfg.reconfig(host, **self.opts.cfgs)
                 if self.opts.folder:
@@ -151,7 +151,7 @@ class VCTools(Logger):
                     else:
                         print('Antiaffinity rules:')
 
-                        for key, val in sorted(anti_affinity_rules.iteritems()):
+                        for key, val in sorted(anti_affinity_rules.items()):
                             print('{0}: {1}'.format(key, ' '.join(sorted(val))))
 
                 if self.opts.datastores:
@@ -200,7 +200,7 @@ class VCTools(Logger):
                             print(net)
                 if self.opts.vms:
                     vms = Query.list_vm_info(datacenters_container.view, self.opts.datacenter)
-                    for key, value in vms.iteritems():
+                    for key, value in vms.items():
                         print(key, value)
                 if self.opts.vmconfig:
                     for name in self.opts.vmconfig:

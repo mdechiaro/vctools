@@ -1,8 +1,8 @@
 """Various config options for Virtual Machines."""
 #!/usr/bin/python
 # vim: ts=4 sw=4 et
-from __future__ import print_function
-from __future__ import division
+
+
 from pyVmomi import vim # pylint: disable=E0611
 from vctools.query import Query
 from vctools import Logger

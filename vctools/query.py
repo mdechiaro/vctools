@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # vim: ts=4 sw=4 et
 """Query class for vctools.  All methods that obtain info should go here."""
-from __future__ import division
-from __future__ import print_function
+
+
 from pyVmomi import vim # pylint: disable=no-name-in-module
 from vctools import Logger
 
@@ -153,8 +153,8 @@ class Query(Logger):
                     datastores.update({datastore.name:free})
 
 
-            most = max(datastores.itervalues())
-            for key, value in datastores.iteritems():
+            most = max(datastores.values())
+            for key, value in datastores.items():
                 if value == most:
                     return key
         return None
@@ -387,7 +387,7 @@ class Query(Logger):
         cfg['vmconfig'] = {}
         def vm_deep_query(data):
             """ deep query vmconfig """
-            for key, val in data.__dict__.iteritems():
+            for key, val in data.__dict__.items():
                 if hasattr(val, '__dict__'):
                     vm_deep_query(val)
                 else:
@@ -431,9 +431,9 @@ class Query(Logger):
             cfg['vmconfig'].update({'name' : createcfg})
 
             cfg['vmconfig']['temp_disks'] = {}
-            for scsi, disks in cfg['vmconfig']['disks'].iteritems():
+            for scsi, disks in cfg['vmconfig']['disks'].items():
                 cfg['vmconfig']['temp_disks'].update({int(scsi.split()[2]) : []})
-                for dummy, val in disks.iteritems():
+                for dummy, val in disks.items():
                     cfg['vmconfig']['temp_disks'][int(scsi.split()[2])].append(val)
 
             cfg['vmconfig']['disks'] = cfg['vmconfig'].pop('temp_disks')

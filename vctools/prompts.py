@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim: ts=4 sw=4 et
 """Prompts for User Inputs"""
-from __future__ import print_function
+
 import sys
 import re
 from pyVmomi import vim # pylint: disable=no-name-in-module
@@ -20,12 +20,12 @@ class Prompts(Logger):
     @classmethod
     def fqdn(cls):
         """ Returns string name. """
-        return raw_input('FQDN: ')
+        return input('FQDN: ')
 
     @classmethod
     def name(cls):
         """ Returns string name. """
-        return raw_input('Name: ')
+        return input('Name: ')
 
     @classmethod
     def networks(cls, net_obj):
@@ -64,7 +64,7 @@ class Prompts(Logger):
             if selected_networks:
                 print('selected: ' + ','.join(selected_networks))
 
-            val = raw_input(
+            val = input(
                 '\nPlease select number:\n(Q)uit (S)how Networks\n'
                 ).strip()
 
@@ -125,7 +125,7 @@ class Prompts(Logger):
                 print('%s: %s' % (num, '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)))
 
         while True:
-            val = int(raw_input('\nPlease select number: ').strip())
+            val = int(input('\nPlease select number: ').strip())
             if val > 0 and val <= (len(datastores) - 1):
                 break
             else:
@@ -162,7 +162,7 @@ class Prompts(Logger):
             print('%s: %s' % (num, opt))
 
         while True:
-            val = int(raw_input('\nPlease select number: ').strip())
+            val = int(input('\nPlease select number: ').strip())
             if int(val) <= len(folders):
                 # need to substract 1 since we start enumeration at 1.
                 val = int(val) - 1
@@ -202,7 +202,7 @@ class Prompts(Logger):
             print('%s: %s' % (num, opt))
 
         while True:
-            val = int(raw_input('\nPlease select number: ').strip())
+            val = int(input('\nPlease select number: ').strip())
             if int(val) <= len(datacenters):
                 # need to substract 1 since we start enumeration at 1.
                 val = int(val) - 1
@@ -239,7 +239,7 @@ class Prompts(Logger):
             print('%s: %s' % (num, opt))
 
         while True:
-            val = int(raw_input('\nPlease select number: ').strip())
+            val = int(input('\nPlease select number: ').strip())
             if int(val) <= len(clusters):
                 # need to substract 1 since we start enumeration at 1.
                 val = int(val) - 1
@@ -263,7 +263,7 @@ class Prompts(Logger):
             print('%s:%s' % (num, guestid))
 
         while True:
-            val = int(raw_input('\nPlease select number: ').strip())
+            val = int(input('\nPlease select number: ').strip())
             if int(val) <= len(guestids):
                 # need to substract 1 since we start enumeration at 1.
                 val = int(val) - 1
@@ -281,11 +281,11 @@ class Prompts(Logger):
     def ip_info(cls):
         """ Method will prompt for basic IP information """
         while True:
-            ipaddr = raw_input('\nPlease enter IP: ').strip()
+            ipaddr = input('\nPlease enter IP: ').strip()
             if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', ipaddr):
                 if ipaddr.split('.')[3] == '1':
                     print('IP ends in .1, which can potentially conflict with a gateway. Proceed?')
-                    answer = raw_input('\nConfirm yes or no: ').strip()
+                    answer = input('\nConfirm yes or no: ').strip()
                     if 'no' in answer:
                         continue
                     elif 'yes' in answer:
@@ -299,14 +299,14 @@ class Prompts(Logger):
                 print('Invalid address')
                 continue
         while True:
-            netmask = raw_input('\nPlease enter Netmask: ').strip()
+            netmask = input('\nPlease enter Netmask: ').strip()
             if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', netmask):
                 break
             else:
                 print('Invalid address')
                 continue
         while True:
-            gateway = raw_input('\nPlease enter Gateway: ').strip()
+            gateway = input('\nPlease enter Gateway: ').strip()
             if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', gateway):
                 break
             else:

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim: et ts=4 sw=4
 """ An API for curl enthusiasts."""
-from __future__ import print_function
+
 import textwrap
 from flask import Flask
 #

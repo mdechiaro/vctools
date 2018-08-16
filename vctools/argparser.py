@@ -54,7 +54,7 @@ class ArgParser(Logger):
             # load parsers and subparsers and override with dotrc dict
             for parent in parent_parsers:
                 if self.dotrc:
-                    if parent in self.dotrc.keys():
+                    if parent in list(self.dotrc.keys()):
                         parents.append(getattr(self, str(parent))(**self.dotrc[str(parent)]))
                     else:
                         parents.append(getattr(self, str(parent))())
@@ -63,7 +63,7 @@ class ArgParser(Logger):
 
             for parser in subparsers:
                 if self.dotrc:
-                    if parser in self.dotrc.keys():
+                    if parser in list(self.dotrc.keys()):
                         getattr(self, str(parser))(*parents, **self.dotrc[str(parser)])
                     else:
                         getattr(self, str(parser))(*parents)
@@ -87,7 +87,7 @@ class ArgParser(Logger):
 
         params = dict(x.split('=') for x in args.split(','))
 
-        for key, value in params.iteritems():
+        for key, value in params.items():
             if params[key].isdigit():
                 params[key] = int(value)
             else:

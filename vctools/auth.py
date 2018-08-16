@@ -1,7 +1,7 @@
 #!/usr/bin/python
 """Authentication Class for vctools."""
 # vim: ts=4 sw=4 et
-from __future__ import print_function
+
 import os
 import subprocess
 from getpass import getpass, getuser

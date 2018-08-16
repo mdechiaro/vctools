@@ -18,6 +18,5 @@ class Log(type):
 
 
 # pylint: disable=too-few-public-methods
-class Logger(object):
+class Logger(object, metaclass=Log):
     """ Allows any class to easily have logging. """
-    __metaclass__ = Log
