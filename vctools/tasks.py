@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """ Task Monitor Class """
 
 import textwrap
@@ -120,7 +120,7 @@ class Tasks(Logger):
                 errors.append(items.message)
 
             sys.stdout.write('\r[' + task.info.state + '] | ' + ' '.join(errors) + '\n')
-            Tasks.logger.info('[' + task.info.state + '] | ' + ' '.join(errors))
+            Tasks.logger.info('[ %s ] | %s', task.info.state, ' '.join(errors))
             sys.stdout.flush()
             return False
 

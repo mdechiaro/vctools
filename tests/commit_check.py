@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """ Check for standard format in git message """
 
 import subprocess
 import sys
 import re
 
-class GitCommitCheck(object):
+class GitCommitCheck:
     """ Validates subject and body of commit message """
     def __init__(self, commit):
         self.commit = commit

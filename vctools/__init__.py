@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: ts=4 sw=4 et
 """ Logging metaclass."""
 import logging
@@ -18,5 +18,5 @@ class Log(type):
 
 
 # pylint: disable=too-few-public-methods
-class Logger(object, metaclass=Log):
+class Logger(metaclass=Log):
     """ Allows any class to easily have logging. """

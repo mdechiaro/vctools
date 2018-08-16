@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: ts=4 sw=4 et
 """Query class for vctools.  All methods that obtain info should go here."""
 
@@ -42,10 +42,8 @@ class Query(Logger):
         if hasattr(s_instance, 'content'):
             if hasattr(s_instance.content, 'viewManager'):
                 return s_instance.content.viewManager.CreateContainerView(*args)
-            else:
-                raise ValueError
-        else:
-            raise ValueError
+
+        return ValueError
 
 
     @classmethod

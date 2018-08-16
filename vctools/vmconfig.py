@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: ts=4 sw=4 et
 """Various config options for Virtual Machines."""
 

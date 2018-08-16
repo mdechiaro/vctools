@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: ts=4 sw=4 et
 """Class for handling argparse parsers. Methods are configured as subparsers."""
 import argparse
@@ -15,7 +15,7 @@ class ArgParser(Logger):
             [
                 'git', '--git-dir', self.syspath + '/.git', 'rev-parse', '--short', 'HEAD'
             ]
-        )
+        ).decode('utf-8')
 
         self.parser = argparse.ArgumentParser(
             description='vCenter Tools CLI'
@@ -50,28 +50,24 @@ class ArgParser(Logger):
             'add', 'create', 'drs', 'mount', 'power', 'query', 'reconfig', 'umount', 'upload'
         ]
 
-        try:
-            # load parsers and subparsers and override with dotrc dict
-            for parent in parent_parsers:
-                if self.dotrc:
-                    if parent in list(self.dotrc.keys()):
-                        parents.append(getattr(self, str(parent))(**self.dotrc[str(parent)]))
-                    else:
-                        parents.append(getattr(self, str(parent))())
+        # load parsers and subparsers and override with dotrc dict
+        for parent in parent_parsers:
+            if self.dotrc:
+                if parent in list(self.dotrc.keys()):
+                    parents.append(getattr(self, str(parent))(**self.dotrc[str(parent)]))
                 else:
                     parents.append(getattr(self, str(parent))())
+            else:
+                parents.append(getattr(self, str(parent))())
 
-            for parser in subparsers:
-                if self.dotrc:
-                    if parser in list(self.dotrc.keys()):
-                        getattr(self, str(parser))(*parents, **self.dotrc[str(parser)])
-                    else:
-                        getattr(self, str(parser))(*parents)
+        for parser in subparsers:
+            if self.dotrc:
+                if parser in list(self.dotrc.keys()):
+                    getattr(self, str(parser))(*parents, **self.dotrc[str(parser)])
                 else:
                     getattr(self, str(parser))(*parents)
-
-        except AttributeError:
-            raise
+            else:
+                getattr(self, str(parser))(*parents)
 
 
     @staticmethod
@@ -241,7 +237,7 @@ class ArgParser(Logger):
         create_parser.set_defaults(cmd='create')
 
         create_parser.add_argument(
-            'config', nargs='+', type=file,
+            'config', nargs='+', type=argparse.FileType('r'),
             help='YaML config for creating new Virtual Machines.'
         )
 

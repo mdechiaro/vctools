@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """ Checks the user config and prompts for more info"""
 
 from pyVmomi import vim # pylint: disable=E0611
 from vctools.prompts import Prompts
 from vctools.query import Query
 
-class CfgCheck(object):
+class CfgCheck:
     """ Cfg checker class."""
     def __init__(self):
         pass

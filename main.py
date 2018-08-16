@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: ts=4 sw=4 et
 """
 vctools is a Python module using pyVmomi which aims to simplify command-line
@@ -79,6 +79,7 @@ class VCTools(Logger):
                         if spec.get('mkbootiso', None):
                             server_cfg['mkbootiso'] = {}
                             server_cfg['mkbootiso'].update(spec['mkbootiso'])
+
                         print(
                             yaml.dump(server_cfg, default_flow_style=False),
                             file=open(filename, 'w')

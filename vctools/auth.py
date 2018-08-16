@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """Authentication Class for vctools."""
 # vim: ts=4 sw=4 et
 

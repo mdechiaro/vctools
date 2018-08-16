@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # vim: ts=4 sw=4 et
 """Prompts for User Inputs"""
 
@@ -126,7 +126,7 @@ class Prompts(Logger):
 
         while True:
             val = int(input('\nPlease select number: ').strip())
-            if val > 0 and val <= (len(datastores) - 1):
+            if val > 0 <= (len(datastores) - 1):
                 break
             else:
                 print('Invalid number')
