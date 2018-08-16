@@ -13,19 +13,17 @@ short list of what it can do:
   - Query various information on VMs, Datastores, Datacenters, etc
   - Upload ISOs to remote datastores, and mount and unmount them on VMs.
 
-Python: 2.7
+Python: 3.5+
 
 Dependencies (all available from pip):
-  - argparse
-  - requests
-  - PyYAML
-  - flask
-  - pyvmomi
+  - pipenv
 
 Install:
 
-    sudo pip install argparse flask requests pyvmomi PyYAML
-    cp .vctoolsrc.yaml.example ~/.vctoolsrc.yaml
+    git clone https://www.github.com/mdechiaro/vctools
+    cd vctools
+    pipenv --python 3.6 && pipenv install
+    cp examples/vctoolsrc.yaml.example ~/.vctoolsrc.yaml
     sudo ln -s /path/to/vctools/main.py /usr/local/bin/vctools
 
 If you wish to share this project with other users, then copy the file to
