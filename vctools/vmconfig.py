@@ -73,17 +73,16 @@ class VMConfig(Logger):
 
         except requests.exceptions.ConnectionError as err:
             if retry:
-                print(err)
-                print('Upload failed, retrying')
-                response = requests.put(
-                    url, params=params, cookies=cookie, data=data, verify=verify
-                )
+                self.logger.error(err)
+                self.logger.error('Upload failed, retrying')
+                with open(iso, 'rb') as data:
+                    response = requests.put(
+                        url, params=params, cookies=cookie, data=data, verify=verify
+                    )
+                self.logger.debug(response, kwargs)
             else:
                 self.logger.error(err, exc_info=False)
                 self.logger.error('%s %s %s %s', url, params, cookie, verify)
-                print(err)
-
-
 
 
     @classmethod
