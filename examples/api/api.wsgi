@@ -1,5 +1,7 @@
-# activate_this = '/home/travis/virtualenv/python2.7.14/bin/activate_this.py'
-# execfile(activate_this, dict(__file__=activate_this))
+## Uncomment this for virtual environments / Travis CI
+# activate_this = '/path/to/bin/activate_this.py'
+# with open(activate_this) as fname:
+#    exec(fname.read(), dict(__file__=activate_this))
 import sys
 sys.path.insert(0, '/path/to/vctools')
 from api_main import vctools_api as application
