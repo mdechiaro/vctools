@@ -10,11 +10,12 @@ argparse = "*"
 requests = "*"
 pyyaml = "*"
 flask = "*"
+mod_wsgi = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.5"
+python_version = "3.6"
 
 [scripts]
 vctools = "python main.py"
