@@ -7,4 +7,4 @@ if [[ ! -d "${RPATH}/.venv" ]]; then
     pipenv install
 fi
 
-cd ${RPATH} && pipenv run vctools "$@"
+(cd ${RPATH} && pipenv run vctools "$@")
