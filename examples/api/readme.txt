@@ -14,6 +14,8 @@ apache2-dev / httpd-devel
 
 Install mod_wsgi via pip3 or pipenv and run the following commands:
 
-mod_wsgi-express module-config >> examples/api/api.conf
+run: pipenv shell 'mod_wsgi-express module-config; exit'
+
+copy output to examples/api/api.conf
 sed -i "/WSGIDaemonProcess/ s,$, python-home=$VIRTUAL_ENV," examples/api/api.conf
 systemctl restart (apache2|httpd)
