@@ -300,16 +300,31 @@ class VMConfigHelper(VMConfig, Logger):
                 if not spec['mkbootiso'].get('options', None):
                     spec['mkbootiso']['options'] = {}
 
-                if not spec['mkbootiso']['options'].get('hostname', None):
-                    fqdn = Prompts.fqdn()
-                    spec['mkbootiso']['options'].update({
-                        'hostname' : fqdn
-                    })
-                if not spec['mkbootiso']['options'].get('ip', None):
-                    ipaddr, netmask, gateway = Prompts.ip_info()
-                    spec['mkbootiso']['options'].update({
-                        'ip' : ipaddr, 'netmask' : netmask, 'gateway' : gateway
-                    })
+                if 'ubuntu' in spec['vmconfig']['guestId']:
+                    if not spec['mkbootiso']['options'].get('netcfg/get_hostname', None):
+                        fqdn = Prompts.fqdn()
+                        spec['mkbootiso']['options'].update({
+                            'netcfg/get_hostname' : fqdn
+                        })
+                    if not spec['mkbootiso']['options'].get('netcfg/get_ipaddress', None):
+                        ipaddr, netmask, gateway = Prompts.ip_info()
+                        spec['mkbootiso']['options'].update({
+                            'netcfg/get_ipaddress' : ipaddr,
+                            'netcfg/get_netmask' : netmask,
+                            'netcfg/get_gateway' : gateway
+                        })
+
+                elif 'rhel' in spec['vmconfig']['guestId']:
+                    if not spec['mkbootiso']['options'].get('hostname', None):
+                        fqdn = Prompts.fqdn()
+                        spec['mkbootiso']['options'].update({
+                            'hostname' : fqdn
+                        })
+                    if not spec['mkbootiso']['options'].get('ip', None):
+                        ipaddr, netmask, gateway = Prompts.ip_info()
+                        spec['mkbootiso']['options'].update({
+                            'ip' : ipaddr, 'netmask' : netmask, 'gateway' : gateway
+                        })
 
             spec['mkbootiso'].update({'filename' : spec['vmconfig']['name'] + '.iso'})
             self.logger.info('mkbootiso %s', spec['mkbootiso'])

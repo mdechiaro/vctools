@@ -70,30 +70,60 @@ def create():
     if request.method == 'POST':
         data = request.get_json()
 
-        label = """
-            default vesamenu.c32
-            display boot.msg
-            timeout 5
-            label iso created by {0}
-            menu default
-            kernel vmlinuz
-            append initrd=initrd.img {1} {2}
-
-            """.format(__name__, 'ks=' + data['ks'],
-                       ' '.join("%s=%s" % (key, val) for (key, val) in data['options'].items()))
-
         # update the iso
-        with open(data['source'] + '/isolinux/isolinux.cfg', 'w') as iso_cfg:
-            iso_cfg.write(textwrap.dedent(label))
+        for key, dummy in data.items():
+            if 'url' in key:
+                ubuntu_label = """
+                    # D-I config version 2.0
+                    # search path for the c32 support libraries (libcom32, libutil etc.)
+                    path
+                    include menu.cfg
+                    default vesamenu.c32
+                    prompt 1
+                    timeout 1
+                    menu default
+                    kernel linux
+                    append initrd=initrd.gz {1} {2}
+
+                    """.format(__name__, 'url=' + data['url'],
+                               ' '.join("%s=%s" % (key, val) for (key, val) in
+                                        data['options'].items()))
+
+                isolinux_bin = 'isolinux.bin'
+                bootcat = 'boot.cat'
+
+                with open(data['source'] + '/isolinux.cfg', 'w') as iso_cfg:
+                    iso_cfg.write(textwrap.dedent(ubuntu_label))
+
+            elif 'ks' in key:
+                redhat_label = """
+                    default vesamenu.c32
+                    display boot.msg
+                    timeout 5
+                    label iso created by {0}
+                    menu default
+                    kernel vmlinuz
+                    append initrd=initrd.img {1} {2}
+
+                    """.format(__name__, 'ks=' + data['ks'],
+                               ' '.join("%s=%s" % (key, val) for (key, val) in
+                                        data['options'].items()))
+
+                isolinux_bin = 'isolinux/isolinux.bin'
+                bootcat = 'isolinux/boot.cat'
+
+                with open(data['source'] + '/isolinux/isolinux.cfg', 'w') as iso_cfg:
+                    iso_cfg.write(textwrap.dedent(redhat_label))
 
         if not data.get('filename', None):
             data.update({'filename' : data['options']['hostname'] + '.iso'})
 
         cmd = """
-              /usr/bin/genisoimage -quiet -J -T -o {0} -b isolinux/isolinux.bin
-              -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R
+              /usr/bin/genisoimage -quiet -J -T -o {0} -b {2}
+              -c {3} -no-emul-boot -boot-load-size 4 -boot-info-table -R
               -m TRANS.TBL -graft-points {1}""".format(
-                  data['output'] + '/' + data['filename'], data['source'])
+                  data['output'] + '/' + data['filename'],
+                  data['source'], isolinux_bin, bootcat)
 
         # create the iso
         create_iso = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, shell=False)
