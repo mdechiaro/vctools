@@ -2,6 +2,7 @@
 # vim: ts=4 sw=4 et
 """Class for handling argparse parsers. Methods are configured as subparsers."""
 import argparse
+import os
 import subprocess
 import sys
 import textwrap
@@ -69,6 +70,16 @@ class ArgParser(Logger):
             else:
                 getattr(self, str(parser))(*parents)
 
+    @staticmethod
+    def _fix_file_paths(args):
+        """
+        Internal method for expanding relative paths to OLDPWD to work around
+        cd subshell and pipenv.
+        """
+        if not args.startswith(('/', '~')):
+            args = os.path.join(os.environ['OLDPWD'], args)
+
+        return open(args, 'r')
 
     @staticmethod
     def _mkdict(args):
@@ -237,7 +248,7 @@ class ArgParser(Logger):
         create_parser.set_defaults(cmd='create')
 
         create_parser.add_argument(
-            'config', nargs='+', type=argparse.FileType('r'),
+            'config', nargs='+', type=self._fix_file_paths,
             help='YaML config for creating new Virtual Machines.'
         )
 

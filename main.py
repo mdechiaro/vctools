@@ -82,7 +82,7 @@ class VCTools(Logger):
 
                         print(
                             yaml.dump(server_cfg, default_flow_style=False),
-                            file=open(filename, 'w')
+                            file=open(os.path.join(os.environ['OLDPWD'], filename), 'w')
                         )
 
             if self.opts.cmd == 'mount':
