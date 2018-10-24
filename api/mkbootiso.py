@@ -83,9 +83,9 @@ def create():
                     timeout 1
                     menu default
                     kernel linux
-                    append initrd=initrd.gz {1} {2}
+                    append initrd=initrd.gz {0} {1}
 
-                    """.format(__name__, 'url=' + data['url'],
+                    """.format('url=' + data['url'],
                                ' '.join("%s=%s" % (key, val) for (key, val) in
                                         data['options'].items()))
 
