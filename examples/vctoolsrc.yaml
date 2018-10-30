@@ -55,6 +55,18 @@ mkbootiso:
         nameserver: '4.2.2.2'
         net.ifnames: '0'
         biosdevname: '0'
+    ubuntu64Guest:
+      output: '/tmp'
+      source: '/opt/isos/18.04'
+      url: 'http://ks.domain.com/18.04.cfg'
+      options:
+        auto: 'true'
+        priority: 'critical'
+        netcfg/domain: 'domain.com'
+        netcfg/disable_autoconfig: 'true'
+        netcfg/disable_dhcp: 'true'
+        netcfg/get_netmask: '255.255.255.0'
+        netcfg/get_nameservers: '4.2.2.2'
 vmconfig:
   # default config values for VM creations
   # You can get an idea of what is can be set here by looking at the ConfigSpec in VMware's SDK

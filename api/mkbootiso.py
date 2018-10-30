@@ -44,7 +44,7 @@ def create():
         The Apache user should have write permissions to files inside isolinux/, and write
         permissions to the output directories.
 
-    Example:
+    Red Hat:
 
         curl -i -k -H "Content-Type: application/json" -X POST \\
         https://hostname.domain.com/api/mkbootiso \\
@@ -58,6 +58,29 @@ def create():
                     "ip" : "10.10.10.10",
                     "nameserver" : "4.2.2.2",
                     "netmask" : "255.255.255.0"
+                },
+                "output": "/tmp"
+            }
+        EOF
+
+    Ubuntu:
+
+        curl -i -k -H "Content-Type: application/json" -X POST \\
+        https://hostname.domain.com/api/mkbootiso \\
+        -d @- << EOF
+            {
+                "source" : "/opt/isos/18.04",
+                "url" : "http://ks.domain.com/preseed.cfg",
+                "options" : {
+                    "netcfg/disable_autoconfig" : "true",
+                    "netcfg/disable_dhcp" : "true",
+                    "netcfg/domain" : "domain.com",
+                    "netcfg/get_gateway" : "10.10.10.1",
+                    "netcfg/get_hostname" : "hostname.domain.com",
+                    "netcfg/get_ipaddress" : "10.10.10.10",
+                    "netcfg/get_nameservers" : "4.2.2.2",
+                    "netcfg/get_netmask" : "255.255.255.0",
+                    "priority" : "critical",
                 },
                 "output": "/tmp"
             }
