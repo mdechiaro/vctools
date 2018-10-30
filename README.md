@@ -13,7 +13,7 @@ short list of what it can do:
   - Query various information on VMs, Datastores, Datacenters, etc
   - Upload ISOs to remote datastores, and mount and unmount them on VMs.
 
-Python: 3.5+
+Python: 3.6
 
 Dependencies (all available from pip):
   - pipenv
@@ -23,15 +23,13 @@ Install:
     git clone https://www.github.com/mdechiaro/vctools
     cd vctools
     pipenv --python 3.6 && pipenv install
-    cp examples/vctoolsrc.yaml.example ~/.vctoolsrc.yaml
-    sudo ln -s /path/to/vctools/main.py /usr/local/bin/vctools
+    cp vctools/examples/vctoolsrc.yaml.example ~/.vctoolsrc.yaml
+    ln -s vctools/main.py ~/bin/vctools
 
 If you wish to share this project with other users, then copy the file to
-the root of the project and edit the group permissions so that they are
-readable.
+the root of the project and edit the group permissions appropriately.
 
-    cp /path/to/vctools/.vctoolsrc.yaml.example \
-        /path/to/vctools/vctoolsrc.yaml
+    cp vctools/examples/vctoolsrc.yaml.example vctools/vctoolsrc.yaml
 
 VM Creation:
 
