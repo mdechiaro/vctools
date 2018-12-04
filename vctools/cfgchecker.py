@@ -90,6 +90,7 @@ class CfgCheck:
             'guestId': guestid,
             'cluster': cluster,
             'datastore': datastore,
+            'datacenter': datacenter,
             'nics': nics,
             'folder': folder
         }

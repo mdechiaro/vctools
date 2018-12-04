@@ -134,11 +134,14 @@ class VMConfigHelper(VMConfig, Logger):
 
         spec['vmconfig'].update({'deviceChange':devices})
 
-        folder = Query.folders_lookup(
-            self.datacenters.view, self.opts.datacenter, folder
-        )
-
-        # delete items that are no longer needed
+        if self.opts.datacenter:
+            folder = Query.folders_lookup(
+                self.datacenters.view, self.opts.datacenter, folder
+            )
+        else:
+            folder = Query.folders_lookup(
+                self.datacenters.view, spec['vmconfig']['datacenter'], folder
+            )
 
         # delete keys that vSphere does not understand, so we can pass it a
         # dictionary to build the VM.

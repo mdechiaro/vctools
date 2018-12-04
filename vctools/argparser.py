@@ -145,8 +145,8 @@ class ArgParser(Logger):
         )
 
         genopts.add_argument(
-            '--datacenter', metavar='', default='Linux',
-            help='vCenter Datacenter. default: %(default)s'
+            '--datacenter', metavar='',
+            help='vCenter Datacenter'
         )
 
         if defaults:
