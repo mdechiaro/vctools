@@ -61,6 +61,9 @@ class VCTools(Logger):
 
             call_count = self.auth.session.content.sessionManager.currentSession.callCount
 
+            if not self.opts.datacenter:
+                self.opts.datacenter = Prompts.datacenters(self.auth.session)
+
             if self.opts.cmd == 'create':
                 if self.opts.config:
                     for cfg in self.opts.config:
