@@ -36,6 +36,10 @@ class VMConfigHelper(VMConfig, Logger):
             self.auth.session, self.auth.session.content.rootFolder,
             [vim.VirtualMachine], True
         )
+        self.dvs = Query.create_container(
+            self.auth.session, self.auth.session.content.rootFolder,
+            [vim.dvs.DistributedVirtualPortgroup], True,
+        )
 
     def dict_merge(self, first, second):
         """
@@ -128,9 +132,16 @@ class VMConfigHelper(VMConfig, Logger):
 
         # configure each network and add to devices
         for nic in spec['vmconfig']['nics']:
-            nic_cfg_opts = {}
-            nic_cfg_opts.update({'container' : cluster_obj.network, 'network' : nic})
-            devices.append(self.nic_config(**nic_cfg_opts))
+            if spec['vmconfig'].get('switch_type', None) == 'distributed':
+                nic_cfg_opts = {}
+                nic_cfg_opts.update(
+                    {'container' : self.dvs.view, 'network' : nic, 'switch_type' : 'distributed'}
+                )
+                devices.append(self.nic_config(**nic_cfg_opts))
+            else:
+                nic_cfg_opts = {}
+                nic_cfg_opts.update({'container' : cluster_obj.network, 'network' : nic})
+                devices.append(self.nic_config(**nic_cfg_opts))
 
         spec['vmconfig'].update({'deviceChange':devices})
 
@@ -151,6 +162,9 @@ class VMConfigHelper(VMConfig, Logger):
         del spec['vmconfig']['datastore']
         del spec['vmconfig']['datacenter']
         del spec['vmconfig']['cluster']
+
+        if spec['vmconfig'].get('switch_type', None):
+            del spec['vmconfig']['switch_type']
 
         pool = cluster_obj.resourcePool
 

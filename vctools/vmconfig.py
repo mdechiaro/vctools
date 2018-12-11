@@ -324,6 +324,8 @@ class VMConfig(Logger):
                 Allows the guest to control whether the connectable device
                 is connected.
             driver (str): A str that represents a network adapter driver
+            switch_type (str): Use "standard" or "distributed" switch for
+                networking.
         Returns:
             nic (obj): A configured object for a Network device.  this should
                 be appended to ConfigSpec devices attribute.
@@ -339,6 +341,7 @@ class VMConfig(Logger):
         unit = kwargs.get('unit', None)
         address_type = kwargs.get('address_type', 'assigned')
         driver = kwargs.get('driver', 'VirtualVmxnet3')
+        switch_type = kwargs.get('switch_type', 'standard')
 
         nic = vim.vm.device.VirtualDeviceSpec()
         nic.device = getattr(vim.vm.device, driver)()
@@ -353,9 +356,26 @@ class VMConfig(Logger):
         else:
             nic.operation = 'add'
 
-        nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
-        nic.device.backing.network = Query.get_obj(container, network)
-        nic.device.backing.deviceName = network
+        if switch_type == 'distributed':
+            network_obj = Query.get_obj(container, network)
+            dvs = network_obj.config.distributedVirtualSwitch
+            criteria = vim.dvs.PortCriteria()
+            criteria.connected = False
+            criteria.inside = True
+            criteria.portgroupKey = network_obj.key
+            dvports = dvs.FetchDVPorts(criteria)
+
+            # pylint: disable=line-too-long
+            nic.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+            nic.device.backing.port = vim.dvs.PortConnection()
+            nic.device.backing.port.portgroupKey = dvports[0].portgroupKey
+            nic.device.backing.port.switchUuid = dvports[0].dvsUuid
+            nic.device.backing.port.portKey = dvports[0].key
+
+        elif switch_type == 'standard':
+            nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
+            nic.device.backing.network = Query.get_obj(container, network)
+            nic.device.backing.deviceName = network
 
         nic.device.connectable = vim.vm.device.VirtualDevice.ConnectInfo()
         nic.device.connectable.connected = connected
