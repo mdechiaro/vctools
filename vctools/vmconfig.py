@@ -365,12 +365,18 @@ class VMConfig(Logger):
             criteria.portgroupKey = network_obj.key
             dvports = dvs.FetchDVPorts(criteria)
 
-            # pylint: disable=line-too-long
-            nic.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
-            nic.device.backing.port = vim.dvs.PortConnection()
-            nic.device.backing.port.portgroupKey = dvports[0].portgroupKey
-            nic.device.backing.port.switchUuid = dvports[0].dvsUuid
-            nic.device.backing.port.portKey = dvports[0].key
+            if dvports:
+                # pylint: disable=line-too-long
+                nic.device.backing = vim.vm.device.VirtualEthernetCard.DistributedVirtualPortBackingInfo()
+                nic.device.backing.port = vim.dvs.PortConnection()
+                nic.device.backing.port.portgroupKey = dvports[0].portgroupKey
+                nic.device.backing.port.switchUuid = dvports[0].dvsUuid
+                nic.device.backing.port.portKey = dvports[0].key
+            else:
+                cls.logger.error(
+                    'No available distributed virtual port found, so network config failed!'
+                )
+                cls.logger.debug('%s', dvports)
 
         elif switch_type == 'standard':
             nic.device.backing = vim.vm.device.VirtualEthernetCard.NetworkBackingInfo()
