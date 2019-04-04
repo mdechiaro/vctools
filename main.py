@@ -275,7 +275,7 @@ if __name__ == '__main__':
     rc_files = [grouprc, homerc]
     for rc_file in rc_files:
         try:
-            dotrc = yaml.load(open(os.path.expanduser(rc_file)))
+            dotrc = yaml.load(open(os.path.expanduser(rc_file)), Loader=yaml.FullLoader)
         except IOError:
             # if it does not exist, then skip it
             pass
