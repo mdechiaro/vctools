@@ -414,11 +414,21 @@ class Query(Logger):
                     capacity = item.capacityInBytes / 1024 / 1024 / 1024
                     cfg['vmconfig']['disks'][scsi].update({item.deviceInfo.label : int(capacity)})
             elif 'Network adapter' in item.deviceInfo.label:
-                cfg['vmconfig']['nics'].update({
-                    item.deviceInfo.label : [
-                        item.macAddress, item.deviceInfo.summary
-                        ]
-                    })
+                if 'DVSwitch' in item.deviceInfo.summary:
+                    cfg['vmconfig']['switch_type'] = 'distributed'
+                    for net in virtmachine.network:
+                        if item.backing.port.portgroupKey == net.config.key:
+                            cfg['vmconfig']['nics'].update({
+                                item.deviceInfo.label : [
+                                    item.macAddress, net.name
+                                    ]
+                                })
+                else:
+                    cfg['vmconfig']['nics'].update({
+                        item.deviceInfo.label : [
+                            item.macAddress, item.deviceInfo.summary
+                            ]
+                        })
 
         if createcfg:
             # make note of copy before overrides
