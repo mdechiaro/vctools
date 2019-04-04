@@ -236,12 +236,11 @@ class VMConfig(Logger):
             return cdrom
 
         # create cdrom
-        else:
-            cdrom.operation = 'add'
-            cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
-            cdrom.device.backing.exclusive = False
+        cdrom.operation = 'add'
+        cdrom.device.backing = vim.vm.device.VirtualCdrom.RemotePassthroughBackingInfo()
+        cdrom.device.backing.exclusive = False
 
-            return cdrom
+        return cdrom
 
 
     @classmethod

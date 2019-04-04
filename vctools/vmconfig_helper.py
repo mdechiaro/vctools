@@ -419,7 +419,7 @@ class VMConfigHelper(VMConfig, Logger):
                         raise ValueError(
                             'New size and existing size are equal'.format()
                         )
-                    elif disk_new_size < current_size:
+                    if disk_new_size < current_size:
                         raise ValueError(
                             'Size {0} does not exceed {1}'.format(
                                 disk_new_size, current_size
@@ -436,16 +436,16 @@ class VMConfigHelper(VMConfig, Logger):
                                 item.backing.datastore.name
                             )
                         )
-                    else:
-                        disk_cfg_opts.update(
-                            {
-                                'size' : disk_new_size,
-                                'key' : key,
-                                'controller' : controller,
-                                'unit' : item.unitNumber,
-                                'filename' : item.backing.fileName
-                            }
-                        )
+
+                    disk_cfg_opts.update(
+                        {
+                            'size' : disk_new_size,
+                            'key' : key,
+                            'controller' : controller,
+                            'unit' : item.unitNumber,
+                            'filename' : item.backing.fileName
+                        }
+                    )
             if disk_cfg_opts:
                 devices.append(self.disk_config(edit=edit, **disk_cfg_opts))
                 self.logger.info(
