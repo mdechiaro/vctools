@@ -67,7 +67,9 @@ class VCTools(Logger):
             if self.opts.cmd == 'create':
                 if self.opts.config:
                     for cfg in self.opts.config:
-                        spec = self.vmcfg.dict_merge(argparser.dotrc, yaml.load(cfg))
+                        spec = self.vmcfg.dict_merge(
+                            argparser.dotrc, yaml.load(cfg, Loader=yaml.FullLoader)
+                        )
                         cfgcheck_update = CfgCheck.cfg_checker(spec, self.auth, self.opts)
                         spec['vmconfig'].update(
                             self.vmcfg.dict_merge(spec['vmconfig'], cfgcheck_update)
@@ -284,7 +286,7 @@ if __name__ == '__main__':
 
     rcfile = argparser.parser.parse_args().rcfile
     if rcfile:
-        argparser(**yaml.load(rcfile))
+        argparser(**yaml.load(rcfile, Loader=yaml.FullLoader))
     options = argparser.sanitize(argparser.parser.parse_args())
 
     log_level = options.level.upper()
