@@ -10,6 +10,7 @@ https://github.com/mdechiaro/vctools/
 import logging
 from getpass import getuser
 import os
+import ssl
 import sys
 import yaml
 #
@@ -41,6 +42,7 @@ class VCTools(Logger):
         """
 
         try:
+            call_count = 0
 
             self.auth = Auth(self.opts.host)
             self.auth.login(
@@ -261,6 +263,10 @@ class VCTools(Logger):
 
         except vim.fault.InvalidLogin as loginerr:
             self.logger.error(loginerr.msg, exc_info=False)
+            sys.exit(2)
+
+        except ssl.CertificateError as err:
+            self.logger.error(err, exc_info=False)
             sys.exit(2)
 
         except KeyboardInterrupt as err:
