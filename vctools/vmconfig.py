@@ -468,3 +468,38 @@ class VMConfig(Logger):
         self.logger.info('Move VM %s to %s folder', host.name, folder.name)
         task = folder.MoveIntoFolder_Task([host])
         Tasks.task_monitor(task, True, host)
+
+    @classmethod
+    def vm_hardware_upgrade(cls, host, version=False, scheduled=False, policy=False):
+        """
+        Method upgrades vm hardware version.
+
+        Args:
+            host (obj): VM object
+            version (str): VM hardware version supported by ESX host.
+            scheduled (bool): Schedule the upgrade upon reboot
+            policy (str): Upgrade policy
+
+        Returns:
+            spec (obj): Configuration spec object
+        """
+        spec = None
+
+        if scheduled:
+            spec = vim.vm.ScheduledHardwareUpgradeInfo()
+            spec.scheduledHardwareUpgradeStatus = 'pending'
+
+            if not policy:
+                spec.upgradePolicy = 'never'
+            else:
+                spec.upgradePolicy = policy
+
+            if version:
+                spec.versionKey = version
+        else:
+            if version:
+                host.UpgradeVM_Task(version)
+            else:
+                host.UpgradeVM_Task()
+
+        return spec

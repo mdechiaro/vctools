@@ -128,6 +128,8 @@ class VCTools(Logger):
                     self.vmcfg.disk_recfg()
                 if self.opts.device == 'nic':
                     self.vmcfg.nic_recfg()
+                if self.opts.upgrade:
+                    self.vmcfg.hwupgrade_recfg()
 
             if self.opts.cmd == 'drs':
                 if not self.opts.cluster:

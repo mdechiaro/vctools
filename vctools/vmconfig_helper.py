@@ -521,3 +521,18 @@ class VMConfigHelper(VMConfig, Logger):
                 'add hardware %s network: %s', vm_name.name, network
             )
             self.reconfig(vm_name, **{'deviceChange': devices})
+
+    def hwupgrade_recfg(self):
+        """ Upgrade hardware on VM """
+        host = Query.get_obj(self.virtual_machines.view, self.opts.name)
+        if self.opts.scheduled:
+            self.logger.info('%s: schedule upgrade vm hardware', host.name)
+        else:
+            self.logger.info('%s: upgrade vm hardware', host.name)
+
+        config = self.vm_hardware_upgrade(
+            host, self.opts.version, self.opts.scheduled, self.opts.policy
+        )
+
+        if config:
+            self.reconfig(host, **{'scheduledHardwareUpgradeInfo' : config})

@@ -12,6 +12,7 @@ short list of what it can do:
   - Reconfigure VM hardware like networks, disks, CPU, and memory
   - Query various information on VMs, Datastores, Datacenters, etc
   - Upload ISOs to remote datastores, and mount and unmount them on VMs.
+  - Upgrade VM hardware
 
 Python: 3.6
 

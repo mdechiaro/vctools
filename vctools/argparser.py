@@ -396,7 +396,7 @@ class ArgParser(Logger):
 
         help: vctools reconfig -h
 
-        vctools reconfig <vc> <name> [--cfgs|--device] <options>
+        vctools reconfig <vc> <name> [--cfgs|--device|--folder|--upgrade] <options>
 
         # reconfigure config settings
         # lookup vmware sdk configspec for all options
@@ -410,6 +410,9 @@ class ArgParser(Logger):
 
         # reconfigure a network card
         vctools reconfig <vc> <name> --device nic --nic-id <int> --network <network>
+
+        # upgrade vm hardware
+        vctools reconfig <vc> <name> --upgrade --scheduled
         """
         reconfig_parser = self.subparsers.add_parser(
             'reconfig',
@@ -479,6 +482,28 @@ class ArgParser(Logger):
             choices=['vmxnet3', 'e1000'],
             help='The network driver, default: \"%(default)s\"'
         )
+        reconfig_type_opts.add_argument(
+            '--upgrade', action='store_true',
+            help='Upgrade VM hardware version.',
+        )
+
+        reconfig_upgrade_opts = reconfig_parser.add_argument_group('upgrade options')
+
+        reconfig_upgrade_opts.add_argument(
+            '--version', metavar='', type=str,
+            help='Upgrade hardware to specific version.'
+        )
+        reconfig_upgrade_opts.add_argument(
+            '--scheduled', action='store_true',
+            help='Schedule a hardware upgrade on reboot.'
+        )
+        reconfig_upgrade_opts.add_argument(
+            '--policy', metavar='', default='always',
+            choices=['always', 'never', 'on_soft_poweroff'],
+            help='The upgrade policy to use with scheduling. ' +
+            'choices: \"%(choices)s\" ' + 'default: \"%(default)s\" '
+        )
+
         if defaults:
             reconfig_parser.set_defaults(**defaults)
 
