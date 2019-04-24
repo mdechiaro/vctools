@@ -136,7 +136,7 @@ is recommended that you run this code when making changes and before you
 commit.
 
     # run inside project directory
-    find . -name "*.py" -type f | xargs pylint --rcfile=.pylintrc
+    find . -not \( -name ".venv" -prune \) -name "*.py" -type f | xargs pylint --rcfile=.pylintrc
 
 
 Here's a quick way to set it up in the Python intepreter and then you
