@@ -129,7 +129,7 @@ def create():
                     append initrd=initrd.img {1} {2}
 
                     """.format(__name__, 'ks=' + data['ks'],
-                               ' '.join("%s=%s" % (key, val) for (key, val) in
+                               ' '.join("%s=%s" % (key, val) if val else key for (key, val) in
                                         data['options'].items()))
 
                 isolinux_bin = 'isolinux/isolinux.bin'
