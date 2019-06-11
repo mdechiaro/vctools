@@ -255,6 +255,10 @@ class VCTools(Logger):
             self.auth.logout()
             self.logger.debug('Call count: {0}'.format(call_count))
 
+        except ssl.CertificateError as err:
+            self.logger.error(err, exc_info=False)
+            sys.exit(2)
+
         except ValueError as err:
             self.logger.error(err, exc_info=False)
             self.auth.logout()
@@ -263,10 +267,6 @@ class VCTools(Logger):
 
         except vim.fault.InvalidLogin as loginerr:
             self.logger.error(loginerr.msg, exc_info=False)
-            sys.exit(2)
-
-        except ssl.CertificateError as err:
-            self.logger.error(err, exc_info=False)
             sys.exit(2)
 
         except KeyboardInterrupt as err:
