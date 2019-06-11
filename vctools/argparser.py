@@ -475,8 +475,9 @@ class ArgParser(Logger):
             help='The network of the interface, i.e. vlan_1234_network'
         )
         reconfig_nic_opts.add_argument(
-            '--driver', metavar='', choices=['vmxnet3', 'e1000'],
-            help='The network driver, default: vmxnet3'
+            '--driver', metavar='', default='vmxnet3',
+            choices=['vmxnet3', 'e1000'],
+            help='The network driver, default: \"%(default)s\"'
         )
         if defaults:
             reconfig_parser.set_defaults(**defaults)
