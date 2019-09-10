@@ -89,6 +89,8 @@ class VMConfigHelper(VMConfig, Logger):
 
         # list of cdrom and disk devices
         devices = []
+        # list of extraConfig options
+        extras = []
 
         # add the cdrom device
         devices.append(self.cdrom_config())
@@ -138,6 +140,9 @@ class VMConfigHelper(VMConfig, Logger):
             devices.append(self.nic_config(**nic_cfg_opts))
 
         spec['vmconfig'].update({'deviceChange':devices})
+
+        if extras:
+            spec['vmconfig'].update({'extraConfig':extras})
 
         if self.opts.datacenter:
             folder = Query.folders_lookup(

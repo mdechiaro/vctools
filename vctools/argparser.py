@@ -399,8 +399,9 @@ class ArgParser(Logger):
         vctools reconfig <vc> <name> [--cfgs|--device|--folder|--upgrade] <options>
 
         # reconfigure config settings
-        # lookup vmware sdk configspec for all options
+        # see VMware SDK vim.vm.ConfigSpec for all possible options
         vctools reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
+        vctools reconfig <vc> <name> --extra-cfgs guestinfo.metadata=<base64>
 
         # move vm to another folder
         vctools reconfig <vc> <name> --folder <str>
@@ -440,6 +441,12 @@ class ArgParser(Logger):
             '--cfgs', metavar='', type=self._mkdict,
             help='A comma separated list of key values that represent config '
                  'settings such as memory or cpu. format: key=val,keyN=valN',
+        )
+
+        reconfig_type_opts.add_argument(
+            '--extra-cfgs', metavar='', type=self._mkdict,
+            help='A comma separated list of key values that represent config '
+                 'settings such as metadata and userdata. format: key=val,keyN=valN',
         )
 
         reconfig_type_opts.add_argument(

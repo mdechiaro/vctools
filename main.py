@@ -122,6 +122,24 @@ class VCTools(Logger):
                         ' '.join('%s=%s' % (k, v) for k, v in self.opts.cfgs.items())
                     )
                     self.vmcfg.reconfig(host, **self.opts.cfgs)
+                if self.opts.extra_cfgs:
+                    self.logger.info(
+                        'reconfig: %s extra-cfgs: %s', host.name,
+                        ' '.join('%s=%s' % (k, v) for k, v in self.opts.extra_cfgs.items())
+                    )
+                    extra_config = {'extraConfig' : []}
+
+                    for key, val in self.opts.extra_cfgs.items():
+                        xopts = vim.option.OptionValue()
+                        xopts.key = key
+                        xopts.value = val
+                        extra_config['extraConfig'].append(xopts)
+
+
+                    self.logger.info('inserting metadata guestinfo to %s', host.name)
+
+                    self.reconfig(host, **extra_config)
+
                 if self.opts.folder:
                     self.vmcfg.folder_recfg()
                 if self.opts.device == 'disk':
