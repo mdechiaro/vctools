@@ -3,7 +3,7 @@
 max-branches = 75
 max-args = 10
 max-attributes = 15
-max-locals = 35
+max-locals = 50
 max-statements = 200
 max-nested-blocks = 10
 min-public-methods = 1
