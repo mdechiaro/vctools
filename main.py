@@ -44,7 +44,7 @@ class VCTools(Logger):
         try:
             call_count = 0
 
-            self.auth = Auth(self.opts.host)
+            self.auth = Auth(self.opts.vcenter)
             self.auth.login(
                 self.opts.user, self.opts.passwd, self.opts.domain, self.opts.passwd_file
             )

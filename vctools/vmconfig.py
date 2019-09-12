@@ -546,7 +546,7 @@ class VMConfig(Logger):
         Decode data for vm guestinfo
 
         Args:
-            data (bytes) Encoded data
+            data (bytes) Decoded data
         Returns:
             str string of base64 gzipped data
         """

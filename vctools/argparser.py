@@ -7,6 +7,7 @@ import subprocess
 import sys
 import textwrap
 from vctools import Logger
+# pylint: disable=empty-docstring,missing-docstring
 
 class ArgParser(Logger):
     """Argparser class. It handles the user inputs and config files."""
@@ -19,7 +20,7 @@ class ArgParser(Logger):
         ).decode('utf-8')
 
         self.parser = argparse.ArgumentParser(
-            description='vCenter Tools CLI'
+            description='vcenter tools cli'
         )
         self.parser.add_argument(
             '--version', '-v', action='version',
@@ -107,21 +108,20 @@ class ArgParser(Logger):
 
     @classmethod
     def general(cls, **defaults):
-        """General Parser."""
+
         # general (parent)
         general_parser = argparse.ArgumentParser(add_help=False)
 
-        # positional argument
         general_parser.add_argument(
-            'host',
-            help='vCenter host'
+            'vcenter',
+            help='vcenter fqdn'
         )
 
         genopts = general_parser.add_argument_group('general options')
 
         genopts.add_argument(
             '--passwd-file', metavar='',
-            help='GPG encrypted passwd file'
+            help='gpg encrypted passwd file'
         )
 
         genopts.add_argument(
@@ -146,7 +146,7 @@ class ArgParser(Logger):
 
         genopts.add_argument(
             '--datacenter', metavar='',
-            help='vCenter Datacenter'
+            help='vcenter datacenter'
         )
 
         if defaults:
@@ -156,7 +156,7 @@ class ArgParser(Logger):
 
     @classmethod
     def logging(cls, **defaults):
-        """ Logging Parser """
+
         # logging (parent)
         logging_parser = argparse.ArgumentParser(add_help=False)
 
@@ -187,24 +187,20 @@ class ArgParser(Logger):
         return logging_parser
 
     def add(self, *parents, **defaults):
-        """ Add Hardware to Virtual Machines """
-        # add
-        usage = """
 
+        usage = """
+        ## add
         help: vctools add -h
 
-        vctools add <vc> <name> --device <options>
-
-        # add a network card
-        vctools add <vc> <name> --device nic  --network <network>
+        ### add a network card
+        vctools add <vcenter> <name> --device nic --network <network>
         """
         add_parser = self.subparsers.add_parser(
             'add',
             parents=list(parents),
             formatter_class=argparse.RawDescriptionHelpFormatter,
             usage=textwrap.dedent(usage),
-            description=textwrap.dedent(self.add.__doc__),
-            help='Add Hardware to Virtual Machines.'
+            help='hardware to virtual machines.'
         )
 
         add_parser.set_defaults(cmd='add')
@@ -213,129 +209,149 @@ class ArgParser(Logger):
 
         add_parser.add_argument(
             'name',
-            help='Name attribute of Virtual Machine object, i.e. hostname'
+            help='name attribute of virtual machine object, i.e. hostname'
         )
 
         add_type_opts.add_argument(
             '--device', metavar='', choices=['nic'],
-            help='Add hardware devices on Virtual Machines. choices=[%(choices)s]',
+            help='add hardware devices on virtual machines. choices=[%(choices)s]',
         )
 
         add_nic_opts = add_parser.add_argument_group('nic options')
 
         add_nic_opts.add_argument(
             '--network', metavar='',
-            help='The network of the interface, i.e. vlan_1234_network'
+            help='the network of the interface, i.e. vlan_1234_network'
         )
 
         add_nic_opts.add_argument(
             '--driver', metavar='', choices=['vmxnet3', 'e1000'],
-            help='The network driver, default: vmxnet3'
+            help='the network driver, default: vmxnet3'
         )
 
         if defaults:
             add_parser.set_defaults(**defaults)
 
     def create(self, *parents, **defaults):
-        """Create Parser."""
-        usage = """
 
+        usage = """
+        ## create
         help: vctools create -h
 
-        # create VM
-        vctools create <vc> <config> <configN>
+        ### create vm
+        vctools create <vcenter> <config> <configN>
 
-        # clone VM from template
-        vctools create <vc> <config> <configN> --template <template>
+        ### clone vm from template
+        vctools create <vcenter> <config> <configN> --template <template>
         """
-        # create
         create_parser = self.subparsers.add_parser(
             'create',
             parents=list(parents),
             formatter_class=argparse.RawDescriptionHelpFormatter,
             usage=textwrap.dedent(usage),
-            description=textwrap.dedent(self.create.__doc__),
-            help='Create Virtual Machines'
+            help='create virtual machines'
         )
 
         create_parser.set_defaults(cmd='create')
 
         create_parser.add_argument(
             'config', nargs='+', type=self._fix_file_paths,
-            help='YaML config for creating new Virtual Machines.'
+            help='yaml config for creating new virtual machines.'
         )
 
         create_parser.add_argument(
             '--power', action='store_true', default=True,
-            help='Power on the VM after creation. default: %(default)s'
+            help='power on the vm after creation. default: %(default)s'
         )
 
         create_parser.add_argument(
             '--template', metavar='',
-            help='Template to create new Virtual Machines.'
+            help='template to create new virtual machines.'
         )
 
         if defaults:
             create_parser.set_defaults(**defaults)
 
     def mount(self, *parents, **defaults):
-        """Mount Parser."""
-        # mount
+
+        usage = """
+        ## mount
+        help: vctools mount -h
+
+        ### mount iso
+        vctools mount <vcenter> --name <server> --path <file.iso> --datastore <datastore>
+        """
         mount_parser = self.subparsers.add_parser(
             'mount', parents=list(parents),
-            help='Mount ISO to CD-Rom device'
+            usage=textwrap.dedent(usage),
+            help='iso onto cdrom'
         )
 
         mount_parser.set_defaults(cmd='mount')
 
         mount_parser.add_argument(
             '--datastore', metavar='',
-            help='Name of datastore where the ISO is located.'
+            help='name of datastore where the iso is located.'
         )
 
         mount_parser.add_argument(
             '--path', metavar='',
-            help='Path inside datastore where the ISO is located.'
+            help='path inside datastore where the iso is located.'
         )
 
         mount_parser.add_argument(
             '--name', nargs='+', metavar='',
-            help='name attribute of Virtual Machine object.'
+            help='name attribute of virtual machine object.'
         )
 
         if defaults:
             mount_parser.set_defaults(**defaults)
 
     def power(self, *parents, **defaults):
-        """Power Parser."""
-        # power
+        usage = """
+        ## power
+        help: vctools power -h
+
+        ### adjust power state
+        vctools power <vcenter> <on|off|reset|reboot|shutdown> --name name nameN
+        """
         power_parser = self.subparsers.add_parser(
             'power', parents=list(parents),
-            help='Power Management for Virtual Machines'
+            usage=textwrap.dedent(usage),
         )
 
         power_parser.set_defaults(cmd='power')
 
         power_parser.add_argument(
             'power', choices=['on', 'off', 'reset', 'reboot', 'shutdown'],
-            help='change power state of VM'
+            help='change power state of vm'
 
         )
 
         power_parser.add_argument(
             '--name', nargs='+', metavar='',
-            help='name attribute of Virtual Machine object.'
+            help='name attribute of virtual machine object.'
         )
 
         if defaults:
             power_parser.set_defaults(**defaults)
 
     def query(self, *parents, **defaults):
-        """Query Parser."""
-        # query
+
+        usage = """
+        ## query
+        help: vctools query -h
+
+        ### query basic vm config
+        vctools query <vcenter> --vmconfig <name> <nameN>
+
+        ### query debug vm config. note: write to separate file recommended.
+        vctools query <vcenter> --vmconfig <name> --level debug --logfile <name>.out
+        """
         query_parser = self.subparsers.add_parser(
             'query', parents=list(parents),
-            help='Query Info'
+            usage=textwrap.dedent(usage),
+            help='information'
         )
 
         query_parser.set_defaults(cmd='query')
@@ -344,63 +360,63 @@ class ArgParser(Logger):
 
         query_opts.add_argument(
             '--anti-affinity-rules', action='store_true',
-            help='Returns information about AntiAffinityRules.'
+            help='returns information about antiaffinityrules.'
         )
 
         query_opts.add_argument(
             '--datastores', action='store_true',
-            help='Returns information about Datastores.'
+            help='returns information about datastores.'
         )
 
         query_opts.add_argument(
             '--datastore', metavar='',
-            help='vCenter Datastore.'
+            help='vcenter datastore.'
         )
 
         query_opts.add_argument(
             '--vms', action='store_true',
-            help='Returns information about Virtual Machines.'
+            help='returns information about virtual machines.'
         )
 
         query_opts.add_argument(
             '--folders', action='store_true',
-            help='Returns information about Folders.'
+            help='returns information about folders.'
         )
 
         query_opts.add_argument(
             '--networks', action='store_true',
-            help='Returns information about Networks.'
+            help='returns information about networks.'
         )
 
         query_opts.add_argument(
             '--clusters', action='store_true',
-            help='Returns information about ComputeResources.'
+            help='returns information about computeresources.'
         )
 
         query_opts.add_argument(
             '--cluster', metavar='',
-            help='vCenter ComputeResource.'
+            help='vcenter computeresource.'
         )
 
         query_opts.add_argument(
             '--vmconfig', nargs='+', metavar='',
-            help='Virtual machine config'
+            help='virtual machine config'
         )
 
         query_opts.add_argument(
             '--vm-by-datastore', action='store_true',
-            help='List the VMs associated with datastore.'
+            help='list the vms associated with datastore.'
         )
         query_opts.add_argument(
             '--vm-guest-ids', action='store_true',
-            help='Show all vm guest ids.'
+            help='show all vm guest ids.'
         )
 
         query_vmcfg_opts = query_parser.add_argument_group('vmconfig options')
 
         query_vmcfg_opts.add_argument(
             '--createcfg', metavar='',
-            help='Create a build config from --vmconfig spec.'
+            help='create a build config from --vmconfig spec.'
         )
 
 
@@ -408,41 +424,37 @@ class ArgParser(Logger):
             query_parser.set_defaults(**defaults)
 
     def reconfig(self, *parents, **defaults):
-        """ Reconfig VM Attributes and Hardware """
-        # reconfig
-        usage = """
 
+        usage = """
+        ## reconfig
         help: vctools reconfig -h
 
-        vctools reconfig <vc> <name> [--cfgs|--device|--folder|--upgrade] <options>
+        ### reconfigure config settings
+        see VMware SDK vim.vm.ConfigSpec for all possible options
+        vctools reconfig <vcenter> <name> --cfgs memoryMB=<int>,numCPUs=<int>
+        vctools reconfig <vcenter> <name> --extra-cfgs guestinfo.metadata=<base64>
 
-        # reconfigure config settings
-        # see VMware SDK vim.vm.ConfigSpec for all possible options
-        vctools reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
-        vctools reconfig <vc> <name> --extra-cfgs guestinfo.metadata=<base64>
+        ### convert vm to be a template
+        vctools reconfig <vcenter> <name> --markastemplate
 
-        # convert vm to be a template
-        vctools reconfig <vc> <name> --markastemplate
+        ### move vm to another folder
+        vctools reconfig <vcenter> <name> --folder <str>
 
-        # move vm to another folder
-        vctools reconfig <vc> <name> --folder <str>
+        ### reconfigure a disk
+        vctools reconfig <vcenter> <name> --device disk --disk-id <int> --sizeGB <int>
 
-        # reconfigure a disk
-        vctools reconfig <vc> <name> --device disk --disk-id <int> --sizeGB <int>
+        ### reconfigure a network card
+        vctools reconfig <vcenter> <name> --device nic --nic-id <int> --network <network>
 
-        # reconfigure a network card
-        vctools reconfig <vc> <name> --device nic --nic-id <int> --network <network>
-
-        # upgrade vm hardware
-        vctools reconfig <vc> <name> --upgrade --scheduled
+        ### upgrade vm hardware
+        vctools reconfig <vcenter> <name> --upgrade --scheduled
         """
         reconfig_parser = self.subparsers.add_parser(
             'reconfig',
             parents=list(parents),
             formatter_class=argparse.RawDescriptionHelpFormatter,
             usage=textwrap.dedent(usage),
-            description=textwrap.dedent(self.reconfig.__doc__),
-            help='Reconfigure Attributes for Virtual Machines.'
+            help='virtual machine attributes and hardware'
         )
         reconfig_parser.set_defaults(cmd='reconfig')
 
@@ -450,36 +462,36 @@ class ArgParser(Logger):
 
         reconfig_parser.add_argument(
             'name',
-            help='Name attribute of Virtual Machine object, i.e. hostname'
+            help='name attribute of virtual machine object, i.e. hostname'
         )
 
         reconfig_type_opts.add_argument(
             '--device', metavar='', choices=['disk', 'nic'],
-            help='Reconfigure hardware devices on Virtual Machines. choices=[%(choices)s]',
+            help='reconfigure hardware devices on virtual machines. choices=[%(choices)s]',
         )
 
         reconfig_type_opts.add_argument(
             '--cfgs', metavar='', type=self._mkdict,
-            help='A comma separated list of key values that represent config '
+            help='comma separated list of key values that represent config '
                  'settings such as memory or cpu. format: key=val,keyN=valN',
         )
 
         reconfig_type_opts.add_argument(
             '--extra-cfgs', metavar='', type=self._mkdict,
-            help='A comma separated list of key values that represent config '
+            help='comma separated list of key values that represent config '
                  'settings such as metadata and userdata. format: key=val,keyN=valN',
         )
 
         reconfig_type_opts.add_argument(
             '--folder', metavar='', type=str,
-            help='Move the VM to another folder. It must exist. '
+            help='move the vm to another folder. it must exist. '
         )
 
         reconfig_template_opts = reconfig_parser.add_argument_group('template options')
 
         reconfig_template_opts.add_argument(
             '--markastemplate', action='store_true', default=False,
-            help='Convert VM to a template. Note template cannot be powered on.',
+            help='convert vm to a template. note template cannot be powered on.',
         )
 
         reconfig_disk_opts = reconfig_parser.add_argument_group('disk options')
@@ -519,18 +531,18 @@ class ArgParser(Logger):
         )
         reconfig_type_opts.add_argument(
             '--upgrade', action='store_true',
-            help='Upgrade VM hardware version.',
+            help='upgrade vm hardware version.',
         )
 
         reconfig_upgrade_opts = reconfig_parser.add_argument_group('upgrade options')
 
         reconfig_upgrade_opts.add_argument(
             '--version', metavar='', type=str,
-            help='Upgrade hardware to specific version.'
+            help='upgrade hardware to specific version.'
         )
         reconfig_upgrade_opts.add_argument(
             '--scheduled', action='store_true',
-            help='Schedule a hardware upgrade on reboot.'
+            help='schedule a hardware upgrade on reboot.'
         )
         reconfig_upgrade_opts.add_argument(
             '--policy', metavar='', default='always',
@@ -543,34 +555,51 @@ class ArgParser(Logger):
             reconfig_parser.set_defaults(**defaults)
 
     def umount(self, *parents, **defaults):
-        """ Umount Parser """
-        # umount
+
+        usage = """
+        ## umount
+        help: vctools umount -h
+
+        ### umount iso
+        vctools umount <vcenter> --name name nameN
+        """
+
         umount_parser = self.subparsers.add_parser(
             'umount', parents=list(parents),
-            help='Unmount ISO from CD-Rom device'
+            usage=textwrap.dedent(usage),
+            help='iso from cdrom'
         )
 
         umount_parser.set_defaults(cmd='umount')
 
         umount_parser.add_argument(
             '--name', nargs='+',
-            help='name attribute of Virtual Machine object.'
+            help='name attribute of virtual machine object.'
         )
         if defaults:
             umount_parser.set_defaults(**defaults)
 
     def upload(self, *parents, **defaults):
-        """ Upload Parser """
-        # upload
+
+        usage = """
+        ## upload
+        help: vctools upload -h
+
+        ### upload iso to remote datastore
+        vctools upload vcenter --iso /local/path/to/file.iso \
+            --dest /remote/path/to/iso/folder --datastore datastore \
+            --datacenter datacenter
+        """
         upload_parser = self.subparsers.add_parser(
             'upload', parents=list(parents),
-            help='Upload File'
+            usage=textwrap.dedent(usage),
+            help='data to remote datastore'
         )
         upload_parser.set_defaults(cmd='upload')
 
         upload_parser.add_argument(
             '--iso', nargs='+', metavar='',
-            help='iso file that needs to be uploaded to vCenter.'
+            help='iso file that needs to be uploaded to vcenter.'
         )
 
         upload_parser.add_argument(
@@ -585,39 +614,33 @@ class ArgParser(Logger):
 
         upload_parser.add_argument(
             '--verify-ssl', metavar='', default=False,
-            help='verify SSL certificate. default: %(default)s'
+            help='verify ssl certificate. default: %(default)s'
         )
 
         if defaults:
             upload_parser.set_defaults(**defaults)
 
     def drs(self, *parents):
-        """Distributed Resource Scheduler rules, currently only anti-affinity"""
-
         usage = """
-        Cluster DRS Rules
-        currently only anti-affinity rules are supported
 
         help: vctools drs -h
 
-        vctools drs <vc> anti-affinity add <name> --vms <vm1 vm2...>
-        vctools drs <vc> anti-affinity delete <name>
+        vctools drs <vcenter> anti-affinity add <name> --vms <vm1 vm2...>
+        vctools drs <vcenter> anti-affinity delete <name>
 
         """
-
         drs_parser = self.subparsers.add_parser(
             'drs', parents=list(parents),
             formatter_class=argparse.RawDescriptionHelpFormatter,
             usage=textwrap.dedent(usage),
-            description=textwrap.dedent(self.drs.__doc__),
-            help='Cluster DRS rules'
+            help='cluster drs rules'
         )
 
         drs_parser.set_defaults(cmd='drs')
 
         drs_parser.add_argument(
             'drs_type', choices=['anti-affinity'],
-            help='options: anti-affinity (other options may come later)'
+            help='options: anti-affinity'
         )
         drs_parser.add_argument(
             'function', choices=['add', 'delete'],
@@ -625,19 +648,19 @@ class ArgParser(Logger):
         )
         drs_parser.add_argument(
             'name', metavar='', type=str,
-            help='Name of the DRS Rule'
+            help='name of the drs rule'
         )
         drs_parser.add_argument(
             '--vms', nargs='+', metavar='', type=str,
-            help='VMs to be added to the DRS rule'
+            help='vms to be added to the drs rule'
         )
         drs_parser.add_argument(
             '--cluster', metavar='',
-            help='vCenter ComputeResource'
+            help='vcenter computeresource'
         )
         drs_parser.add_argument(
             '--prefix', metavar='', type=str,
-            help='Cluster DRS rule name prefix'
+            help='cluster drs rule name prefix'
         )
 
     def sanitize(self, opts):

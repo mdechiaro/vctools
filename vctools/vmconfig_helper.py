@@ -304,7 +304,7 @@ class VMConfigHelper(VMConfig, Logger):
 
             upload_args.update(
                 {
-                    'host': self.opts.host,
+                    'host': self.opts.vcenter,
                     'cookie' : self.auth.session._stub.cookie,
                     'datacenter' : self.opts.datacenter,
                     'dest_folder' : dest,
