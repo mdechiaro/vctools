@@ -421,6 +421,9 @@ class ArgParser(Logger):
         vctools reconfig <vc> <name> --cfgs memoryMB=<int>,numCPUs=<int>
         vctools reconfig <vc> <name> --extra-cfgs guestinfo.metadata=<base64>
 
+        # convert vm to be a template
+        vctools reconfig <vc> <name> --markastemplate
+
         # move vm to another folder
         vctools reconfig <vc> <name> --folder <str>
 
@@ -470,6 +473,13 @@ class ArgParser(Logger):
         reconfig_type_opts.add_argument(
             '--folder', metavar='', type=str,
             help='Move the VM to another folder. It must exist. '
+        )
+
+        reconfig_template_opts = reconfig_parser.add_argument_group('template options')
+
+        reconfig_template_opts.add_argument(
+            '--markastemplate', action='store_true', default=False,
+            help='Convert VM to a template. Note template cannot be powered on.',
         )
 
         reconfig_disk_opts = reconfig_parser.add_argument_group('disk options')

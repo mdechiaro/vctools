@@ -151,6 +151,9 @@ class VCTools(Logger):
                     self.vmcfg.nic_recfg()
                 if self.opts.upgrade:
                     self.vmcfg.hwupgrade_recfg()
+                if self.opts.markastemplate:
+                    self.logger.info('reconfig: %s convert to template', host.name)
+                    host.MarkAsTemplate()
 
             if self.opts.cmd == 'drs':
                 if not self.opts.cluster:
