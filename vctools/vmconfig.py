@@ -412,6 +412,23 @@ class VMConfig(Logger):
         result = Tasks.task_monitor(task, False)
         return result
 
+    def clone(self, folder, host, vm_name, config):
+        """
+        Method clones a new VM from template
+
+        Args:
+            folder (obj): Managed Object Reference to folder where VM will reside
+            host (obj): Managed Object Reference to VM
+            vm_name (str): Name of VM created
+            config (dict): A dict containing vim.vm.ConfigSpec attributes
+        Returns:
+            result (bool): Result of task_monitor
+        """
+        self.logger.info('%s from %s', vm_name, host.name)
+
+        task = host.CloneVM_Task(folder=folder, name=vm_name, spec=config)
+        result = Tasks.task_monitor(task, True, host)
+        return result
 
     def reconfig(self, host, **config):
         """

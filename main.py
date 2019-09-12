@@ -77,7 +77,10 @@ class VCTools(Logger):
                             self.vmcfg.dict_merge(spec['vmconfig'], cfgcheck_update)
                         )
                         spec = self.vmcfg.pre_create_hooks(**spec)
-                        spec = self.vmcfg.create_wrapper(**spec)
+                        if self.opts.template:
+                            spec = self.vmcfg.create_wrapper(self.opts.template, **spec)
+                        else:
+                            spec = self.vmcfg.create_wrapper(**spec)
                         self.vmcfg.post_create_hooks(**spec)
                         filename = spec['vmconfig']['name'] + '.yaml'
                         server_cfg = {}

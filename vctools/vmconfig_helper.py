@@ -62,13 +62,14 @@ class VMConfigHelper(VMConfig, Logger):
 
         return new
 
-    def create_wrapper(self, **spec):
+    def create_wrapper(self, template=False, **spec):
         """
         Wrapper method for creating VMs. If certain information was
         not provided in the yaml config (like a datastore), then the client
         will be prompted to select one inside the cfg_checker method.
 
         Args:
+            template (str): The name of template to use for creation
             yaml_cfg (file): A yaml file containing the necessary information
                 for creating a new VM. This file will override the defaults set
                 in the dotrc file.
@@ -168,7 +169,34 @@ class VMConfigHelper(VMConfig, Logger):
         pool = cluster_obj.resourcePool
 
         self.logger.debug(folder, datastore, pool, devices, spec)
-        self.create(folder, datastore, pool, **spec['vmconfig'])
+
+        if template:
+            host = Query.get_obj(self.virtual_machines.view, self.opts.template)
+            datastore_obj = Query.get_obj(cluster_obj.datastore, datastore)
+
+            relocate = vim.vm.RelocateSpec()
+            relocate.datastore = datastore_obj
+            relocate.pool = pool
+            relocate.deviceChange = spec['vmconfig']['deviceChange']
+
+            clone_cfg = vim.vm.CloneSpec()
+            clone_cfg.location = relocate
+            clone_cfg.powerOn = self.opts.power
+
+            self.clone(folder, host, spec['vmconfig']['name'], clone_cfg)
+            vm_obj = Query.get_obj(self.virtual_machines.view, spec['vmconfig']['name'])
+
+            # everything but devices
+            vm_params = {
+                'numCPUs' : spec['vmconfig']['numCPUs'],
+                'memoryMB' : spec['vmconfig']['memoryMB'],
+                'guestId' : spec['vmconfig']['guestId'],
+            }
+
+            self.reconfig(vm_obj, **vm_params)
+
+        else:
+            self.create(folder, datastore, pool, **spec['vmconfig'])
 
         return server_cfg
 

@@ -238,10 +238,23 @@ class ArgParser(Logger):
 
     def create(self, *parents, **defaults):
         """Create Parser."""
+        usage = """
+
+        help: vctools create -h
+
+        # create VM
+        vctools create <vc> <config> <configN>
+
+        # clone VM from template
+        vctools create <vc> <config> <configN> --template <template>
+        """
         # create
         create_parser = self.subparsers.add_parser(
-            'create', parents=list(parents),
-            description='Example: vctools create <vc> <config> <configN>',
+            'create',
+            parents=list(parents),
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            usage=textwrap.dedent(usage),
+            description=textwrap.dedent(self.create.__doc__),
             help='Create Virtual Machines'
         )
 
@@ -255,6 +268,11 @@ class ArgParser(Logger):
         create_parser.add_argument(
             '--power', action='store_true', default=True,
             help='Power on the VM after creation. default: %(default)s'
+        )
+
+        create_parser.add_argument(
+            '--template', metavar='',
+            help='Template to create new Virtual Machines.'
         )
 
         if defaults:
