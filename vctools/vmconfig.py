@@ -3,6 +3,9 @@
 """Various config options for Virtual Machines."""
 
 from random import uniform
+import base64
+import gzip
+import io
 import requests
 from pyVmomi import vim # pylint: disable=E0611
 from vctools.query import Query
@@ -520,3 +523,32 @@ class VMConfig(Logger):
                 host.UpgradeVM_Task()
 
         return spec
+
+    @classmethod
+    def guestinfo_encoder(cls, data):
+        """
+        Encode data for vm guestinfo
+
+        Args:
+            data (bytes) Encoded data
+        Returns:
+            str string of base64 gzipped data
+        """
+        stream = io.BytesIO()
+        with gzip.GzipFile(fileobj=stream, mode='wb') as data_stream:
+            data_stream.write(data)
+
+        return base64.b64encode(stream.getvalue()).decode('ascii')
+
+    @classmethod
+    def guestinfo_decoder(cls, data):
+        """
+        Decode data for vm guestinfo
+
+        Args:
+            data (bytes) Encoded data
+        Returns:
+            str string of base64 gzipped data
+        """
+
+        return gzip.decompress(base64.b64decode(data.encode()))
