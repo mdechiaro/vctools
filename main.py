@@ -89,6 +89,9 @@ class VCTools(Logger):
                         if spec.get('mkbootiso', None):
                             server_cfg['mkbootiso'] = {}
                             server_cfg['mkbootiso'].update(spec['mkbootiso'])
+                        if spec.get('metadata', None):
+                            server_cfg['metadata'] = {}
+                            server_cfg['metadata'].update(spec['metadata'])
 
                         print(
                             yaml.dump(server_cfg, default_flow_style=False),

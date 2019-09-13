@@ -6,6 +6,8 @@ import os
 import subprocess
 import sys
 import textwrap
+import requests
+import yaml
 from vctools import Logger
 # pylint: disable=empty-docstring,missing-docstring
 
@@ -105,6 +107,16 @@ class ArgParser(Logger):
                     params[key] = False
 
         return params
+
+    @staticmethod
+    def _file_url_loader(args):
+        """
+        Internal method for determining how to read external data.
+        """
+        if args.startswith('http'):
+            return requests.get(args).content
+
+        return yaml.dump(open(args, 'rb')).encode()
 
     @classmethod
     def general(cls, **defaults):
@@ -243,6 +255,9 @@ class ArgParser(Logger):
 
         ### clone vm from template
         vctools create <vcenter> <config> <configN> --template <template>
+
+        ### clone vm from template with metadata
+        vctools create <vcenter> <config> --template <template> --metadata metadata.json
         """
         create_parser = self.subparsers.add_parser(
             'create',
@@ -267,6 +282,25 @@ class ArgParser(Logger):
         create_parser.add_argument(
             '--template', metavar='',
             help='template to create new virtual machines.'
+        )
+        create_parser.add_argument(
+            '--metadata', metavar='', type=self._file_url_loader,
+            help='json file containing vm metadata.'
+        )
+
+        create_parser.add_argument(
+            '--network', metavar='', type=self._file_url_loader,
+            help='yaml file containing vm network info.'
+        )
+
+        create_parser.add_argument(
+            '--userdata', metavar='', type=self._file_url_loader,
+            help='yaml file containing userdata.'
+        )
+
+        create_parser.add_argument(
+            '--vendordata', metavar='', type=self._file_url_loader,
+            help='yaml file containing vendordata.'
         )
 
         if defaults:

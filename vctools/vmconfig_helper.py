@@ -6,7 +6,9 @@
 import os
 import socket
 import copy
+import json
 import requests
+import yaml
 from pyVmomi import vim # pylint: disable=E0611
 from vctools.prompts import Prompts
 from vctools.query import Query
@@ -384,6 +386,77 @@ class VMConfigHelper(VMConfig, Logger):
 
         Returns: None
         """
+        extras = {}
+
+        if spec.get('metadata', None):
+            metadata = {}
+
+            if spec['metadata'].get('local-hostname', None):
+                metadata.update({'local-hostname' : spec['metadata']['local-hostname']})
+
+            if spec['metadata'].get('network', None):
+                network = self.guestinfo_encoder(yaml.dump(spec['metadata']['network']).encode())
+                metadata.update({'network' : network})
+                metadata.update({'network.encoding' : 'gzip+base64'})
+
+            encoded_metadata = self.guestinfo_encoder(json.dumps(metadata).encode())
+
+            extras.update(
+                {
+                    'guestinfo.metadata' : encoded_metadata,
+                    'guestinfo.metadata.encoding' : 'gzip+base64',
+                }
+            )
+
+            if spec.get('userdata', None):
+                userdata = self.guestinfo_encoder(spec['userdata'].encode())
+                extras.update({'guestinfo.userdata' : userdata})
+                extras.update({'guestinfo.userdata.encoding' : 'gzip+base64'})
+
+            if spec.get('vendordata', None):
+                vendordata = self.guestinfo_encoder(
+                    yaml.dump(spec['vendordata']).encode()
+                )
+                extras.update({'guestinfo.vendordata' : vendordata})
+                extras.update({'guestinfo.vendordata.encoding' : 'gzip+base64'})
+
+        if self.opts.metadata:
+            metadata = self.opts.metadata
+
+            if self.opts.network:
+                network = self.guestinfo_encoder(self.opts.network)
+                metadata.update({'network' : network})
+                metadata.update({'network.encoding' : 'gzip+base64'})
+
+            encoded_metadata = self.guestinfo_encoder(json.dumps(metadata).encode())
+
+            extras.update({'guestinfo.metadata' : encoded_metadata})
+            extras.update({'guestinfo.metadata.encoding' : 'gzip+base64'})
+
+        if self.opts.userdata:
+            userdata = self.guestinfo_encoder(self.opts.userdata)
+            extras.update({'guestinfo.userdata' : userdata})
+            extras.update({'guestinfo.userdata.encoding' : 'gzip+base64'})
+
+        if self.opts.vendordata:
+            vendordata = self.guestinfo_encoder(self.opts.vendordata)
+            extras.update({'guestinfo.vendordata' : vendordata})
+            extras.update({'guestinfo.vendordata.encoding' : 'gzip+base64'})
+
+        if extras:
+            host = Query.get_obj(self.virtual_machines.view, spec['vmconfig']['name'])
+            extra_config = {'extraConfig' : []}
+
+            for key, val in extras.items():
+                xopts = vim.option.OptionValue()
+                xopts.key = key
+                xopts.value = val
+                extra_config['extraConfig'].append(xopts)
+
+
+            self.logger.info('inserting metadata guestinfo to %s', host.name)
+
+            self.reconfig(host, **extra_config)
 
         # hooks for upload, mount, power
         if self.opts.upload:
@@ -424,7 +497,7 @@ class VMConfigHelper(VMConfig, Logger):
 
             self.mount_wrapper(datastore, path, name)
 
-        if self.opts.power:
+        if self.opts.power and not spec.get('metadata', None):
             state = 'on'
             name = spec['vmconfig']['name']
             self.power_wrapper(state, name)
