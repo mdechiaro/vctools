@@ -1,8 +1,6 @@
-"""Various config options for Virtual Machines."""
 #!/usr/bin/env python
 # vim: ts=4 sw=4 et
-
-
+"""Various config options for Virtual Machines."""
 import os
 import socket
 import copy
@@ -452,7 +450,6 @@ class VMConfigHelper(VMConfig, Logger):
                 xopts.key = key
                 xopts.value = val
                 extra_config['extraConfig'].append(xopts)
-
 
             self.logger.info('inserting metadata guestinfo to %s', host.name)
 

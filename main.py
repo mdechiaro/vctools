@@ -200,8 +200,10 @@ class VCTools(Logger):
                         cluster = Prompts.clusters(self.auth.session)
                         datastores = Query.return_datastores(clusters_container.view, cluster)
                     for row in datastores:
-                        print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
-
+                        try:
+                            print('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*row))
+                        except TypeError:
+                            pass
                 if self.opts.folders:
                     if self.opts.datacenter:
                         folders = Query.list_vm_folders(
