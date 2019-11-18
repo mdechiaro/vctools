@@ -323,3 +323,39 @@ class Prompts(Logger):
                 continue
 
         return (ipaddr, netmask, gateway)
+
+    @classmethod
+    def resource_pools(cls, session):
+        """
+        Method will prompt user to select a resource pool
+
+        Args:
+            session (obj): Auth session object
+
+        Returns:
+            pool (str): Name of selected resource pool
+        """
+
+        pools_choices = Query.create_container(
+            session, session.content.rootFolder,
+            [vim.ResourcePool], True
+        )
+        pools = Query.list_obj_attrs(pools_choices, 'name')
+        pools.sort()
+
+        for num, opt in enumerate(pools, start=1):
+            print('%s: %s' % (num, opt))
+
+        while True:
+            val = int(input('\nPlease select number: ').strip())
+            if int(val) <= len(pools):
+                # need to substract 1 since we start enumeration at 1.
+                val = int(val) - 1
+                selected_pool = pools[val]
+                break
+            else:
+                print('Invalid number.')
+                continue
+
+        cls.logger.info(selected_pool)
+        return selected_pool
