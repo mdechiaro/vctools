@@ -120,9 +120,18 @@ class Prompts(Logger):
             # the first item is the header information, so we will
             # not allow it as an option.
             if num == 0:
-                print('\t%s' % ('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)))
+                try:
+                    print('\t%s' % ('{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)))
+                except TypeError:
+                    pass
             else:
-                print('%s: %s' % (num, '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt)))
+                try:
+                    # pylint: disable=line-too-long
+                    print(
+                        '%s: %s' % (num, '{0:30}\t{1:10}\t{2:10}\t{3:6}\t{4:10}\t{5:6}'.format(*opt))
+                    )
+                except TypeError:
+                    pass
 
         while True:
             val = int(input('\nPlease select number: ').strip())
