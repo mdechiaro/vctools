@@ -1,5 +1,7 @@
-vctools
+vctools (deprecated)
 ======
+
+This project is no longer maintained.
 
 [![Status](https://travis-ci.org/mdechiaro/vctools.svg?branch=master)](https://travis-ci.org/mdechiaro/vctools)
 
